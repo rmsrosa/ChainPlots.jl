@@ -56,3 +56,5 @@ julia> plot(nnrlwide, title="$nnrlwide", titlefontsize=9)
 Then we get the plot
 
 ![nnrlwide plot](tests/img/nnrlwide.png)
+
+Other examples can be seen being built in [tests/runtest.jl](tests/runtest.jl), with the several created plots in the folder [tests/img](tests/img/).
