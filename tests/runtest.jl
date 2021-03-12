@@ -41,19 +41,19 @@ nn = Chain(Dense(2,5), Dense(5,7,σ), Dense(7,2,relu),Dense(2,3))
 display(plot(nn, title="$nn", titlefontsize=10, xlabel="layer", xaxis=nothing))
 savefig("tests/img/nn.png")
 
-nnr = Chain(Dense(2,5,σ),RNN(5,4,relu), LSTM(4,4), Dense(4,3))
-display(plot(nnr, title="$nnr", titlefontsize=10, yaxis=true))
-savefig("tests/img/nnr.png")
-
-nnrl = Chain(Dense(5,8), RNN(8,20), LSTM(20,10), Dense(10,7))
-display(plot(nnrl, title="$nnrl", titlefontsize=12, yaxis=true))
+nnrl = Chain(Dense(2,5,σ),RNN(5,4,relu), LSTM(4,4), Dense(4,3))
+display(plot(nnrl, title="$nnrl", titlefontsize=10, yaxis=true))
 savefig("tests/img/nnrl.png")
+
+nnrlwide = Chain(Dense(5,8), RNN(8,20), LSTM(20,10), Dense(10,7))
+display(plot(nnrlwide, title="$nnrlwide", titlefontsize=12, yaxis=true))
+savefig("tests/img/nnrlwide.png")
 
 for t in themes
     theme(t)
     try        
         display(plot(nnr, title="$nnr with theme $t", titlefontsize=8, yaxis=true))
-        savefig("tests/img/nnr_$t.png")
+        savefig("tests/img/nnrl_$t.png")
     catch err
         println("Error in chain plot with theme $t: $err")
     end
