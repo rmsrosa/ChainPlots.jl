@@ -10,7 +10,13 @@ Nevertheless, one is welcome to install it directly via github, use it at your o
 
 ## Current state
 
-At the moment, the recipe works for Dense and (RNN and LSTR) Recurrent layers and Chains of such layers.
+The aim is to obtain pictorial representations similar to those in the links
+
+* [Main Types of Neural Networks and its Applications — Tutorial](https://pub.towardsai.net/main-types-of-neural-networks-and-its-applications-tutorial-734480d7ec8e); and
+
+* [The mostly complete chart of Neural Networks, explained](https://towardsdatascience.com/the-mostly-complete-chart-of-neural-networks-explained-3fb6f2367464).
+
+At the moment, the recipe works for Dense and (RNN and LSTR) Recurrent layers, as well as for Chains of such layers.
 
 A little taste:
 
