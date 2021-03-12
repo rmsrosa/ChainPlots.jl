@@ -35,3 +35,18 @@ julia> plot(nnrl, title="$nnrl", titlefontsize=8)
 Then we get the following plot:
 
 ![nnrl plot](tests/img/nnrl_gruvbox_light.png)
+
+Another one:
+
+```julia
+julia> theme(:default)
+
+julia> nnrlwide = Chain(Dense(5,8,relu), RNN(8,20), LSTM(20,10), Dense(10,7))
+Chain(Dense(5, 8, relu), Recur(RNNCell(8, 20, tanh)), Recur(LSTMCell(20, 10)), Dense(10, 7))
+
+julia> plot(nnrlwide, title="$nnrlwide", titlefontsize=9)
+```
+
+Then we get the plot
+
+![nnrlwide plot](tests/img/nnrlwide.png)
