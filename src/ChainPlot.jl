@@ -13,22 +13,25 @@ rnn_verts = [(1.2*sin(2π*n/20), 1.2*(1+cos(2π*n/20))) for n=-10:10]
 lstm_verts = vcat([(1.0*sin(2π*n/20), 1.4 + 1.0*cos(2π*n/20)) for n=-10:10],
                   [(1.4*sin(2π*n/20), 1.4 + 1.4*cos(2π*n/20)) for n=-10:10])
 
-layerplotattributes(::Any) = (ms = :circle, mc = :transparent)
+layerplotattributes(::Any) = (ms = :circle, mc = :black)
 layerplotattributes(::Flux.Dense) = (ms = :circle, mc = :lightgreen)
 layerplotattributes(::Flux.RNNCell) = (ms = [Main.Plots.Shape(rnn_verts), :circle], mc = [false, :lightblue])
 layerplotattributes(::Flux.LSTMCell) = (ms = [Main.Plots.Shape(lstm_verts), :circle], mc = [false, :lightblue])
+layerplotattributes(::Flux.GRUCell) = (ms = [Main.Plots.Shape(lstm_verts), :circle], mc = [false, :lightblue])
 layerplotattributes(r::Flux.Recur) = layerplotattributes(r.cell)
 
 layeractivationfn(::Any) = ""
 layeractivationfn(d::Flux.Dense) = string(Symbol(d.σ))
 layeractivationfn(r::Flux.RNNCell) = string(Symbol(r.σ))
-layeractivationfn(r::Flux.LSTMCell) = "identity"
+layeractivationfn(r::Flux.LSTMCell) = "LSTM"
+layeractivationfn(r::Flux.GRUCell) = "GRU"
 layeractivationfn(r::Flux.Recur) = layeractivationfn(r.cell)
 
 layerdimensions(::Any) = (1,1)
 layerdimensions(l::Flux.Dense) = size(l.W)
 layerdimensions(l::Flux.RNNCell) = (size(l.Wh)[2], size(l.Wi)[2])
 layerdimensions(l::Flux.LSTMCell) = (size(l.Wh)[2], size(l.Wi)[2])
+layerdimensions(l::Flux.GRUCell) = (size(l.Wh)[2], size(l.Wi)[2])
 layerdimensions(r::Flux.Recur) = layerdimensions(r.cell)
 
 """

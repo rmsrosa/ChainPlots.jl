@@ -32,15 +32,15 @@ Plots.GRBackend()
 
 julia> theme(:gruvbox_light)
 
-julia> nnrl = Chain(Dense(2,5,σ),RNN(5,4,relu), LSTM(4,4), Dense(4,3))
+julia> nnr = Chain(Dense(2,5,σ),RNN(5,4,relu), LSTM(4,4), GRU(4,4), Dense(4,3))
 Chain(Dense(2, 5, σ), Recur(RNNCell(5, 4, relu)), Recur(LSTMCell(4, 4)), Dense(4, 3))
 
-julia> plot(nnrl, title="$nnrl", titlefontsize=8)
+julia> plot(nnr, title="$nnr", titlefontsize=8)
 ```
 
 Then we get the following plot:
 
-![nnrl plot](tests/img/nnrl_gruvbox_light.png)
+![nnrl plot](tests/img/nnr_gruvbox_light.png)
 
 Another one:
 
@@ -50,7 +50,7 @@ julia> theme(:default)
 julia> nnrlwide = Chain(Dense(5,8,relu), RNN(8,20), LSTM(20,10), Dense(10,7))
 Chain(Dense(5, 8, relu), Recur(RNNCell(8, 20, tanh)), Recur(LSTMCell(20, 10)), Dense(10, 7))
 
-julia> plot(nnrlwide, title="$nnrlwide", titlefontsize=9)
+julia> plot(nnrlwide, title="$nnrlwide", titlefontsize=8)
 ```
 
 Then we get the plot
