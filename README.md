@@ -57,4 +57,4 @@ Then we get the plot
 
 ![nnrlwide plot](tests/img/nnrlwide.png)
 
-Other examples can be seen being built in [tests/runtest.jl](tests/runtest.jl), with the several created plots in the folder [tests/img](tests/img/).
+Other examples can be seen in [tests/runtest.jl](tests/runtest.jl), with the several created plots saved to the folder [tests/img](tests/img/).
