@@ -29,15 +29,11 @@ rl = RNN(3,5)
 display(plot(rl, title="$rl", titlefontsize=12))
 savefig("tests/img/rl.png")
 
-rlc = Flux.RNNCell(3,5)
-display(plot(rlc, title="$rlc", titlefontsize=12))
-savefig("tests/img/rlc.png")
-
-llstm = Flux.LSTM(4,7)
+llstm = LSTM(4,7)
 display(plot(llstm, title="$llstm", titlefontsize=12))
 savefig("tests/img/llstm.png")
 
-lgru = Flux.GRU(5,7)
+lgru = GRU(5,7)
 display(plot(lgru, title="$lgru", titlefontsize=12))
 savefig("tests/img/lgru.png")
 
@@ -45,7 +41,7 @@ nnd = Chain(Dense(2,5), Dense(5,7,σ), Dense(7,2,relu),Dense(2,3))
 display(plot(nnd, title="$nnd", titlefontsize=10, xaxis=nothing))
 savefig("tests/img/nnd.png")
 
-nnr = Chain(Dense(2,5,σ),RNN(5,4,relu), LSTM(4,4), GRU(4,4), Dense(4,3))
+nnr = Chain(Dense(2,5,σ), RNN(5,4,relu), LSTM(4,4), GRU(4,4), Dense(4,3))
 display(plot(nnr, title="$nnr", titlefontsize=7))
 savefig("tests/img/nnr.png")
 
