@@ -33,8 +33,9 @@ layerplotattributes(r::Flux.Recur) = layerplotattributes(r.cell)
 Retrive activation function of a given layer.
 """
 layeractivationfn(::Any) = ""
-layeractivationfn(d::Flux.Dense) = string(Symbol(d.σ))
-layeractivationfn(r::Flux.RNNCell) = string(Symbol(r.σ))
+layeractivationfn(f::Function) = string(f)
+layeractivationfn(d::Flux.Dense) = string(d.σ)
+layeractivationfn(r::Flux.RNNCell) = string(r.σ)
 layeractivationfn(r::Flux.LSTMCell) = "LSTM"
 layeractivationfn(r::Flux.GRUCell) = "GRU"
 layeractivationfn(r::Flux.Recur) = layeractivationfn(r.cell)

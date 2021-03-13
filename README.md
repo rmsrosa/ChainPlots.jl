@@ -10,13 +10,13 @@ Nevertheless, one is welcome to install it directly via github, use it at your o
 
 ## Current state
 
-The aim is to obtain pictorial representations similar to those in the links
+The aim is to obtain pictorial for all types of layers implemented in [Flux.jl] and in a way similar to the representations given in the following links.
 
 * [Main Types of Neural Networks and its Applications — Tutorial](https://pub.towardsai.net/main-types-of-neural-networks-and-its-applications-tutorial-734480d7ec8e); and
 
 * [The mostly complete chart of Neural Networks, explained](https://towardsdatascience.com/the-mostly-complete-chart-of-neural-networks-explained-3fb6f2367464).
 
-At the moment, the recipe works for Dense and (RNN, LSTR, and GRU) Recurrent layers, as well as for Chains of such layers.
+At the moment, the recipe works for Dense and (RNN, LSTR, and GRU) Recurrent layers and for one-dimensional taylor-made function layers, as well as for Chains of such layers.
 
 A little taste:
 
