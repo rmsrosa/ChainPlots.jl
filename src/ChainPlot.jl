@@ -62,16 +62,14 @@ The first layer is required to be a layer with fixed input dimensions,
 such as Flux.Dense or a Flux.Recur.
 """
 function get_chain_dimensions(m::Flux.Chain)
-
+    
     if !(m.layers[1] isa Union{fixed_input_dim_layers...})
-        throw(ArgumentError("The first layer is required to be a layer with fixed input dimensions, such as Flux.Dense or a Flux.Recur."))
+        throw(ArgumentError("The first layer is required to be a layer with fixed input dimensions"))
     end
 
-    chain_dimensions = fill(Int16(1),length(m.layers)+1)
-    chain_dimensions[1] = layerdimensions(m.layers[1])[2] # input dimensions
-    for (ln, l) in enumerate(m.layers)
-        chain_dimensions[ln+1] = layerdimensions(l)[1]
-    end
+    mock_input = rand(layerdimensions(m.layers[1])[2])
+    chain_dimensions = vcat((layerdimensions(m.layers[1])[2],), [size(m[1:nl](mock_input)) for nl in 1:length(m.layers)])
+    chain_dimensions = map(x -> x[1], chain_dimensions) # just temporarily
     return chain_dimensions
 end
 
