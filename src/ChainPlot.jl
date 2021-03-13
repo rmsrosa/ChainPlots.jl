@@ -91,18 +91,6 @@ Plot a Flux.Chain neural network.
         end
     end
 
-#=     # draw output layer cells
-    @series begin
-        markershape --> :diamond
-        markercolor --> :orange
-        nj, ni = size(params(m[end])[1])
-        layer_center = nj/2
-        # dataseries = hcat([[j] for j in 1:nj]...) .- layer_center
-        dataseries = hcat([j for j in 1:nj]...) .- layer_center
-        dataseries = map(x -> ((x + max_width/2)/(max_width+1)), dataseries)
-        return [length(m)+1], dataseries        
-    end =#
-
     # display activation functions
     for (ln, l) in enumerate(m.layers)
         @series begin
@@ -118,12 +106,24 @@ end
     Flux.Chain(d)
 end
 
+"""
+    plot((m,s)::Tuple{Flux.Chain,Tuple{Int}})
+
+Plot a Flux.Chain neural network `m` with input dimensions `s`.
+
+Useful when the neural network starts with a variable-input layer, such as a convolutional layer.
+"""
+@recipe function plot((m,s)::Tuple{Flux.Chain,Tuple{Int}})
+
 end
 
-#= 
-Questions:
+"""
+    plot((m,a)::Tuple{Flux.Chain,Array})
 
-1) If `m` is a chain, is there any case in which `length(m)` is different from `length(m.layers)`?
-2) Similarly, is there any difference between walking through the layers with `for l in m` or `for l in m.layers`?
-3) How complicate can `Recur` be? Can I assume there is always one and only one `RNNCell` in it?
-=#
+Plot a Flux.Chain neural network `m` with an input array `a`.
+
+Useful when the neural network starts with a variable-input layer, such as a convolutional layer.
+"""
+@recipe function plot((m,s)::Tuple{Flux.Chain,Array})
+    return (m, size(s))
+end
