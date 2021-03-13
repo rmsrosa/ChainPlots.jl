@@ -96,16 +96,13 @@ Plot a Flux.Chain neural network.
     seriescolor --> :gray
 
     # draw connections
-    ni = chain_dimensions[1]
     for (ln, l) in enumerate(m.layers)
         @series begin
             # arrow --> true
-            # nj, ni = layerdimensions(l)
-            nj = chain_dimensions[ln+1]
+            ni, nj = chain_dimensions[ln:ln+1]
             layer_center = [ni,nj]./2
             dataseries = hcat([[i,j] for i in 1:ni for j in 1:nj]...) .- layer_center
             dataseries = map(x -> ((x + max_width/2)/(max_width+1)), dataseries)
-            ni=nj
             return [ln,ln + 1], dataseries
         end
     end
@@ -114,7 +111,7 @@ Plot a Flux.Chain neural network.
     @series begin
         markershape --> :circle
         markercolor --> :yellow
-        nj, ni = layerdimensions(m[1])
+        ni = chain_dimensions[1]
         layer_center = ni/2
         dataseries = hcat([[i] for i in 1:ni]...) .- layer_center
         dataseries = map(x -> ((x + max_width/2)/(max_width+1)), dataseries)
@@ -157,7 +154,7 @@ Plot a Flux.Chain neural network `m` with input dimensions `s`.
 Useful when the neural network starts with a variable-input layer, such as a convolutional layer.
 """
 @recipe function plot((m,s)::Tuple{Flux.Chain,Tuple{Int}})
-
+    nothing
 end
 
 """
