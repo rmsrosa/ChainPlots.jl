@@ -9,15 +9,17 @@ using Flux
 using RecipesBase
 # import Functors: functor
 
-rnn_verts = [(1.2*sin(2π*n/20), 1.2*(1+cos(2π*n/20))) for n=-10:10]
+lrnn_verts = [(1.2*sin(2π*n/20), 1.2*(1+cos(2π*n/20))) for n=-10:10]
 lstm_verts = vcat([(1.0*sin(2π*n/20), 1.4 + 1.0*cos(2π*n/20)) for n=-10:10],
+                  [(1.4*sin(2π*n/20), 1.4 + 1.4*cos(2π*n/20)) for n=-10:10])
+lgru_verts = vcat([(0.6*sin(2π*n/20), 1.4 + 1.0*cos(2π*n/20)) for n=-10:10],
                   [(1.4*sin(2π*n/20), 1.4 + 1.4*cos(2π*n/20)) for n=-10:10])
 
 layerplotattributes(::Any) = (ms = :circle, mc = :black)
 layerplotattributes(::Flux.Dense) = (ms = :circle, mc = :lightgreen)
-layerplotattributes(::Flux.RNNCell) = (ms = [Main.Plots.Shape(rnn_verts), :circle], mc = [false, :lightblue])
+layerplotattributes(::Flux.RNNCell) = (ms = [Main.Plots.Shape(lrnn_verts), :circle], mc = [false, :lightblue])
 layerplotattributes(::Flux.LSTMCell) = (ms = [Main.Plots.Shape(lstm_verts), :circle], mc = [false, :lightblue])
-layerplotattributes(::Flux.GRUCell) = (ms = [Main.Plots.Shape(lstm_verts), :circle], mc = [false, :lightblue])
+layerplotattributes(::Flux.GRUCell) = (ms = [Main.Plots.Shape(lgru_verts), :circle], mc = [false, :lightblue])
 layerplotattributes(r::Flux.Recur) = layerplotattributes(r.cell)
 
 layeractivationfn(::Any) = ""
