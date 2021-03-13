@@ -35,12 +35,12 @@ julia> theme(:gruvbox_light)
 julia> nnr = Chain(Dense(2,5,σ),RNN(5,4,relu), LSTM(4,4), GRU(4,4), Dense(4,3))
 Chain(Dense(2, 5, σ), Recur(RNNCell(5, 4, relu)), Recur(LSTMCell(4, 4)), Dense(4, 3))
 
-julia> plot(nnr, title="With theme gruvbox_light", titlefontsize=10)
+julia> plot(nnr, title="With theme solarized_light", titlefontsize=10)
 ```
 
 Then we get the following plot:
 
-![nnrl plot](tests/img/nnr_gruvbox_light.png)
+![nnrl plot](tests/img/nnr_solarized_light.png)
 
 Another example:
 
