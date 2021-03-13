@@ -16,7 +16,7 @@ The aim is to obtain pictorial representations similar to those in the links
 
 * [The mostly complete chart of Neural Networks, explained](https://towardsdatascience.com/the-mostly-complete-chart-of-neural-networks-explained-3fb6f2367464).
 
-At the moment, the recipe works for Dense and (RNN and LSTR) Recurrent layers, as well as for Chains of such layers.
+At the moment, the recipe works for Dense and (RNN, LSTR, and GRU) Recurrent layers, as well as for Chains of such layers.
 
 A little taste:
 
@@ -35,14 +35,14 @@ julia> theme(:gruvbox_light)
 julia> nnr = Chain(Dense(2,5,σ),RNN(5,4,relu), LSTM(4,4), GRU(4,4), Dense(4,3))
 Chain(Dense(2, 5, σ), Recur(RNNCell(5, 4, relu)), Recur(LSTMCell(4, 4)), Dense(4, 3))
 
-julia> plot(nnr, title="$nnr", titlefontsize=8)
+julia> plot(nnr, title="With theme gruvbox_light", titlefontsize=10)
 ```
 
 Then we get the following plot:
 
 ![nnrl plot](tests/img/nnr_gruvbox_light.png)
 
-Another one:
+Another example:
 
 ```julia
 julia> theme(:default)
@@ -50,7 +50,7 @@ julia> theme(:default)
 julia> nnrlwide = Chain(Dense(5,8,relu), RNN(8,20), LSTM(20,10), Dense(10,7))
 Chain(Dense(5, 8, relu), Recur(RNNCell(8, 20, tanh)), Recur(LSTMCell(20, 10)), Dense(10, 7))
 
-julia> plot(nnrlwide, title="$nnrlwide", titlefontsize=8)
+julia> plot(nnrlwide, title="$nnrlwide", titlefontsize=9)
 ```
 
 Then we get the plot
