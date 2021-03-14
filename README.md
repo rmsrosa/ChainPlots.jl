@@ -22,14 +22,13 @@ At the moment, the recipe works for Dense and Recurrent layers and for one-dimen
 
 There will be a distinction between netwoks starting with a layer with fixed-sized input (Dense and Recurrent) and networks starting with a layer with variable-sized input (Convolutional,  Pooling, and functional).
 
-In the former case, just passing a network `m=Chain(...)` to plot works, e.g. `plot(m)`. In the latter case, one needs to pass along an initial input `a`, in the form `plot((m,a))`, so that the plot recipe can figure out the size of each layer.
+In the former case, just passing a network `m=Chain(...)` to plot works, e.g. `plot(m)`. In the latter case, one needs to pass along an initial input `a` as the second argument, like `plot(m,a)`, so that the plot recipe can properly figure out the size of each layer.
 
-Any other argument for plot is accepted, like `plot((m,a), title="Convolutional network with $(length(m)) layers")`
+Any other argument for plot is accepted, like `plot(m,a, title="Convolutional network with $(length(m)) layers")`
 
 ## Examples
 
-Here is a little taste of the current state:
-
+Here is a little taste of the current state. In all the examples below, one needs `Flux`, `ChainPlot` and `Plots`
 ```julia
 julia> using Flux
 
@@ -39,7 +38,13 @@ julia> using Plots
 
 julia> gr()
 Plots.GRBackend()
+```
 
+### Dense and Recurrent layers with a gruvbox_light theme
+
+In our first example, we do it with two plot themes: `gruvbox_light` and `default`:
+
+```julia
 julia> theme(:gruvbox_light)
 
 julia> nnr = Chain(Dense(2,5,σ),RNN(5,4,relu), LSTM(4,4), GRU(4,4), Dense(4,3))
@@ -48,9 +53,19 @@ Chain(Dense(2, 5, σ), Recur(RNNCell(5, 4, relu)), Recur(LSTMCell(4, 4)), Dense(
 julia> plot(nnr, title="With theme solarized_light", titlefontsize=10)
 ```
 
-Then we get the following plot:
+![nnr_solarized_light plot](tests/img/nnr_solarized_light.png)
 
-![nnrl plot](tests/img/nnr_solarized_light.png)
+and
+
+```julia
+julia> theme(:default)
+
+julia> plot(nnr, title="With theme default", titlefontsize=10)
+```
+
+![nnr_default plot](tests/img/nnr_default.png)
+
+### A wide neural network
 
 Another example:
 
@@ -63,8 +78,45 @@ Chain(Dense(5, 8, relu), Recur(RNNCell(8, 20, tanh)), Recur(LSTMCell(20, 10)), D
 julia> plot(nnrlwide, title="$nnrlwide", titlefontsize=9)
 ```
 
-Then we get the plot
-
 ![nnrlwide plot](tests/img/nnrlwide.png)
+
+### Variable-input layer
+
+Variable-input functional layers are also accepted. If given as the first layer, then an initial input must be provided, otherwise, the input data is not needed. Here are two examples, illustrating each case.
+
+```julia
+julia> dx(x) = x[2:end]-x[1:end-1]
+dx (generic function with 1 method)
+
+julia> x³(x) = x.^3
+x³ (generic function with 1 method)
+
+julia> nna = Chain(Dense(2,5,σ), dx, RNN(4,6,relu), x³, LSTM(6,4), GRU(4,4), Dense(4,3))
+Chain(Dense(2, 5, σ), dx, Recur(RNNCell(4, 6, relu)), x³, Recur(LSTMCell(6, 4)), Recur(GRUCell(4, 4)), Dense(4, 3))
+
+julia> plot(nna, title="$nna", titlefontsize=7)
+```
+
+![nna plot](tests/img/nna.png)
+
+```julia
+julia> nnx = Chain(x³, dx, LSTM(5,10), Dense(10,5))
+Chain(x³, dx, Recur(LSTMCell(5, 10)), Dense(10, 5))
+
+julia> input_data = rand(6)
+6-element Array{Float64,1}:
+ 0.5164868191993157
+ 0.7386483981515735
+ 0.21619847437985973
+ 0.14180315462617088
+ 0.5197106515889114
+ 0.7723045731149896
+
+julia> plot(nnx, input_data, title="$nnx", titlefontsize=9)
+```
+
+![nnx plot](tests/img/nnx.png)
+
+### Other examples
 
 Other examples can be seen in [tests/runtest.jl](tests/runtest.jl), with the several created plots saved to the folder [tests/img](tests/img/).

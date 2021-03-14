@@ -45,9 +45,17 @@ nnr = Chain(Dense(2,5,σ), RNN(5,4,relu), LSTM(4,4), GRU(4,4), Dense(4,3))
 display(plot(nnr, title="$nnr", titlefontsize=7))
 savefig("tests/img/nnr.png")
 
-nna = Chain(Dense(2,5,σ), x -> x[2:end]-x[1:end-1], RNN(4,6,relu), LSTM(6,4), GRU(4,4), Dense(4,3))
-display(plot(nna, title="$nna", titlefontsize=6))
+dx(x) = x[2:end]-x[1:end-1]
+x³(x) = x.^3
+nna = Chain(Dense(2,5,σ), dx, RNN(4,6,relu), x³, LSTM(6,4), GRU(4,4), Dense(4,3))
+display(plot(nna, title="$nna", titlefontsize=7))
 savefig("tests/img/nna.png")
+
+nnx = Chain(x³, dx, LSTM(5,10), Dense(10,5))
+input_data = rand(6)
+display(plot(nnx, input_data, title="$nnx", titlefontsize=9))
+savefig("tests/img/nnx.png")
+
 
 nnrlwide = Chain(Dense(5,8), RNN(8,20), LSTM(20,10), Dense(10,7))
 display(plot(nnrlwide, title="$nnrlwide", titlefontsize=9))
