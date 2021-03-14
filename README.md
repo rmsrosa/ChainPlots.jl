@@ -103,14 +103,7 @@ julia> plot(nna, title="$nna", titlefontsize=7)
 julia> nnx = Chain(x³, dx, LSTM(5,10), Dense(10,5))
 Chain(x³, dx, Recur(LSTMCell(5, 10)), Dense(10, 5))
 
-julia> input_data = rand(6)
-6-element Array{Float64,1}:
- 0.5164868191993157
- 0.7386483981515735
- 0.21619847437985973
- 0.14180315462617088
- 0.5197106515889114
- 0.7723045731149896
+julia> input_data = rand(6);
 
 julia> plot(nnx, input_data, title="$nnx", titlefontsize=9)
 ```
