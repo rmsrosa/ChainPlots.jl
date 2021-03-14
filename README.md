@@ -20,7 +20,7 @@ The aim is to obtain pictorial representations for all types of layers implement
 
 At the moment, the recipe works for Dense and Recurrent layers and for one-dimensional taylor-made functional layers, as well as for Chains of such layers. There is only partial suppport for Convolutional and Pooling layers, but hopefully soon it will be working with any type of layer.
 
-There will be a distinction between netwoks starting with a layer with fixed-sized input (Dense and Recurrent) and networks starting with a layer with variable-sized input (Convolutional,  Pooling, and functional).
+There is a distinction between netwoks starting with a layer with fixed-sized input (Dense and Recurrent) and networks starting with a layer with variable-sized input (Convolutional,  Pooling, and functional).
 
 In the former case, just passing a network `m=Chain(...)` to plot works, e.g. `plot(m)`. In the latter case, one needs to pass along an initial input `a` as the second argument, like `plot(m,a)`, so that the plot recipe can properly figure out the size of each layer.
 
