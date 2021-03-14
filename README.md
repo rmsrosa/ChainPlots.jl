@@ -1,24 +1,34 @@
 # ChainPlot
 
-Plot visualization for [FluxML/Flux.jl](https://github.com/FluxML/Flux.jl)'s `Chain` neural networks.
+Plot visualization for [FluxML/Flux.jl](https://github.com/FluxML/Flux.jl)'s neural networks composed with [Flux.Chain](https://fluxml.ai/Flux.jl/stable/models/layers/#Flux.Chain).
+
+## Description
 
 It implements a plot recipe for `Flux.Chain` using the recipe tool from [JuliaPlots/RecipesBase.jl](https://github.com/JuliaPlots/RecipesBase.jl).
 
-This repository is for a prototyping the recipe. There is currently no intention to make it a registered Julia package. Instead, the aim is to PR it into [FluxML/Flux.jl](https://github.com/FluxML/Flux.jl).
+This repository is for prototyping the recipe. There is currently no intention to make it a registered Julia package. Instead, the aim is to PR it into [FluxML/Flux.jl](https://github.com/FluxML/Flux.jl).
 
-Nevertheless, one is welcome to install it directly via github, use it at your own will, and contribute to improve it.
+Nevertheless, one is welcome to install it directly via github, use it, and contribute to improve it.
 
 ## Current state
 
-The aim is to obtain pictorial for all types of layers implemented in [Flux.jl] and in a way similar to the representations given in the following links.
+The aim is to obtain pictorial representations for all types of layers implemented with [Flux.Chain](https://fluxml.ai/Flux.jl/stable/models/layers/#Flux.Chain) and in a way similar to the representations given in the following links.
 
 * [Main Types of Neural Networks and its Applications — Tutorial](https://pub.towardsai.net/main-types-of-neural-networks-and-its-applications-tutorial-734480d7ec8e); and
 
 * [The mostly complete chart of Neural Networks, explained](https://towardsdatascience.com/the-mostly-complete-chart-of-neural-networks-explained-3fb6f2367464).
 
-At the moment, the recipe works for Dense and (RNN, LSTR, and GRU) Recurrent layers and for one-dimensional taylor-made function layers, as well as for Chains of such layers.
+At the moment, the recipe works for Dense and Recurrent layers and for one-dimensional taylor-made functional layers, as well as for Chains of such layers. There is only partial suppport for Convolutional and Pooling layers, but hopefully soon it will be working with any type of layer.
 
-A little taste:
+There will be a distinction between netwoks starting with a layer with fixed-sized input (Dense and Recurrent) and networks starting with a layer with variable-sized input (Convolutional,  Pooling, and functional).
+
+In the former case, just passing a network `m=Chain(...)` to plot works, e.g. `plot(m)`. In the latter case, one needs to pass along an initial input `a`, in the form `plot((m,a))`, so that the plot recipe can figure out the size of each layer.
+
+Any other argument for plot is accepted, like `plot((m,a), title="Convolutional network with $(length(m)) layers")`
+
+## Examples
+
+Here is a little taste of the current state:
 
 ```julia
 julia> using Flux
