@@ -75,11 +75,11 @@ function get_dimensions(m::Flux.Chain, input_data::Union{Nothing,Array} = nothin
     end
 
     chain_dimensions = vcat(size(input_data), [size(m[1:nl](input_data)) for nl in 1:length(m.layers)])
-    chain_dimensions = map(x -> x[1], chain_dimensions) # just temporarily
+    chain_dimensions = map(x -> x[1], chain_dimensions) # temporary, only for the current 1D structure
     return chain_dimensions
 end
 
-# structure for unit vectors in a linear space, for generating basis
+# structure for unit vectors in a linear space, for generating a basis to infer the layer connection
 struct UnitVector{T} <: AbstractVector{T}
     idx::Int
     length::Int
@@ -97,19 +97,22 @@ Get all the connections to the next layer of each neuron in each layer.
 function get_connections(m::Flux.Chain, input_data)
     chain_dimensions = get_dimensions(m, input_data)
     connections = []
+
     for (ln, l) in enumerate(m)
         d = chain_dimensions[ln]
-        layer_connections = Dict{Int,Array{Int,1}}()
+        layer_connections = Dict{CartesianIndex,Array{CartesianIndex,1}}()
         foreach(1:prod(d)) do idx
-            affected = Array{Int,1}()
+            affected = Array{CartesianIndex,1}()
+            basis_element = reshape(UnitVector{Float64}(idx, prod(d)),d...)
             for rv in 1000*(rand(10) .- 0.5)
-                union!(affected, findall(x -> abs(x) > eps(), l(rv*reshape(UnitVector{Float64}(idx, prod(d)),d...))))
+                union!(affected, CartesianIndex.(findall(x -> abs(x) > eps(), l(rv*basis_element))))
             end
-            push!(layer_connections, idx => affected)
+            push!(layer_connections, CartesianIndex(findfirst(x->x==1, basis_element)) => affected)
         end
         push!(connections, layer_connections)
     end
-    return connections
+    connections = [Dict(k[1] => map(e->e[1], v) for (k,v) in c) for c in connections] # temporary, only for the current 1D structure
+    return connections    
 end
 
 """
@@ -121,6 +124,7 @@ Plot a Flux.Chain neural network.
 """
 @recipe function plot(m::Flux.Chain, input_data::Union{Nothing,Array} = nothing)
     chain_dimensions = get_dimensions(m, input_data)
+    # chain_dimensions = map(x->x[1], chain_dimensions) # temporary, only for the current 1D structure
     max_width = maximum(chain_dimensions)
 
     axis --> false
