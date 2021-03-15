@@ -124,7 +124,7 @@ function get_connections(m::Flux.Chain, input_data::Union{Nothing,Array} = nothi
         end
         push!(connections, layer_connections)
     end
-    #connections = [Dict(k[1] => map(e->e[1], v) for (k,v) in c) for c in connections] # temporary, only for the current 1D structure
+
     return connections    
 end
 
@@ -170,22 +170,19 @@ Plot a Flux.Chain neural network.
     seriescolor --> :gray
 
     # get connections
-    new_connections = get_connections(m, input_data)
-    connections = [Dict(k[1] => map(e->e[1], v) for (k,v) in c) for c in new_connections] # temporary, only for the current 1D structure
+    connections = get_connections(m, input_data)
 
     # draw connections
     for (ln, l) in enumerate(m.layers)
         @series begin
             ni, nj = chain_dimensions[ln:ln+1]
             layer_center = [ni[1],nj[1]]./2
-            # dataseries = hcat([[i,j] for i in 1:ni[1] for j in connections[ln][i]]...) .- layer_center
-            # dataseries = map(x -> ((x + max_width/2)/(max_width+1)), dataseries)
             dataseries = hcat([
                 hcat([
                     [project(neuron_in, layer_center[1], max_width),
                      project(neuron_out, layer_center[2], max_width)
                     ]
-                    for neuron_out in new_connections[ln][neuron_in]
+                    for neuron_out in connections[ln][neuron_in]
                 ]...)
                 for neuron_in in get_cartesians(ni)
             ]...)
@@ -201,9 +198,6 @@ Plot a Flux.Chain neural network.
         ni = chain_dimensions[1]
         layer_center = ni[1]/2
         dataseries = reshape([project(neuron, layer_center, max_width) for neuron in get_cartesians(ni)], 1, :)
-        # dataseries = reshape([project(k, layer_center, max_width) for k in keys(new_connections[1])], 1, :)
-        # dataseries = reshape(map(x -> project(x, layer_center, max_width), collect(keys(new_connections[1]))), 1, :)
-        # dataseries = reshape(project.(collect(keys(new_connections[1])), layer_center, max_width), 1, :)
         return [1], dataseries        
     end
 
@@ -215,9 +209,6 @@ Plot a Flux.Chain neural network.
             markercolor --> layerplotattributes(l).mc
             nj = chain_dimensions[ln+1]
             layer_center = nj[1]/2
-            # dataseries = hcat([[j, j] for j in 1:nj[1]]...) .- layer_center
-            # dataseries = map(x -> ((x + max_width/2)/(max_width+1)), dataseries)
-            # dataseries = reshape([project(k, layer_center, max_width) for k in keys(new_connections[ln+1])], 1, : ) |> v -> vcat(v,v)
             dataseries = reshape([project(neuron, layer_center, max_width) for neuron in get_cartesians(nj)], 1, : ) |> v -> vcat(v,v)
             return [ln+1, ln+1], dataseries
         end
@@ -232,8 +223,6 @@ Plot a Flux.Chain neural network.
         markercolor --> outputlayerplotattributes.mc
         nj = chain_dimensions[end]
         layer_center = nj[1]/2
-        # dataseries = hcat([j for j in 1:nj[1]]...) .- layer_center
-        # dataseries = map(x -> ((x + max_width/2)/(max_width+1)), dataseries)
         dataseries = reshape([project(neuron, layer_center, max_width) for neuron in get_cartesians(nj)], 1, : )
         return [ln+1], dataseries
     end  
