@@ -116,20 +116,35 @@ function get_connections(m::Flux.Chain, input_data)
 end
 
 """
-    plot(m::Flux.Chain)
+    get_max_width(m::Flux.Chain, input_data::Union{Nothing,Array} = nothing)
+
+Get the maximum display width for the chain.
+"""
+get_max_width(m::Flux.Chain, input_data::Union{Nothing,Array} = nothing) =
+    mapreduce(x->x[1], max, get_dimensions(m,input_data))
+
+
+"""
+    plot(m::Flux.Chain, input_data::Union{Nothing,Array} = nothing)
 
 Plot a Flux.Chain neural network.
-
-☡ Currently only works with Dense and Recurrent layers.
 """
 @recipe function plot(m::Flux.Chain, input_data::Union{Nothing,Array} = nothing)
     chain_dimensions = get_dimensions(m, input_data)
-    # chain_dimensions = map(x->x[1], chain_dimensions) # temporary, only for the current 1D structure
     max_width = maximum(chain_dimensions)
 
     axis --> false
     xrotation   --> 60
-    xticks --> begin ll = 1:length(m)+1; (ll, vcat(["input \nlayer "], ["hidden \n   layer $n" for n in ll[1:end-2]], ["output \nlayer   "])); end
+    xticks --> begin
+        ll = 1:length(m)+1
+        (ll,
+            vcat(
+                ["input \nlayer "],
+                ["hidden \n   layer $n" for n in ll[1:end-2]],
+                ["output \nlayer   "]
+            )
+        )
+    end
     yaxis --> nothing
     ylims --> (-0.1,1.2)
     legend --> false
