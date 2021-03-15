@@ -75,7 +75,7 @@ function get_dimensions(m::Flux.Chain, input_data::Union{Nothing,Array} = nothin
     end
 
     chain_dimensions = vcat(size(input_data), [size(m[1:nl](input_data)) for nl in 1:length(m.layers)])
-    chain_dimensions = map(x -> x[1], chain_dimensions) # temporary, only for the current 1D structure
+    # chain_dimensions = map(x -> x[1], chain_dimensions) # temporary, only for the current 1D structure
     return chain_dimensions
 end
 
@@ -94,16 +94,16 @@ Base.size(x::UnitVector) = (x.length,)
 
 Get all the connections to the next layer of each neuron in each layer.
 """
-function get_connections(m::Flux.Chain, input_data)
+function get_connections(m::Flux.Chain, input_data::Union{Nothing,Array} = nothing)
     chain_dimensions = get_dimensions(m, input_data)
     connections = []
 
     for (ln, l) in enumerate(m)
-        d = chain_dimensions[ln]
+        ldim = chain_dimensions[ln]
         layer_connections = Dict{CartesianIndex,Array{CartesianIndex,1}}()
-        foreach(1:prod(d)) do idx
+        foreach(1:prod(ldim)) do idx
             affected = Array{CartesianIndex,1}()
-            basis_element = reshape(UnitVector{Float64}(idx, prod(d)),d...)
+            basis_element = reshape(UnitVector{Float64}(idx, prod(ldim)),ldim...)
             for rv in 1000*(rand(10) .- 0.5)
                 union!(affected, CartesianIndex.(findall(x -> abs(x) > eps(), l(rv*basis_element))))
             end
@@ -131,7 +131,7 @@ Plot a Flux.Chain neural network.
 """
 @recipe function plot(m::Flux.Chain, input_data::Union{Nothing,Array} = nothing)
     chain_dimensions = get_dimensions(m, input_data)
-    max_width = maximum(chain_dimensions)
+    max_width, = maximum(chain_dimensions)
 
     axis --> false
     xrotation   --> 60
@@ -155,8 +155,8 @@ Plot a Flux.Chain neural network.
     for (ln, l) in enumerate(m.layers)
         @series begin
             ni, nj = chain_dimensions[ln:ln+1]
-            layer_center = [ni,nj]./2
-            dataseries = hcat([[i,j] for i in 1:ni for j in connections[ln][i]]...) .- layer_center
+            layer_center = [ni[1],nj[1]]./2
+            dataseries = hcat([[i,j] for i in 1:ni[1] for j in connections[ln][i]]...) .- layer_center
             dataseries = map(x -> ((x + max_width/2)/(max_width+1)), dataseries)
             return [ln,ln + 1], dataseries            
         end
@@ -168,8 +168,8 @@ Plot a Flux.Chain neural network.
         markershape --> inputlayerplotattributes.ms
         markercolor --> inputlayerplotattributes.mc
         ni = chain_dimensions[1]
-        layer_center = ni/2
-        dataseries = hcat([[i] for i in 1:ni]...) .- layer_center
+        layer_center = ni[1]/2
+        dataseries = hcat([[i] for i in 1:ni[1]]...) .- layer_center
         dataseries = map(x -> ((x + max_width/2)/(max_width+1)), dataseries)
         return [1], dataseries        
     end
@@ -181,8 +181,8 @@ Plot a Flux.Chain neural network.
             markershape --> layerplotattributes(l).ms
             markercolor --> layerplotattributes(l).mc
             nj = chain_dimensions[ln+1]
-            layer_center = nj/2
-            dataseries = hcat([[j, j] for j in 1:nj]...) .- layer_center
+            layer_center = nj[1]/2
+            dataseries = hcat([[j, j] for j in 1:nj[1]]...) .- layer_center
             dataseries = map(x -> ((x + max_width/2)/(max_width+1)), dataseries)
             return [ln+1, ln+1], dataseries
         end
@@ -196,8 +196,8 @@ Plot a Flux.Chain neural network.
         markershape --> outputlayerplotattributes.ms
         markercolor --> outputlayerplotattributes.mc
         nj = chain_dimensions[end]
-        layer_center = nj/2
-        dataseries = hcat([j for j in 1:nj]...) .- layer_center
+        layer_center = nj[1]/2
+        dataseries = hcat([j for j in 1:nj[1]]...) .- layer_center
         dataseries = map(x -> ((x + max_width/2)/(max_width+1)), dataseries)
         return [ln+1], dataseries
     end  
@@ -207,7 +207,7 @@ Plot a Flux.Chain neural network.
         @series begin
             nj = chain_dimensions[ln+1]
             series_annotations --> Main.Plots.series_annotations([layeractivationfn(l)], Main.Plots.font("Sans", 8))
-            return [ln+1], [(nj/2 + 1 + max_width/2)/(max_width+1)]
+            return [ln+1], [(nj[1]/2 + 1 + max_width/2)/(max_width+1)]
         end
     end
 
