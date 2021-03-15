@@ -29,6 +29,7 @@ Any other argument for plot is accepted, like `plot(m,a, title="Convolutional ne
 ## Examples
 
 Here is a little taste of the current state. In all the examples below, one needs `Flux`, `ChainPlot` and `Plots`
+
 ```julia
 julia> using Flux
 
