@@ -56,10 +56,14 @@ input_data = rand(6)
 display(plot(nnx, input_data, title="$nnx", titlefontsize=9))
 savefig("tests/img/nnx.png")
 
-
 nnrlwide = Chain(Dense(5,8), RNN(8,20), LSTM(20,10), Dense(10,7))
 display(plot(nnrlwide, title="$nnrlwide", titlefontsize=9))
 savefig("tests/img/nnrlwide.png")
+
+reshape6(a) = reshape(a, 6,  1, 1)
+nnrs = Chain(x³, Dense(3,6), reshape6, Conv((2,), 1=>1))
+display(plot(nnrs, rand(3), title="$nnrs", titlefontsize=9))
+savefig("tests/img/nnrs.png")
 
 for t in themes
     theme(t)
