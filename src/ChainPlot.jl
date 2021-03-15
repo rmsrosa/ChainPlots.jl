@@ -27,10 +27,14 @@ layerplotattributes(::Flux.LSTMCell) = (ms = [Main.Plots.Shape(lstm_verts), :cir
 layerplotattributes(::Flux.GRUCell) = (ms = [Main.Plots.Shape(lgru_verts), :circle], mc = [false, :skyblue3])
 layerplotattributes(r::Flux.Recur) = layerplotattributes(r.cell)
 
+# layer plot attributes for input and output layers
+inputlayerplotattributes = (ms = :circle, mc = :yellow)
+outputlayerplotattributes = (ms = :circle, mc = :orange)
+
 """
     layeractivationfn()
 
-Retrive activation function of a given layer.
+Retrive activation function name of a given layer.
 """
 layeractivationfn(::Any) = ""
 layeractivationfn(f::Function) = string(f)
@@ -52,6 +56,7 @@ layerdimensions(l::Flux.LSTMCell) = (size(l.Wh)[2], size(l.Wi)[2])
 layerdimensions(l::Flux.GRUCell) = (size(l.Wh)[2], size(l.Wi)[2])
 layerdimensions(r::Flux.Recur) = layerdimensions(r.cell)
 
+# list layers with fixed-sized data input
 fixed_input_dim_layers = (Flux.Dense, Flux.Recur, Flux.RNNCell, Flux.LSTMCell, Flux.GRUCell) # list of types of layers with fixed input dimensions
 
 """
@@ -76,6 +81,7 @@ function get_chain_dimensions(m::Flux.Chain, input_data::Union{Nothing,Array} = 
     return chain_dimensions
 end
 
+# structure for unit vectors in a linear space, for generating basis
 struct UnitVector{T} <: AbstractVector{T}
     idx::Int
     length::Int
@@ -123,9 +129,8 @@ Plot a Flux.Chain neural network.
     xrotation   --> 60
     xticks --> begin ll = 1:length(m)+1; (ll, vcat(["input \nlayer "], ["hidden \n   layer $n" for n in ll[1:end-2]], ["output \nlayer   "])); end
     yaxis --> nothing
-    ylims --> (-0.0,1.1)
+    ylims --> (-0.1,1.2)
     legend --> false
-    markersize --> min(12, 100/max_width)
     seriescolor --> :gray
 
     # draw connections
@@ -142,8 +147,9 @@ Plot a Flux.Chain neural network.
 
     # draw input layer cells
     @series begin
-        markershape --> :circle
-        markercolor --> :yellow
+        markersize --> min(12, 100/max_width)
+        markershape --> inputlayerplotattributes.ms
+        markercolor --> inputlayerplotattributes.mc
         ni = chain_dimensions[1]
         layer_center = ni/2
         dataseries = hcat([[i] for i in 1:ni]...) .- layer_center
@@ -154,8 +160,9 @@ Plot a Flux.Chain neural network.
     # draw hidden and output layer neurons
     for (ln, l) in enumerate(m.layers)
         @series begin
+            markersize --> min(12, 120/max_width)
             markershape --> layerplotattributes(l).ms
-            markercolor --> ifelse(ln == length(m), [:transparent,:orange], layerplotattributes(l).mc)
+            markercolor --> layerplotattributes(l).mc
             nj = chain_dimensions[ln+1]
             layer_center = nj/2
             dataseries = hcat([[j, j] for j in 1:nj]...) .- layer_center
@@ -163,6 +170,20 @@ Plot a Flux.Chain neural network.
             return [ln+1, ln+1], dataseries
         end
     end
+
+    # finish drawing output layer neurons
+    @series begin
+        l = m.layers[end]
+        ln = length(m.layers)
+        markersize --> min(8, 80/max_width)
+        markershape --> outputlayerplotattributes.ms
+        markercolor --> outputlayerplotattributes.mc
+        nj = chain_dimensions[end]
+        layer_center = nj/2
+        dataseries = hcat([j for j in 1:nj]...) .- layer_center
+        dataseries = map(x -> ((x + max_width/2)/(max_width+1)), dataseries)
+        return [ln+1], dataseries
+    end  
 
     # display activation functions
     for (ln, l) in enumerate(m.layers)
