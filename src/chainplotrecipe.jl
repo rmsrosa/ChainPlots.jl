@@ -98,7 +98,7 @@ get_cartesians(lsize:Tuple)
 function get_cartesians(ldim::Tuple)
     cartesians = Array{CartesianIndex,1}()
     foreach(1:prod(ldim)) do idx
-        basis_element = reshape(UnitVector{Float64}(idx, prod(ldim)),ldim...)
+        basis_element = reshape(UnitVector{Int}(idx, prod(ldim)),ldim...)
         push!(cartesians, CartesianIndex(findfirst(x->x==1, basis_element)))
     end
     return cartesians
@@ -118,7 +118,7 @@ function get_connections(m::Flux.Chain, input_data::Union{Nothing,Array} = nothi
         layer_connections = Dict{CartesianIndex,Array{CartesianIndex,1}}()
         foreach(1:prod(ldim)) do idx
             affected = Array{CartesianIndex,1}()
-            basis_element = reshape(UnitVector{Float64}(idx, prod(ldim)),ldim...)
+            basis_element = reshape(UnitVector{Int}(idx, prod(ldim)),ldim...)
             for rv in 1000*(rand(10) .- 0.5)
                 union!(affected, CartesianIndex.(findall(x -> abs(x) > eps(), l(rv*basis_element))))
             end
@@ -186,7 +186,7 @@ Plot a Flux.Chain neural network.
                     ]
                     for neuron_out in connections[ln][neuron_in]
                 ]...)
-                for neuron_in in get_cartesians(ni)
+                for neuron_in in get_cartesians(ni) if length(connections[ln][neuron_in]) > 0
             ]...)
             return [ln,ln + 1], dataseries            
         end

@@ -18,7 +18,7 @@ The aim is to obtain pictorial representations for all types of layers implement
 
 * [The mostly complete chart of Neural Networks, explained](https://towardsdatascience.com/the-mostly-complete-chart-of-neural-networks-explained-3fb6f2367464).
 
-At the moment, the recipe works for Dense and Recurrent layers and for one-dimensional taylor-made functional layers, as well as for Chains of such layers. There is only partial suppport for Convolutional and Pooling layers, but hopefully soon it will be working with any type of layer.
+At the moment, the recipe works for Dense and Recurrent layers, for  taylor-made functional layers, as well as for Chains of such layers. There is only partial suppport for Convolutional and Pooling layers, in the sense that the view is "flat", no 2d or 3d view, and no coloring for all of them, but hopefully soon there will be a proper visualization for them, as well.
 
 There is a distinction between netwoks starting with a layer with fixed-sized input (Dense and Recurrent) and networks starting with a layer with variable-sized input (Convolutional,  Pooling, and functional).
 
@@ -110,6 +110,39 @@ julia> plot(nnx, input_data, title="$nnx", titlefontsize=9)
 ```
 
 ![nnx plot](tests/img/nnx.png)
+
+### Convolutional networks
+
+A neural network with a one-dimensional convolutional layer
+
+```julia
+julia> reshape6x1x1(a) = reshape(a, 6,  1, 1)
+reshape6x1x1 (generic function with 1 method)
+
+julia> slice(a) = a[:,1,1]
+slice (generic function with 1 method)
+
+julia> nnrs = Chain(x³, Dense(3,6), reshape6x1x1, Conv((2,), 1=>1), slice, Dense(5,4))
+Chain(x³, Dense(3, 6), reshape6x1x1, Conv((2,), 1=>1), slice, Dense(5, 4))
+
+julia> plot(nnrs, Float32.(rand(3)), title="$nnrs", titlefontsize=9)
+```
+
+![nnrs plot](tests/img/nnrs.png)
+
+Now with a two-dimensional convolution, but with a one-dimensional visualization (of the convolutional layer).
+
+```julia
+julia> reshape3x3x1x1(a) = reshape(a, 3, 3, 1, 1)
+reshape3x3x1x1 (generic function with 1 method)
+
+julia> nnrs2d = Chain(x³, Dense(4,9), reshape3x3x1x1, Conv((2,2), 1=>1), slice)
+Chain(x³, Dense(4, 9), reshape3x3x1x1, Conv((2, 2), 1=>1), slice)
+
+julia> plot(nnrs2d, Float32.(rand(4)), title="$nnrs2d", titlefontsize=9)
+```
+
+![nnrs2d plot](tests/img/nnrs2d.png)
 
 ### Other examples
 
