@@ -71,6 +71,10 @@ nnrs2d = Chain(x³, Dense(4,9), reshape3x3x1x1, Conv((2,2), 1=>1), slice)
 display(plot(nnrs2d, Float32.(rand(4)), title="$nnrs2d", titlefontsize=9))
 savefig("tests/img/nnrs2d.png")
 
+nncg = Chain(Conv((3,3), 1=>8, leakyrelu;pad = 1),GroupNorm(8,4))
+display(plot(nncg, rand(6,6,1,1), title="$nncg", titlefontsize=10))
+savefig("tests/img/nncg.png")
+
 for t in themes
     theme(t)
     try        
