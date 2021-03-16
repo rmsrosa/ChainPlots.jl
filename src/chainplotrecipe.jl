@@ -8,26 +8,27 @@ using RecipesBase
 # import Functors: functor
 
 lrnn_verts = [(1.2*sin(2π*n/20), 1.2*(1+cos(2π*n/20))) for n=-10:10]
-lstm_verts = vcat([(1.0*sin(2π*n/20), 1.4 + 1.0*cos(2π*n/20)) for n=-10:10],
-                  [(1.4*sin(2π*n/20), 1.4 + 1.4*cos(2π*n/20)) for n=-10:10])
-lgru_verts = vcat([(0.6*sin(2π*n/20), 1.4 + 1.6*cos(2π*n/20)) for n=-10:10],
-                  [(1.2*sin(2π*n/20), 1.2 + 1.2*cos(2π*n/20)) for n=-10:10])
+lstm_verts = vcat([(1.0*sin(2π*n/20), 1.2 + 1.0*cos(2π*n/20)) for n=-10:10],
+                  [(1.4*sin(2π*n/20), 1.2 + 1.4*cos(2π*n/20)) for n=-10:10])
+lgru_verts = vcat([(0.5*sin(2π*n/20), 1.2 + 1.4*cos(2π*n/20)) for n=-10:10],
+                  [(1.0*sin(2π*n/20), 1.2 + 1.0*cos(2π*n/20)) for n=-10:10])
 
 """
     layerplotattributes()
 
 Retrive plot attributes for each specific type of layer.
 """                  
-layerplotattributes(::Any) = (ms = :circle, mc = :gray35)
-layerplotattributes(::Flux.Dense) = (ms = :circle, mc = :lightgreen)
-layerplotattributes(::Flux.RNNCell) = (ms = [Main.Plots.Shape(lrnn_verts), :circle], mc = [false, :lightskyblue1])
-layerplotattributes(::Flux.LSTMCell) = (ms = [Main.Plots.Shape(lstm_verts), :circle], mc = [false, :skyblue2])
-layerplotattributes(::Flux.GRUCell) = (ms = [Main.Plots.Shape(lgru_verts), :circle], mc = [false, :skyblue3])
+layerplotattributes(::Any) = (mrkrsize = 12, mrkrshape =  :circle, mrkrcolor = :gray)
+layerplotattributes(::Flux.Dense) = (mrkrsize = 12, mrkrshape =  :circle, mrkrcolor = :lightgreen)
+layerplotattributes(::Flux.RNNCell) = (mrkrsize = 12, mrkrshape =  [Main.Plots.Shape(lrnn_verts), :circle], mrkrcolor = [false, :lightskyblue1])
+layerplotattributes(::Flux.LSTMCell) = (mrkrsize = 12, mrkrshape =  [Main.Plots.Shape(lstm_verts), :circle], mrkrcolor = [false, :skyblue2])
+layerplotattributes(::Flux.GRUCell) = (mrkrsize = 12, mrkrshape =  [Main.Plots.Shape(lgru_verts), :circle], mrkrcolor = [false, :skyblue3])
 layerplotattributes(r::Flux.Recur) = layerplotattributes(r.cell)
+layerplotattributes(::Flux.Conv) = (mrkrsize = 10, mrkrshape =  :square, mrkrcolor = :plum)
 
 # layer plot attributes for input and output layers
-inputlayerplotattributes = (ms = :circle, mc = :yellow)
-outputlayerplotattributes = (ms = :circle, mc = :orange)
+inputlayerplotattributes = (mrkrsize = 12, mrkrshape =  :rtriangle, mrkrcolor = :yellow)
+outputlayerplotattributes = (mrkrsize = 12, mrkrshape =  :rtriangle, mrkrcolor = :orange)
 
 """
     layeractivationfn()
@@ -41,11 +42,12 @@ layeractivationfn(r::Flux.RNNCell) = string(r.σ)
 layeractivationfn(r::Flux.LSTMCell) = "LSTM"
 layeractivationfn(r::Flux.GRUCell) = "GRU"
 layeractivationfn(r::Flux.Recur) = layeractivationfn(r.cell)
+layeractivationfn(r::Flux.Conv) = "Conv"
 
 """
     layerdimensions()
 
-Retrive dimensions of a given layer.
+Retrive dimensions of a given fixed-input-size layer.
 """
 layerdimensions(::Any) = (1,1)
 layerdimensions(l::Flux.Dense) = size(l.W)
@@ -192,9 +194,13 @@ Plot a Flux.Chain neural network.
 
     # draw input layer cells
     @series begin
-        markersize --> min(12, 100/max_width)
-        markershape --> inputlayerplotattributes.ms
-        markercolor --> inputlayerplotattributes.mc
+        #markersize --> min(12, 100/max_width)
+        markersize --> begin
+            sz = inputlayerplotattributes.mrkrsize
+            min(sz, 7.5*sz/max_width)
+        end
+        markershape --> inputlayerplotattributes.mrkrshape
+        markercolor --> inputlayerplotattributes.mrkrcolor
         ni = chain_dimensions[1]
         layer_center = ni[1]/2
         dataseries = reshape([project(neuron, layer_center, max_width) for neuron in get_cartesians(ni)], 1, :)
@@ -204,9 +210,12 @@ Plot a Flux.Chain neural network.
     # draw hidden and output layer neurons
     for (ln, l) in enumerate(m.layers)
         @series begin
-            markersize --> min(12, 100/max_width)
-            markershape --> layerplotattributes(l).ms
-            markercolor --> layerplotattributes(l).mc
+            markersize --> begin
+                sz = layerplotattributes(l).mrkrsize
+                min(sz, 7.5*sz/max_width)
+            end
+            markershape --> layerplotattributes(l).mrkrshape
+            markercolor --> layerplotattributes(l).mrkrcolor
             nj = chain_dimensions[ln+1]
             layer_center = nj[1]/2
             dataseries = reshape([project(neuron, layer_center, max_width) for neuron in get_cartesians(nj)], 1, : ) |> v -> vcat(v,v)
@@ -218,9 +227,12 @@ Plot a Flux.Chain neural network.
     @series begin
         l = m.layers[end]
         ln = length(m.layers)
-        markersize --> min(8, 66/max_width)
-        markershape --> outputlayerplotattributes.ms
-        markercolor --> outputlayerplotattributes.mc
+        markersize --> begin
+            sz = outputlayerplotattributes.mrkrsize
+            min(sz, 7.5*sz/max_width)
+        end
+        markershape --> outputlayerplotattributes.mrkrshape
+        markercolor --> outputlayerplotattributes.mrkrcolor
         nj = chain_dimensions[end]
         layer_center = nj[1]/2
         dataseries = reshape([project(neuron, layer_center, max_width) for neuron in get_cartesians(nj)], 1, : )

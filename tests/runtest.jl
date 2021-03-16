@@ -61,8 +61,9 @@ display(plot(nnrlwide, title="$nnrlwide", titlefontsize=9))
 savefig("tests/img/nnrlwide.png")
 
 reshape6(a) = reshape(a, 6,  1, 1)
-nnrs = Chain(x³, Dense(3,6), reshape6, Conv((2,), 1=>1))
-display(plot(nnrs, rand(3), title="$nnrs", titlefontsize=9))
+slice(a) = a[:,1,1]
+nnrs = Chain(x³, Dense(3,6), reshape6, Conv((2,), 1=>1), slice, Dense(5,4))
+display(plot(nnrs, Float32.(rand(3)), title="$nnrs", titlefontsize=9))
 savefig("tests/img/nnrs.png")
 
 for t in themes
