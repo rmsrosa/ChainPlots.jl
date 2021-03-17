@@ -1,6 +1,22 @@
-using ChainPlot
+# Usually, running tests work with either
+# 1) inside VSCode with ⌘⇧T (command+shift+T) (but plots will show up externally)
+# 2) in shell=>Julia with `]test` (which work the same as above)
+# 3) by launching the VSCode REPL and then `]test` (but now no plots are displayed)
+#
+# To overcome the plotting issue and have the plots displayed in the plots panel:
+# - I added all the dependencies for the Package in the Package.toml of the test package
+# - Replaced `using ChainPlot` with `include("../src/ChainPlot.jl")`
+# - Open up `runtests.jl` in VSCode
+# - "Julia: Change to This Directory"
+# - "Julia: Activate This Environment"
+# - "Julia: Execute File in REPL"
+# voilá!
+
+# using ChainPlot
 using Flux
 using Plots
+
+include("../src/ChainPlot.jl")
 
 gr()
 theme(:default)
@@ -75,12 +91,12 @@ nncg = Chain(Conv((3,3), 1=>8, leakyrelu;pad = 1),GroupNorm(8,4))
 display(plot(nncg, rand(6,6,1,1), title="$nncg", titlefontsize=10))
 savefig("img/nncg.png")
 
-#= hdf5()
-plot(nnr, title="$nnr", titlefontsize=7)
+hdf5()
+plot(nnr, title="$nnr with HDF5", titlefontsize=7)
 Plots.hdf5plot_write("img/nnrhdf5.hdf5")
 gr()
 plthdf5_read = Plots.hdf5plot_read("img/nnrhdf5.hdf5")
-display(plthdf5_read) =#
+display(plthdf5_read)
 
 gr()
 for t in themes
