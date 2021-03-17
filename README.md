@@ -54,7 +54,7 @@ Chain(Dense(2, 5, σ), Recur(RNNCell(5, 4, relu)), Recur(LSTMCell(4, 4)), Dense(
 julia> plot(nnr, title="With theme solarized_light", titlefontsize=10)
 ```
 
-![nnr_solarized_light plot](tests/img/nnr_solarized_light.png)
+![nnr_solarized_light plot](test/img/nnr_solarized_light.png)
 
 and
 
@@ -64,7 +64,7 @@ julia> theme(:default)
 julia> plot(nnr, title="With theme default", titlefontsize=10)
 ```
 
-![nnr_default plot](tests/img/nnr_default.png)
+![nnr_default plot](test/img/nnr_default.png)
 
 ### A wide neural network
 
@@ -79,7 +79,7 @@ Chain(Dense(5, 8, relu), Recur(RNNCell(8, 20, tanh)), Recur(LSTMCell(20, 10)), D
 julia> plot(nnrlwide, title="$nnrlwide", titlefontsize=9)
 ```
 
-![nnrlwide plot](tests/img/nnrlwide.png)
+![nnrlwide plot](test/img/nnrlwide.png)
 
 ### Variable-input layer
 
@@ -98,7 +98,7 @@ Chain(Dense(2, 5, σ), dx, Recur(RNNCell(4, 6, relu)), x³, Recur(LSTMCell(6, 4)
 julia> plot(nna, title="$nna", titlefontsize=7)
 ```
 
-![nna plot](tests/img/nna.png)
+![nna plot](test/img/nna.png)
 
 ```julia
 julia> nnx = Chain(x³, dx, LSTM(5,10), Dense(10,5))
@@ -109,7 +109,7 @@ julia> input_data = rand(6);
 julia> plot(nnx, input_data, title="$nnx", titlefontsize=9)
 ```
 
-![nnx plot](tests/img/nnx.png)
+![nnx plot](test/img/nnx.png)
 
 ### Convolutional networks
 
@@ -128,7 +128,7 @@ Chain(x³, Dense(3, 6), reshape6x1x1, Conv((2,), 1=>1), slice, Dense(5, 4))
 julia> plot(nnrs, Float32.(rand(3)), title="$nnrs", titlefontsize=9)
 ```
 
-![nnrs plot](tests/img/nnrs.png)
+![nnrs plot](test/img/nnrs.png)
 
 Now with a two-dimensional convolution, but with a one-dimensional visualization (of the convolutional layer).
 
@@ -142,8 +142,8 @@ Chain(x³, Dense(4, 9), reshape3x3x1x1, Conv((2, 2), 1=>1), slice)
 julia> plot(nnrs2d, Float32.(rand(4)), title="$nnrs2d", titlefontsize=9)
 ```
 
-![nnrs2d plot](tests/img/nnrs2d.png)
+![nnrs2d plot](test/img/nnrs2d.png)
 
 ### Other examples
 
-Other examples can be seen in [tests/runtest.jl](tests/runtest.jl), with the several created plots saved to the folder [tests/img](tests/img/).
+Other examples can be seen in [test/runtest.jl](test/runtest.jl), with the several created plots saved to the folder [test/img](test/img/).
