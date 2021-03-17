@@ -147,3 +147,49 @@ julia> plot(nnrs2d, Float32.(rand(4)), title="$nnrs2d", titlefontsize=9)
 ### Other examples
 
 Other examples can be seen in [test/runtest.jl](test/runtest.jl), with the several created plots saved to the folder [test/img](test/img/).
+
+## Compatibility
+
+Packages tested or to be tested: Plots.jl, Plotly.jl, PlotlyJS.jl, Gadfly.jl.
+
+### Plots.jl
+
+This depends on the backend and on the themes. I haven't tried all combinations. Themes were just tested with gr() backend
+
+See [Plots backends](https://docs.juliaplots.org/latest/backends/)
+
+#### GR backend
+
+* This is okay. Only problem is with theme ggplot2
+
+#### PyPlot backend
+
+* Get Warning: pyplot() backend does not have :rtriangle and seems not to scale properly.
+
+#### Plotly and PlotlyJS backends
+
+* Get Error: plotly() and plotlyjs() do not support custom shapes
+
+#### PGFPlotsX backend
+
+* Haven't tried it yet
+
+#### UnicodePlots backend
+
+* custom shapes and :rtriangle are unsupported. Choose from: [:none, :auto, :circle]
+
+#### HDF5 backend
+
+* It is working fine, despite saying in Plots's page that it is currently missing support for SeriesAnnotations. Maybe it was fixed since SeriesAnnotations is used to display the type/activation function of each layer.
+
+#### InspectDR backend
+
+* Haven't tried it yet
+
+### Plotly and PlotlyJS
+
+* Haven't tried it yet
+
+### Gadfly
+
+* Haven't tried it yet

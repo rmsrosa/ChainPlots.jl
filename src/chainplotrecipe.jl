@@ -2,6 +2,7 @@
 # See `show(Chain)T` (not yet implemented): https://github.com/FluxML/Flux.jl/pull/1467
 # See https://docs.juliaplots.org/latest/generated/supported/
 # See https://fluxml.ai/Flux.jl/stable/models/layers/
+# See colors: http://juliagraphics.github.io/Colors.jl/stable/namedcolors/
 
 using Flux
 using RecipesBase
