@@ -58,8 +58,12 @@ layerdimensions(l::Flux.LSTMCell) = (size(l.Wh)[2], size(l.Wi)[2])
 layerdimensions(l::Flux.GRUCell) = (size(l.Wh)[2], size(l.Wi)[2])
 layerdimensions(r::Flux.Recur) = layerdimensions(r.cell)
 
-# list layers with fixed-sized data input
-fixed_input_dim_layers = (Flux.Dense, Flux.Recur, Flux.RNNCell, Flux.LSTMCell, Flux.GRUCell) # list of types of layers with fixed input dimensions
+"""
+    FIXED_INPUT_DIM_LAYERS
+
+List of layers with fixed-sized input data
+"""
+const FIXED_INPUT_DIM_LAYERS = (Flux.Dense, Flux.Recur, Flux.RNNCell, Flux.LSTMCell, Flux.GRUCell) # list of types of layers with fixed input dimensions
 
 """
     get_dimensions(m::Flux.Chain, input_data = nothing)
@@ -72,18 +76,23 @@ otherwise the given data is used to infer the dimensions of each layer.
 """
 function get_dimensions(m::Flux.Chain, input_data::Union{Nothing,Array} = nothing)
 
-    if (m.layers[1] isa Union{fixed_input_dim_layers...})
-        input_data = rand(Float32, layerdimensions(m.layers[1])[2])
+    if m.layers[1] isa Union{FIXED_INPUT_DIM_LAYERS...}
+        input_data = rand(Float32, layerdimensions(m.layers[1])[2]) 
     elseif input_data === nothing
         throw(ArgumentError("An `input_data` is required when the first layer accepts variable-dimension input"))
     end
 
     chain_dimensions = vcat(size(input_data), [size(m[1:nl](input_data)) for nl in 1:length(m.layers)])
-    # chain_dimensions = map(x -> x[1], chain_dimensions) # temporary, only for the current 1D structure
     return chain_dimensions
 end
 
-# structure for unit vectors in a linear space, for generating a basis to infer the layer connection
+"""
+UnitVector{T}
+
+Structure for unit vectors in a linear space
+    
+Used for generating a basis to infer the layer connection
+"""
 struct UnitVector{T} <: AbstractVector{T}
     idx::Int
     length::Int
@@ -98,8 +107,9 @@ Base.length(x::UnitVector) = x.length
 Base.size(x::UnitVector) = (x.length,)
 
 """
-get_cartesians(lsize:Tuple)
+    get_cartesians(lsize:Tuple)
 
+Return all possible Cartesian indices for a given `lsize` Tuple.
 """
 function get_cartesians(ldim::Tuple)
     cartesians = Array{CartesianIndex,1}()
@@ -119,23 +129,18 @@ function get_connections(m::Flux.Chain, input_data::Union{Nothing,Array} = nothi
     chain_dimensions = get_dimensions(m, input_data)
     connections = Vector{Dict{CartesianIndex, Vector{CartesianIndex}}}()
 
-    # input_data_type = input_data === nothing ? Float64 : T
     input_data_type = Float32
 
     for (ln, l) in enumerate(m)
         ldim = chain_dimensions[ln]
         layer_connections = Dict{CartesianIndex,Array{CartesianIndex,1}}()
-        #basis_element = fill(0,prod(ldim))
         foreach(1:prod(ldim)) do idx
             affected = Array{CartesianIndex,1}()
             basis_element = reshape(UnitVector{Int}(idx, prod(ldim)),ldim...)
-            #basis_element[idx] = 1
-            #basis_element = reshape(basis_element, ldim)
             for rv in convert.(Float32, rand(Int16,2))
                 union!(affected, CartesianIndex.(findall(x -> abs(x) > eps(), l(rv .* basis_element))))
             end
             push!(layer_connections, CartesianIndex(findfirst(x->x==1, basis_element)) => affected)
-            #basis_element[idx] = 0
         end
         push!(connections, layer_connections)
     end
