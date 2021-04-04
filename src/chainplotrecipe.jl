@@ -117,7 +117,7 @@ Get all the connections to the next layer of each neuron in each layer.
 """
 function get_connections(m::Flux.Chain, input_data::Union{Nothing,Array} = nothing)
     chain_dimensions = get_dimensions(m, input_data)
-    connections = []
+    connections = Vector{Dict{CartesianIndex, Vector{CartesianIndex}}}()
 
     # input_data_type = input_data === nothing ? Float64 : T
     input_data_type = Float32
