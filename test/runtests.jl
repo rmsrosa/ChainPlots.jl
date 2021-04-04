@@ -87,9 +87,9 @@ nnrs2d = Chain(x³, Dense(4,9), reshape3x3x1x1, Conv((2,2), 1=>1), slice)
 display(plot(nnrs2d, Float32.(rand(4)), title="$nnrs2d", titlefontsize=9))
 savefig("img/nnrs2d.png")
 
-nncg = Chain(Conv((3,3), 1=>8, leakyrelu;pad = 1),GroupNorm(8,4))
+#= nncg = Chain(Conv((3,3), 1=>8, leakyrelu, pad = 1),GroupNorm(8,4))
 display(plot(nncg, Float32.(rand(6,6,1,1)), title="$nncg", titlefontsize=10))
-savefig("img/nncg.png")
+savefig("img/nncg.png") =#
 
 hdf5()
 plot(nnr, title="$nnr with HDF5", titlefontsize=7)
