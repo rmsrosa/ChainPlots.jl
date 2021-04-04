@@ -8,7 +8,7 @@
 # - Replaced `using ChainPlot` with `include("../src/ChainPlot.jl")`
 # - Open up `runtests.jl` in VSCode
 # - "Julia: Change to This Directory"
-# - "Julia: Activate This Environment"
+# - "Julia: Activate This Environment" (dismiss popup warning if it appears)
 # - "Julia: Execute File in REPL"
 # voilá!
 
@@ -88,7 +88,7 @@ display(plot(nnrs2d, Float32.(rand(4)), title="$nnrs2d", titlefontsize=9))
 savefig("img/nnrs2d.png")
 
 nncg = Chain(Conv((3,3), 1=>8, leakyrelu;pad = 1),GroupNorm(8,4))
-display(plot(nncg, rand(6,6,1,1), title="$nncg", titlefontsize=10))
+display(plot(nncg, Float32.(rand(6,6,1,1)), title="$nncg", titlefontsize=10))
 savefig("img/nncg.png")
 
 hdf5()

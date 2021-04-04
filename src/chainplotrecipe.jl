@@ -6,6 +6,7 @@
 
 using Flux
 using RecipesBase
+import Base: getindex, setindex!, firstindex, lastindex, length, size
 # import Functors: functor
 
 lrnn_verts = [(1.2*sin(2π*n/20), 1.2*(1+cos(2π*n/20))) for n=-10:10]
@@ -37,7 +38,7 @@ outputlayerplotattributes = (mrkrsize = 12, mrkrshape =  :rtriangle, mrkrcolor =
 Retrive activation function name of a given layer.
 """
 layeractivationfn(::Any) = ""
-layeractivationfn(f::Function) = string(f)
+layeractivationfn(f::Function) = string(f) # think about using `nameof(f)` and so on
 layeractivationfn(d::Flux.Dense) = string(d.σ)
 layeractivationfn(r::Flux.RNNCell) = string(r.σ)
 layeractivationfn(r::Flux.LSTMCell) = "LSTM"
@@ -72,7 +73,7 @@ otherwise the given data is used to infer the dimensions of each layer.
 function get_dimensions(m::Flux.Chain, input_data::Union{Nothing,Array} = nothing)
 
     if (m.layers[1] isa Union{fixed_input_dim_layers...})
-        input_data = rand(layerdimensions(m.layers[1])[2])
+        input_data = rand(Float32, layerdimensions(m.layers[1])[2])
     elseif input_data === nothing
         throw(ArgumentError("An `input_data` is required when the first layer accepts variable-dimension input"))
     end
@@ -89,6 +90,10 @@ struct UnitVector{T} <: AbstractVector{T}
 end
 
 Base.getindex(x::UnitVector{T}, i) where T = x.idx==i ? one(T) : zero(T)
+Base.setindex!(x::UnitVector{T}, v::T, i::Int) where T = v != 0 ? x.idx = i : nothing
+Base.setindex!(x::UnitVector{T}, v::AbstractFloat, i::Int) where T = abs(v) ≤ eps() ? x.idx = i : nothing
+Base.firstindex(x::UnitVector) = 1
+Base.lastindex(x::UnitVector) = x.length
 Base.length(x::UnitVector) = x.length
 Base.size(x::UnitVector) = (x.length,)
 
@@ -114,21 +119,28 @@ function get_connections(m::Flux.Chain, input_data::Union{Nothing,Array} = nothi
     chain_dimensions = get_dimensions(m, input_data)
     connections = []
 
+    # input_data_type = input_data === nothing ? Float64 : T
+    input_data_type = Float32
+
     for (ln, l) in enumerate(m)
         ldim = chain_dimensions[ln]
         layer_connections = Dict{CartesianIndex,Array{CartesianIndex,1}}()
+        #basis_element = fill(0,prod(ldim))
         foreach(1:prod(ldim)) do idx
             affected = Array{CartesianIndex,1}()
             basis_element = reshape(UnitVector{Int}(idx, prod(ldim)),ldim...)
-            for rv in 1000*(rand(10) .- 0.5)
-                union!(affected, CartesianIndex.(findall(x -> abs(x) > eps(), l(rv*basis_element))))
+            #basis_element[idx] = 1
+            #basis_element = reshape(basis_element, ldim)
+            for rv in convert.(Float32, rand(Int16,2))
+                union!(affected, CartesianIndex.(findall(x -> abs(x) > eps(), l(rv .* basis_element))))
             end
             push!(layer_connections, CartesianIndex(findfirst(x->x==1, basis_element)) => affected)
+            #basis_element[idx] = 0
         end
         push!(connections, layer_connections)
     end
 
-    return connections    
+    return connections
 end
 
 """
@@ -152,6 +164,10 @@ project(x, center, max_width, slope=0) = ((x[1] - center + max_width/2)/(max_wid
 Plot a Flux.Chain neural network.
 """
 @recipe function plot(m::Flux.Chain, input_data::Union{Nothing,Array} = nothing)
+    m = f32(m)
+    if input_data !== nothing
+        input_data = convert.(Float32, input_data)
+    end
     chain_dimensions = get_dimensions(m, input_data)
     max_width, = maximum(chain_dimensions)
 
