@@ -87,7 +87,7 @@ function get_dimensions(m::Flux.Chain, input_data::Union{Nothing,Array} = nothin
 end
 
 """
-UnitVector{T}
+    UnitVector{T}
 
 Structure for unit vectors in a linear space
     
@@ -99,10 +99,6 @@ struct UnitVector{T} <: AbstractVector{T}
 end
 
 Base.getindex(x::UnitVector{T}, i) where T = x.idx==i ? one(T) : zero(T)
-Base.setindex!(x::UnitVector{T}, v::T, i::Int) where T = v != 0 ? x.idx = i : nothing
-Base.setindex!(x::UnitVector{T}, v::AbstractFloat, i::Int) where T = abs(v) ≤ eps() ? x.idx = i : nothing
-Base.firstindex(x::UnitVector) = 1
-Base.lastindex(x::UnitVector) = x.length
 Base.length(x::UnitVector) = x.length
 Base.size(x::UnitVector) = (x.length,)
 
@@ -128,8 +124,6 @@ Get all the connections to the next layer of each neuron in each layer.
 function get_connections(m::Flux.Chain, input_data::Union{Nothing,Array} = nothing)
     chain_dimensions = get_dimensions(m, input_data)
     connections = Vector{Dict{CartesianIndex, Vector{CartesianIndex}}}()
-
-    input_data_type = Float32
 
     for (ln, l) in enumerate(m)
         ldim = chain_dimensions[ln]
