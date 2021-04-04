@@ -38,9 +38,9 @@ outputlayerplotattributes = (mrkrsize = 12, mrkrshape =  :rtriangle, mrkrcolor =
 Retrive activation function name of a given layer.
 """
 layeractivationfn(::Any) = ""
-layeractivationfn(f::Function) = string(f) # think about using `nameof(f)` and so on
-layeractivationfn(d::Flux.Dense) = string(d.σ)
-layeractivationfn(r::Flux.RNNCell) = string(r.σ)
+layeractivationfn(f::Function) = nameof(f)
+layeractivationfn(d::Flux.Dense) = nameof(d.σ)
+layeractivationfn(r::Flux.RNNCell) = nameof(r.σ)
 layeractivationfn(r::Flux.LSTMCell) = "LSTM"
 layeractivationfn(r::Flux.GRUCell) = "GRU"
 layeractivationfn(r::Flux.Recur) = layeractivationfn(r.cell)
