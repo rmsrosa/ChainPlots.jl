@@ -89,7 +89,7 @@ function get_connections(m::Flux.Chain, input_data::Union{Nothing,Array} = nothi
         foreach(1:prod(ldim)) do idx
             affected = Array{CartesianIndex,1}()
             basis_element = reshape(UnitVector{Int}(idx, prod(ldim)),ldim...)
-            for rv in convert.(Float32, rand(Int16,2))
+            for rv in convert.(Float32, rand(Int16,1000))
                 union!(affected, CartesianIndex.(findall(x -> abs(x) > eps(), l(rv .* basis_element))))
             end
             push!(layer_connections, CartesianIndex(findfirst(x->x==1, basis_element)) => affected)
