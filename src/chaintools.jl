@@ -38,6 +38,8 @@ function get_dimensions(m::Flux.Chain, input_data::Union{Nothing,Array} = nothin
         input_data = rand(Float32, layerdimensions(m.layers[1])[2]) 
     elseif input_data === nothing
         throw(ArgumentError("An `input_data` is required when the first layer accepts variable-dimension input"))
+    else
+        input_data = convert.(Float32, input_data)
     end
 
     chain_dimensions = vcat(size(input_data), [size(m[1:nl](input_data)) for nl in 1:length(m.layers)])
