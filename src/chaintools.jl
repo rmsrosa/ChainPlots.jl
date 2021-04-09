@@ -1,9 +1,3 @@
-# See Functors.jl https://github.com/FluxML/Functors.jl
-# See `show(Chain)T` (not yet implemented): https://github.com/FluxML/Flux.jl/pull/1467
-# See https://docs.juliaplots.org/latest/generated/supported/
-# See https://fluxml.ai/Flux.jl/stable/models/layers/
-# See colors: http://juliagraphics.github.io/Colors.jl/stable/namedcolors/
-
 """
     layerdimensions()
 
@@ -26,10 +20,10 @@ const FIXED_INPUT_DIM_LAYERS = (Flux.Dense, Flux.Recur, Flux.RNNCell, Flux.LSTMC
 """
     get_dimensions(m::Flux.Chain, input_data = nothing)
 
-Get the dimensions of the input layer and of the output layer of each hidden layer.
+Return the dimensions of the input and of the output data of each hidden layer.
 
 If `input_data` is not given, the first layer is required to be a layer
-with fixed input dimensions,  such as Flux.Dense or Flux.Recur,
+with fixed input dimensions, such as Flux.Dense or Flux.Recur,
 otherwise the given data is used to infer the dimensions of each layer.
 """
 function get_dimensions(m::Flux.Chain, input_data::Union{Nothing,Array} = nothing)
@@ -45,6 +39,21 @@ function get_dimensions(m::Flux.Chain, input_data::Union{Nothing,Array} = nothin
     chain_dimensions = vcat(size(input_data), [size(m[1:nl](input_data)) for nl in 1:length(m.layers)])
     return chain_dimensions
 end
+
+function get_dimensions(m::Flux.Chain)
+    if m.layers[1] isa Union{FIXED_INPUT_DIM_LAYERS...}
+        input_data = rand(Float32, layerdimensions(m.layers[1])[2]) 
+    else
+        throw(ArgumentError("An `input_data` is required when the first layer accepts variable-dimension input"))
+    end
+    return get_dimensions(m, input_data)
+end
+
+function get_dimensions(m::Flux.Chain, ldim::Tuple)
+    input_data = rand(Float32, ldim)
+    return get_dimensions(m, input_data)
+end
+
 
 """
     UnitVector{T}

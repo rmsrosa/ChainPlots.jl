@@ -37,6 +37,13 @@ themes = [
     :gruvbox_light
 ]
 
+#= m = Chain(Dense(2,5,σ), RNN(5,4,relu), LSTM(4,4), GRU(4,4), Dense(4,3))
+input_data = rand(Float32,6)
+mg = chaingraph(m, input_data)
+@show get_prop(mg, 3, :layer_type)
+@show get_prop(mg, 9, :layer_style)
+@show collect(edges(mg)) =#
+
 dl = Dense(2,3)
 display(plot(dl, title="$dl", titlefontsize=12))
 savefig("img/dl.png")
