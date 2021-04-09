@@ -63,38 +63,33 @@ Base.length(x::UnitVector) = x.length
 Base.size(x::UnitVector) = (x.length,)
 
 """
-    get_cartesians(lsize:Tuple)
+    neuron_indices(ldim:Tuple) -> Vector{NTuple{N, Int}} where N
 
-Return all possible Cartesian indices for a given `lsize` Tuple.
+Return all possible indices for a given Tuple `ldim`.
 """
-function get_cartesians(ldim::Tuple)
-    cartesians = Array{CartesianIndex,1}()
-    foreach(1:prod(ldim)) do idx
-        basis_element = reshape(UnitVector{Int}(idx, prod(ldim)),ldim...)
-        push!(cartesians, CartesianIndex(findfirst(x->x==1, basis_element)))
-    end
-    return cartesians
+function neuron_indices(ldim::Tuple)
+    return [Tuple(1+mod(div(i,prod(ldim[1:j-1])), ldim[j]) for j in 1:length(ldim)) for i in 0:prod(ldim)-1]
 end
 
 """
-    get_connections(m::Flux.Chain)
+    neuron_connections(m::Flux.Chain) -> Vector{Dict{Tuple, Vector{Tuple}}}
 
-Get all the connections to the next layer of each neuron in each layer.
+Return all the connections from every neuron in each layer to the corresponding neurons in the next layer.
 """
-function get_connections(m::Flux.Chain, input_data::Union{Nothing,Array} = nothing)
+function neuron_connections(m::Flux.Chain, input_data::Union{Nothing,Array} = nothing)
     chain_dimensions = get_dimensions(m, input_data)
-    connections = Vector{Dict{CartesianIndex, Vector{CartesianIndex}}}()
+    connections = Vector{Dict{Tuple, Vector{Tuple}}}()
 
     for (ln, l) in enumerate(m)
         ldim = chain_dimensions[ln]
-        layer_connections = Dict{CartesianIndex,Array{CartesianIndex,1}}()
+        layer_connections = Dict{Tuple,Array{Tuple,1}}()
         foreach(1:prod(ldim)) do idx
-            affected = Array{CartesianIndex,1}()
+            affected = Array{Tuple,1}()
             basis_element = reshape(UnitVector{Int}(idx, prod(ldim)),ldim...)
             for rv in convert.(Float32, rand(Int16,1000))
-                union!(affected, CartesianIndex.(findall(x -> abs(x) > eps(), l(rv .* basis_element))))
+                union!(affected, Tuple.(findall(x -> abs(x) > eps(), l(rv .* basis_element))))
             end
-            push!(layer_connections, CartesianIndex(findfirst(x->x==1, basis_element)) => affected)
+            push!(layer_connections, Tuple(findfirst(x->x==1, basis_element)) => affected)
         end
         push!(connections, layer_connections)
     end

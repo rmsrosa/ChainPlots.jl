@@ -46,7 +46,7 @@ layeractivationfn(r::Flux.Conv) = "Conv"
 """
 project(x, center, max_width, slope)
 
-Transform a CartesianIndex x of a neuron into its y-coordinate for plotting.
+Transform a Tuple x of a neuron into its y-coordinate for plotting.
 """
 project(x, center, max_width, slope=0) = ((x[1] - center + max_width/2)/(max_width + 1))
 
@@ -62,6 +62,7 @@ Plot a Flux.Chain neural network.
     end
     chain_dimensions = get_dimensions(m, input_data)
     max_width, = maximum(chain_dimensions)
+    mg = chaingraph(m, input_data)
 
     axis --> false
     xrotation   --> 60
@@ -81,7 +82,7 @@ Plot a Flux.Chain neural network.
     seriescolor --> :gray
 
     # get connections
-    connections = get_connections(m, input_data)
+    connections = neuron_connections(m, input_data)
 
     # draw connections
     for (ln, l) in enumerate(m.layers)
@@ -95,7 +96,7 @@ Plot a Flux.Chain neural network.
                     ]
                     for neuron_out in connections[ln][neuron_in]
                 ]...)
-                for neuron_in in get_cartesians(ni) if length(connections[ln][neuron_in]) > 0
+                for neuron_in in neuron_indices(ni) if length(connections[ln][neuron_in]) > 0
             ]...)
             return [ln,ln + 1], dataseries            
         end
@@ -112,7 +113,7 @@ Plot a Flux.Chain neural network.
         markercolor --> inputlayerplotattributes.mrkrcolor
         ni = chain_dimensions[1]
         layer_center = ni[1]/2
-        dataseries = reshape([project(neuron, layer_center, max_width) for neuron in get_cartesians(ni)], 1, :)
+        dataseries = reshape([project(neuron, layer_center, max_width) for neuron in neuron_indices(ni)], 1, :)
         return [1], dataseries        
     end
 
@@ -127,7 +128,7 @@ Plot a Flux.Chain neural network.
             markercolor --> layerplotattributes(l).mrkrcolor
             nj = chain_dimensions[ln+1]
             layer_center = nj[1]/2
-            dataseries = reshape([project(neuron, layer_center, max_width) for neuron in get_cartesians(nj)], 1, : ) |> v -> vcat(v,v)
+            dataseries = reshape([project(neuron, layer_center, max_width) for neuron in neuron_indices(nj)], 1, : ) |> v -> vcat(v,v)
             return [ln+1, ln+1], dataseries
         end
     end
@@ -144,7 +145,7 @@ Plot a Flux.Chain neural network.
         markercolor --> outputlayerplotattributes.mrkrcolor
         nj = chain_dimensions[end]
         layer_center = nj[1]/2
-        dataseries = reshape([project(neuron, layer_center, max_width) for neuron in get_cartesians(nj)], 1, : )
+        dataseries = reshape([project(neuron, layer_center, max_width) for neuron in neuron_indices(nj)], 1, : )
         return [ln+1], dataseries
     end  
 
