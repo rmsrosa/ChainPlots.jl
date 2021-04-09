@@ -4,7 +4,7 @@
 # See https://fluxml.ai/Flux.jl/stable/models/layers/
 # See colors: http://juliagraphics.github.io/Colors.jl/stable/namedcolors/
 
-
+circle_verts = [(1.41*sin(2π*n/20), 1.41*cos(2π*n/20)) for n=-10:10]
 lrnn_verts = [(1.2*sin(2π*n/20), 1.2*(1+cos(2π*n/20))) for n=-10:10]
 lstm_verts = vcat([(1.0*sin(2π*n/20), 1.2 + 1.0*cos(2π*n/20)) for n=-10:10],
                   [(1.4*sin(2π*n/20), 1.2 + 1.4*cos(2π*n/20)) for n=-10:10])
@@ -16,17 +16,15 @@ lgru_verts = vcat([(0.5*sin(2π*n/20), 1.2 + 1.4*cos(2π*n/20)) for n=-10:10],
 
 Retrive plot attributes for each specific type of layer.
 """                  
-layerplotattributes(::Any) = (mrkrsize = 12, mrkrshape =  :circle, mrkrcolor = :gray)
-layerplotattributes(::Flux.Dense) = (mrkrsize = 12, mrkrshape =  :circle, mrkrcolor = :lightgreen)
+layerplotattributes(::Any) = (mrkrsize = 12, mrkrshape =  [:circle], mrkrcolor = [:gray])
+layerplotattributes(::Flux.Dense) = (mrkrsize = 12, mrkrshape =  [:circle], mrkrcolor = [:lightgreen])
 layerplotattributes(::Flux.RNNCell) = (mrkrsize = 12, mrkrshape =  [Main.Plots.Shape(lrnn_verts), :circle], mrkrcolor = [false, :lightskyblue1])
 layerplotattributes(::Flux.LSTMCell) = (mrkrsize = 12, mrkrshape =  [Main.Plots.Shape(lstm_verts), :circle], mrkrcolor = [false, :skyblue2])
 layerplotattributes(::Flux.GRUCell) = (mrkrsize = 12, mrkrshape =  [Main.Plots.Shape(lgru_verts), :circle], mrkrcolor = [false, :skyblue3])
 layerplotattributes(r::Flux.Recur) = layerplotattributes(r.cell)
-layerplotattributes(::Flux.Conv) = (mrkrsize = 10, mrkrshape =  :square, mrkrcolor = :plum)
-
-# layer plot attributes for input and output layers
-inputlayerplotattributes = (mrkrsize = 12, mrkrshape =  :rtriangle, mrkrcolor = :yellow)
-outputlayerplotattributes = (mrkrsize = 12, mrkrshape =  :rtriangle, mrkrcolor = :orange)
+layerplotattributes(::Flux.Conv) = (mrkrsize = 10, mrkrshape = [:square], mrkrcolor = [:plum])
+layerplotattributes(::InputLayer) = (mrkrsize = 12, mrkrshape = [Main.Plots.Shape(circle_verts), :rtriangle], mrkrcolor = [false, :yellow])
+layerplotattributes(::OutputLayer) = (mrkrsize = 12, mrkrshape = [:rtriangle], mrkrcolor = [:orange])
 
 """
     layeractivationfn()
@@ -63,11 +61,12 @@ Plot a Flux.Chain neural network.
     chain_dimensions = get_dimensions(m, input_data)
     max_width, = maximum(chain_dimensions)
     mg = chaingraph(m, input_data)
+    connections = neuron_connections(m, input_data)
 
     axis --> false
-    xrotation   --> 60
+    xrotation --> 60
     xticks --> begin
-        ll = 1:length(m)+1
+        ll = 0:length(m)
         (ll,
             vcat(
                 ["input \nlayer "],
@@ -76,85 +75,45 @@ Plot a Flux.Chain neural network.
             )
         )
     end
-    yaxis --> nothing
+    xlims --> length(m).*(-0.2,1.2)
+    yticks --> false
     ylims --> (-0.1,1.2)
     legend --> false
-    seriescolor --> :gray
-
-    # get connections
-    connections = neuron_connections(m, input_data)
+    #seriescolor --> :gray
 
     # draw connections
-    for (ln, l) in enumerate(m.layers)
-        @series begin
-            ni, nj = chain_dimensions[ln:ln+1]
-            layer_center = [ni[1],nj[1]]./2
-            dataseries = hcat([
-                hcat([
-                    [project(neuron_in, layer_center[1], max_width),
-                     project(neuron_out, layer_center[2], max_width)
-                    ]
-                    for neuron_out in connections[ln][neuron_in]
-                ]...)
-                for neuron_in in neuron_indices(ni) if length(connections[ln][neuron_in]) > 0
-            ]...)
-            return [ln,ln + 1], dataseries            
-        end
-    end
-
-    # draw input layer cells
     @series begin
-        #markersize --> min(12, 100/max_width)
-        markersize --> begin
-            sz = inputlayerplotattributes.mrkrsize
-            min(sz, 7.5*sz/max_width)
-        end
-        markershape --> inputlayerplotattributes.mrkrshape
-        markercolor --> inputlayerplotattributes.mrkrcolor
-        ni = chain_dimensions[1]
-        layer_center = ni[1]/2
-        dataseries = reshape([project(neuron, layer_center, max_width) for neuron in neuron_indices(ni)], 1, :)
-        return [1], dataseries        
+        seriescolor --> :gray
+        dataseries = [([get_prop(mg, e.src, :layer_number), get_prop(mg, e.dst, :layer_number)], [project(get_prop(mg, e.src, :index_in_layer), get_prop(mg, e.src, :layer_center), max_width), project(get_prop(mg, e.dst, :index_in_layer), get_prop(mg, e.dst, :layer_center), max_width)]) for e in edges(mg)]
+        return dataseries  
     end
 
-    # draw hidden and output layer neurons
-    for (ln, l) in enumerate(m.layers)
-        @series begin
-            markersize --> begin
-                sz = layerplotattributes(l).mrkrsize
-                min(sz, 7.5*sz/max_width)
-            end
-            markershape --> layerplotattributes(l).mrkrshape
-            markercolor --> layerplotattributes(l).mrkrcolor
-            nj = chain_dimensions[ln+1]
-            layer_center = nj[1]/2
-            dataseries = reshape([project(neuron, layer_center, max_width) for neuron in neuron_indices(nj)], 1, : ) |> v -> vcat(v,v)
-            return [ln+1, ln+1], dataseries
-        end
-    end
-
-    # finish drawing output layer neurons
+    # draw neurons
     @series begin
-        l = m.layers[end]
-        ln = length(m.layers)
-        markersize --> begin
-            sz = outputlayerplotattributes.mrkrsize
-            min(sz, 7.5*sz/max_width)
-        end
-        markershape --> outputlayerplotattributes.mrkrshape
-        markercolor --> outputlayerplotattributes.mrkrcolor
-        nj = chain_dimensions[end]
-        layer_center = nj[1]/2
-        dataseries = reshape([project(neuron, layer_center, max_width) for neuron in neuron_indices(nj)], 1, : )
-        return [ln+1], dataseries
-    end  
+        scale_sz(sz, max_width) = min(sz, 7.5*sz/max_width)
+        seriestype --> :scatter
+        markersize --> vcat([scale_sz(layerplotattributes(get_prop(mg, v, :layer_type)).mrkrsize, max_width) for v in vertices(mg)],
+                            [scale_sz(layerplotattributes(get_prop(mg, v, :layer_type)).mrkrsize, max_width) for v in vertices(mg) if length(layerplotattributes(get_prop(mg, v, :layer_type)).mrkrshape)>1],
+                            [scale_sz(layerplotattributes(get_prop(mg, v, :layer_type)).mrkrsize, max_width) for v in vertices(mg) if get_prop(mg, v, :layer_level) isa OutputLayer])
+        markershape --> vcat([layerplotattributes(get_prop(mg, v, :layer_type)).mrkrshape[1] for v in vertices(mg)],
+                            [layerplotattributes(get_prop(mg, v, :layer_type)).mrkrshape[end] for v in vertices(mg) if length(layerplotattributes(get_prop(mg, v, :layer_type)).mrkrshape)>1],
+                            [layerplotattributes(get_prop(mg, v, :layer_level)).mrkrshape[end] for v in vertices(mg) if get_prop(mg, v, :layer_level) isa OutputLayer])
+        markercolor --> vcat([layerplotattributes(get_prop(mg, v, :layer_type)).mrkrcolor[1] for v in vertices(mg)],
+                            [layerplotattributes(get_prop(mg, v, :layer_type)).mrkrcolor[end] for v in vertices(mg) if length(layerplotattributes(get_prop(mg, v, :layer_type)).mrkrshape)>1],
+                            [layerplotattributes(get_prop(mg, v, :layer_level)).mrkrcolor[end] for v in vertices(mg) if get_prop(mg, v, :layer_level) isa OutputLayer])
+        dataseries = vcat([(get_prop(mg, v, :layer_number), project(get_prop(mg, v, :index_in_layer), get_prop(mg, v, :layer_center), max_width)) for v in vertices(mg)],
+                          [(get_prop(mg, v, :layer_number), project(get_prop(mg, v, :index_in_layer), get_prop(mg, v, :layer_center), max_width)) for v in vertices(mg) if length(layerplotattributes(get_prop(mg, v, :layer_type)).mrkrshape)>1],
+                          [(get_prop(mg, v, :layer_number), project(get_prop(mg, v, :index_in_layer), get_prop(mg, v, :layer_center), max_width)) for v in vertices(mg) if get_prop(mg, v, :layer_level) isa OutputLayer])
+        return dataseries
+    end
 
     # display activation functions
     for (ln, l) in enumerate(m.layers)
+        #rotation   --> 60
         @series begin
             nj = chain_dimensions[ln+1]
-            series_annotations --> Main.Plots.series_annotations([layeractivationfn(l)], Main.Plots.font("Sans", 8))
-            return [ln+1], [(nj[1]/2 + 1 + max_width/2)/(max_width+1)]
+            series_annotations --> Main.Plots.series_annotations([string(l)], Main.Plots.font("Sans", 8, rotation=20))
+            return [ln], [(nj[1]/2 + 1 + max_width/2)/(max_width+1)]
         end
     end
 

@@ -9,6 +9,10 @@ include("chaintools.jl") =#
 
 # Remove the above ↑↑↑ when it is for real
 
+struct InputLayer end
+struct HiddenLayer end
+struct OutputLayer end
+
 """
     chaingraph(m::Flux.Chain, input_data::Union{Nothing,Array} = nothing)
 
@@ -47,8 +51,10 @@ function chaingraph(m::Flux.Chain, input_data::Union{Nothing,Array} = nothing)
         set_props!(
             mg, i, Dict(
                 :layer_number => first(node_to_neuron[i]),
-                :layer_type => first(node_to_neuron[i]) == 0 ? "input" : string(m[first(node_to_neuron[i])]),
-                :index_in_layer => last(node_to_neuron[i])
+                :layer_type => first(node_to_neuron[i]) == 0 ? InputLayer() : m[first(node_to_neuron[i])],
+                :layer_level => first(node_to_neuron[i]) == 0 ? InputLayer() : first(node_to_neuron[i]) == length(m) ? OutputLayer() : HiddenLayer(),
+                :index_in_layer => last(node_to_neuron[i]),
+                :layer_center => chain_dimensions[first(node_to_neuron[i])+1][1]/2
             )
         )
     end
