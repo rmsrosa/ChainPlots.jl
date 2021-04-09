@@ -74,10 +74,10 @@ nna = Chain(Dense(2,5,σ), dx, RNN(4,6,relu), x³, LSTM(6,4), GRU(4,4), Dense(4,
 display(plot(nna, title="$nna", titlefontsize=7))
 savefig("img/nna.png")
 
-#= nnx = Chain(x³, dx, LSTM(5,10), Dense(10,5))
+nnx = Chain(x³, dx, LSTM(5,10), Dense(10,5))
 input_data = rand(6)
 display(plot(nnx, input_data, title="$nnx", titlefontsize=9))
-savefig("img/nnx.png") =#
+savefig("img/nnx.png")
 
 nnrlwide = Chain(Dense(5,8), RNN(8,20), LSTM(20,10), Dense(10,7))
 display(plot(nnrlwide, title="$nnrlwide", titlefontsize=9))
