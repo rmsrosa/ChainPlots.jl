@@ -28,6 +28,17 @@ function layerplotattributes(s::Symbol)
 end
 
 """
+    get_layer_type(m::Flux.Chain, i::Int)
+
+Return `:input_layer` if "layer number" `i` is zero and the layer `m[i]` itself,
+otherwise.
+
+For use with [`layerplotattributes`](@ref), for properly retrieving the 
+corresponding plot attributes.
+"""
+get_layer_type(m::Flux.Chain, i::Int) = i == 0 ? :input_layer : m[i]
+
+"""
 projection(x, center, max_width, slope)
 
 Transform a Tuple x of a neuron into its y-coordinate for plotting.
@@ -80,17 +91,17 @@ Plot a Flux.Chain neural network according to recipe.
     @series begin
         scale_sz(sz, max_width) = min(sz, 7.5*sz/max_width)
         seriestype --> :scatter
-        markersize --> vcat([scale_sz(layerplotattributes(get_prop(mg, v, :layer_type)).mrkrsize, max_width) for v in vertices(mg)],
-                            [scale_sz(layerplotattributes(get_prop(mg, v, :layer_type)).mrkrsize, max_width) for v in vertices(mg) if length(layerplotattributes(get_prop(mg, v, :layer_type)).mrkrshape)>1],
-                            [scale_sz(layerplotattributes(get_prop(mg, v, :layer_type)).mrkrsize, max_width) for v in vertices(mg) if get_prop(mg, v, :layer_number) == length(m)])
-        markershape --> vcat([layerplotattributes(get_prop(mg, v, :layer_type)).mrkrshape[1] for v in vertices(mg)],
-                            [layerplotattributes(get_prop(mg, v, :layer_type)).mrkrshape[end] for v in vertices(mg) if length(layerplotattributes(get_prop(mg, v, :layer_type)).mrkrshape)>1],
+        markersize --> vcat([scale_sz(layerplotattributes(get_layer_type(m, get_prop(mg, v, :layer_number))).mrkrsize, max_width) for v in vertices(mg)],
+                            [scale_sz(layerplotattributes(get_layer_type(m, get_prop(mg, v, :layer_number))).mrkrsize, max_width) for v in vertices(mg) if length(layerplotattributes(get_layer_type(m, get_prop(mg, v, :layer_number))).mrkrshape)>1],
+                            [scale_sz(layerplotattributes(get_layer_type(m, get_prop(mg, v, :layer_number))).mrkrsize, max_width) for v in vertices(mg) if get_prop(mg, v, :layer_number) == length(m)])
+        markershape --> vcat([layerplotattributes(get_layer_type(m, get_prop(mg, v, :layer_number))).mrkrshape[1] for v in vertices(mg)],
+                            [layerplotattributes(get_layer_type(m, get_prop(mg, v, :layer_number))).mrkrshape[end] for v in vertices(mg) if length(layerplotattributes(get_layer_type(m, get_prop(mg, v, :layer_number))).mrkrshape)>1],
                             [layerplotattributes(:output_layer).mrkrshape[end] for v in vertices(mg) if get_prop(mg, v, :layer_number) == length(m)])
-        markercolor --> vcat([layerplotattributes(get_prop(mg, v, :layer_type)).mrkrcolor[1] for v in vertices(mg)],
-                            [layerplotattributes(get_prop(mg, v, :layer_type)).mrkrcolor[end] for v in vertices(mg) if length(layerplotattributes(get_prop(mg, v, :layer_type)).mrkrshape)>1],
+        markercolor --> vcat([layerplotattributes(get_layer_type(m, get_prop(mg, v, :layer_number))).mrkrcolor[1] for v in vertices(mg)],
+                            [layerplotattributes(get_layer_type(m, get_prop(mg, v, :layer_number))).mrkrcolor[end] for v in vertices(mg) if length(layerplotattributes(get_layer_type(m, get_prop(mg, v, :layer_number))).mrkrshape)>1],
                             [layerplotattributes(:output_layer).mrkrcolor[end] for v in vertices(mg) if get_prop(mg, v, :layer_number) == length(m)])
         dataseries = vcat([(get_prop(mg, v, :layer_number), projection(get_prop(mg, v, :index_in_layer), get_prop(mg, v, :layer_center), max_width)) for v in vertices(mg)],
-                          [(get_prop(mg, v, :layer_number), projection(get_prop(mg, v, :index_in_layer), get_prop(mg, v, :layer_center), max_width)) for v in vertices(mg) if length(layerplotattributes(get_prop(mg, v, :layer_type)).mrkrshape)>1],
+                          [(get_prop(mg, v, :layer_number), projection(get_prop(mg, v, :index_in_layer), get_prop(mg, v, :layer_center), max_width)) for v in vertices(mg) if length(layerplotattributes(get_layer_type(m, get_prop(mg, v, :layer_number))).mrkrshape)>1],
                           [(get_prop(mg, v, :layer_number), projection(get_prop(mg, v, :index_in_layer), get_prop(mg, v, :layer_center), max_width)) for v in vertices(mg) if get_prop(mg, v, :layer_number) == length(m)])
         return dataseries
     end
