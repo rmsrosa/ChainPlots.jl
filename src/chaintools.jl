@@ -34,7 +34,7 @@ otherwise the given data is used to infer the dimensions of each layer.
 """
 function get_dimensions(m::Flux.Chain, input_data::Union{Nothing,Array} = nothing)
 
-    if m.layers[1] isa Union{FIXED_INPUT_DIM_LAYERS...}
+    if (input_data === nothing) & (m.layers[1] isa Union{FIXED_INPUT_DIM_LAYERS...})
         input_data = rand(Float32, layerdimensions(m.layers[1])[2]) 
     elseif input_data === nothing
         throw(ArgumentError("An `input_data` is required when the first layer accepts variable-dimension input"))
