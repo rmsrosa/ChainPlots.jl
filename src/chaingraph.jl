@@ -50,7 +50,7 @@ function chaingraph(m::Flux.Chain, input_data::Union{Nothing,Array} = nothing)
                 :layer_type => first(node_to_neuron[i]) == 0 ? "input layer" : string(m[first(node_to_neuron[i])]),
                 :index_in_layer => last(node_to_neuron[i]),
                 :layer_center => chain_dimensions[first(node_to_neuron[i])+1][1]/2,
-                :loc_x => first(node_to_neuron[i]),
+                :loc_x => convert(Float64,first(node_to_neuron[i])),
                 :loc_y => projection(last(node_to_neuron[i]), chain_dimensions[first(node_to_neuron[i])+1][1]/2, max_width)
             )
         )
