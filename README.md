@@ -195,7 +195,7 @@ julia> get_prop.(Ref(mg_nnr), 15, [:loc_x, :loc_y])
 
 ### Visualizing the MetaGraph
 
-We may visualize the generated MetaGraph with [GraphPlot](). We use the attributes `:loc_x`, `:loc_y`, and `:neuron_color` to properly position and color every neuron.
+We may visualize the generated MetaGraph with [JuliaGraphs/GraphPlot.jl](https://github.com/JuliaGraphs/GraphPlot.jl). We use the attributes `:loc_x`, `:loc_y`, and `:neuron_color` to properly position and color every neuron.
 
 For that, however, we need a bunch of other packages, besides those already loaded as mentioned above.
 
