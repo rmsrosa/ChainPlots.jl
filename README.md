@@ -1,14 +1,14 @@
 # ChainPlot
 
-Plot visualization for [FluxML/Flux.jl](https://github.com/FluxML/Flux.jl)'s neural networks composed with [Flux.Chain](https://fluxml.ai/Flux.jl/stable/models/layers/#Flux.Chain).
+Plot visualization and graph constructor for [FluxML/Flux.jl](https://github.com/FluxML/Flux.jl)'s neural networks composed with [Flux.Chain](https://fluxml.ai/Flux.jl/stable/models/layers/#Flux.Chain).
 
 ## Description
 
 It implements a plot recipe for `Flux.Chain` using the recipe tool from [JuliaPlots/RecipesBase.jl](https://github.com/JuliaPlots/RecipesBase.jl).
 
-This new version also generates a [MetaGraph.jl](https://github.com/JuliaGraphs/MetaGraphs.jl) from a `Flux.Chain`. The Plot recipe is now build from the generated `metagraph`.
+It also generates a [MetaGraph.jl](https://github.com/JuliaGraphs/MetaGraphs.jl) from the `Flux.Chain`. The Plot recipe is built from the generated `metagraph`.
 
-This repository is for prototyping the recipe. There is currently no intention to make it a registered Julia package. Instead, the aim is to PR it into [FluxML/Flux.jl](https://github.com/FluxML/Flux.jl).
+This repository is for prototyping the recipe. It is not intended to become a registered Julia package. Instead, the aim is to PR it into [FluxML/Flux.jl](https://github.com/FluxML/Flux.jl).
 
 Nevertheless, one is welcome to install it directly via github, use it, and contribute to improve it.
 
@@ -28,7 +28,7 @@ In the former case, just passing a network `m=Chain(...)` to plot works, e.g. `p
 
 Any other argument for plot is accepted, like `plot(m,a, title="Convolutional network with $(length(m)) layers")`
 
-In the new version, one can also obtain a metagraph with `mg = chaingraph(m)` or `mg = chaingraph(m,a)`. The current attributes are can be seen in the docstring for `chaingraph`. The plot coordinates are calculated from some of the attributes, but soon these coordinates will be given as attributes, for a more independent use.
+In this new version, one can also obtain a metagraph with `mg = chaingraph(m)` or `mg = chaingraph(m,a)`. The current attributes are can be seen in the docstring for `chaingraph`.
 
 ## Examples
 
@@ -181,6 +181,14 @@ julia> first(edges(mg_nnr)).src
 
 julia> first(edges(mg_nnr)).dst
 3
+
+julia> julia> outdegree(mg_nnr, 12)
+8
+
+julia> get_prop.(Ref(mg_nnr), 15, [:loc_x, :loc_y])
+2-element Vector{Real}:
+ 3
+ 0.75
 ```
 
 ### Other examples
