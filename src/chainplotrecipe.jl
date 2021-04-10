@@ -76,7 +76,9 @@ Plot a Flux.Chain neural network according to recipe.
     # draw connections
     @series begin
         seriescolor --> :gray
-        dataseries = [([get_prop(mg, e.src, :loc_x), get_prop(mg, e.dst, :loc_x)], [get_prop(mg, e.src, :loc_y), get_prop(mg, e.dst, :loc_y)]) for e in edges(mg)]
+        dataseries = [
+            ([get_prop(mg, e.src, :loc_x), get_prop(mg, e.dst, :loc_x)],
+             [get_prop(mg, e.src, :loc_y), get_prop(mg, e.dst, :loc_y)]) for e in edges(mg)]
         return dataseries  
     end
 
@@ -84,30 +86,53 @@ Plot a Flux.Chain neural network according to recipe.
     @series begin
         scale_sz(sz, max_width) = min(sz, 7.5*sz/max_width)
         seriestype --> :scatter
-        markersize --> vcat([scale_sz(layerplotattributes(get_layer_type(m, get_prop(mg, v, :layer_number))).mrkrsize, max_width) for v in vertices(mg)],
-                            [scale_sz(layerplotattributes(get_layer_type(m, get_prop(mg, v, :layer_number))).mrkrsize, max_width) for v in vertices(mg) if length(layerplotattributes(get_layer_type(m, get_prop(mg, v, :layer_number))).mrkrshape)>1],
-                            [scale_sz(layerplotattributes(get_layer_type(m, get_prop(mg, v, :layer_number))).mrkrsize, max_width) for v in vertices(mg) if get_prop(mg, v, :layer_number) == length(m)])
-        markershape --> vcat([layerplotattributes(get_layer_type(m, get_prop(mg, v, :layer_number))).mrkrshape[1] for v in vertices(mg)],
-                            [layerplotattributes(get_layer_type(m, get_prop(mg, v, :layer_number))).mrkrshape[end] for v in vertices(mg) if length(layerplotattributes(get_layer_type(m, get_prop(mg, v, :layer_number))).mrkrshape)>1],
-                            [layerplotattributes(:output_layer).mrkrshape[end] for v in vertices(mg) if get_prop(mg, v, :layer_number) == length(m)])
-        markercolor --> vcat([layerplotattributes(get_layer_type(m, get_prop(mg, v, :layer_number))).mrkrcolor[1] for v in vertices(mg)],
-                            [layerplotattributes(get_layer_type(m, get_prop(mg, v, :layer_number))).mrkrcolor[end] for v in vertices(mg) if length(layerplotattributes(get_layer_type(m, get_prop(mg, v, :layer_number))).mrkrshape)>1],
-                            [layerplotattributes(:output_layer).mrkrcolor[end] for v in vertices(mg) if get_prop(mg, v, :layer_number) == length(m)])
-        dataseries = vcat([(get_prop(mg, v, :loc_x), get_prop(mg, v, :loc_y)) for v in vertices(mg)],
-                          [(get_prop(mg, v, :loc_x), get_prop(mg, v, :loc_y)) for v in vertices(mg) if length(layerplotattributes(get_layer_type(m, get_prop(mg, v, :layer_number))).mrkrshape)>1],
-                          [(get_prop(mg, v, :loc_x), get_prop(mg, v, :loc_y)) for v in vertices(mg) if get_prop(mg, v, :layer_number) == length(m)])
+        markersize --> vcat(
+            [scale_sz(layerplotattributes(get_layer_type(m, get_prop(mg, v, :layer_number))).mrkrsize, max_width)
+                for v in vertices(mg)],
+            [scale_sz(layerplotattributes(get_layer_type(m, get_prop(mg, v, :layer_number))).mrkrsize, max_width)
+                for v in vertices(mg)
+                    if length(layerplotattributes(get_layer_type(m, get_prop(mg, v, :layer_number))).mrkrshape)>1],
+            [scale_sz(layerplotattributes(get_layer_type(m, get_prop(mg, v, :layer_number))).mrkrsize, max_width)
+                for v in vertices(mg) if get_prop(mg, v, :layer_number) == length(m)]
+        )
+        markershape --> vcat(
+            [layerplotattributes(get_layer_type(m, get_prop(mg, v, :layer_number))).mrkrshape[1]
+                for v in vertices(mg)],
+            [layerplotattributes(get_layer_type(m, get_prop(mg, v, :layer_number))).mrkrshape[end]
+                for v in vertices(mg)
+                    if length(layerplotattributes(get_layer_type(m, get_prop(mg, v, :layer_number))).mrkrshape)>1],
+            [layerplotattributes(:output_layer).mrkrshape[end] for v in vertices(mg) if get_prop(mg, v, :layer_number) == length(m)]
+        )
+        markercolor --> vcat(
+            [layerplotattributes(get_layer_type(m, get_prop(mg, v, :layer_number))).mrkrcolor[1]
+                for v in vertices(mg)],
+            [layerplotattributes(get_layer_type(m, get_prop(mg, v, :layer_number))).mrkrcolor[end]
+                for v in vertices(mg)
+                    if length(layerplotattributes(get_layer_type(m, get_prop(mg, v, :layer_number))).mrkrshape)>1],
+            [layerplotattributes(:output_layer).mrkrcolor[end]
+                for v in vertices(mg)
+                    if get_prop(mg, v, :layer_number) == length(m)]
+        )
+        dataseries = vcat(
+            [(get_prop(mg, v, :loc_x), get_prop(mg, v, :loc_y)) for v in vertices(mg)],
+            [(get_prop(mg, v, :loc_x), get_prop(mg, v, :loc_y)) for v in vertices(mg)
+                if length(layerplotattributes(get_layer_type(m, get_prop(mg, v, :layer_number))).mrkrshape)>1],
+            [(get_prop(mg, v, :loc_x), get_prop(mg, v, :loc_y)) for v in vertices(mg)
+                if get_prop(mg, v, :layer_number) == length(m)]
+        )
         return dataseries
     end
 
     # display layer type
-    for (ln, l) in enumerate(m.layers)
+    for ln in 0:length(m)
         @series begin
             nj = chain_dimensions[ln+1]
-            series_annotations --> Main.Plots.series_annotations([string(l)], Main.Plots.font("Sans", 8, rotation=20))
+            series_annotations --> Main.Plots.series_annotations(
+                [ln == 0 ? "input" : string(m[ln])], Main.Plots.font("Sans", 8, rotation=20)
+            )
             return [ln], [(nj[1]/2 + 1 + max_width/2)/(max_width+1)]
         end
     end
-
 end
 
 @recipe function plot(d::Union{Flux.Dense, Flux.Recur, Flux.RNNCell, Flux.LSTMCell, Flux.GRUCell})
