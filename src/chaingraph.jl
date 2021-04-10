@@ -1,4 +1,19 @@
 """
+    neuron_color()
+
+Define color for each specific type of neuron, depending ot the type of layer it belongs to.
+"""                  
+neuron_color(::Any) = :gray
+neuron_color(::Flux.Dense) = :lightgreen
+neuron_color(::Flux.RNNCell) = :lightskyblue1
+neuron_color(::Flux.LSTMCell) = :skyblue2
+neuron_color(::Flux.GRUCell) = :skyblue3
+neuron_color(r::Flux.Recur) = neuron_color(r.cell)
+neuron_color(::Flux.Conv) = :plum
+neuron_color(s::Symbol) = s == :input_layer ? :yellow : s == :output_layer ? :orange : 
+    throw(ArgumentError("Color not defined for the given symbol $s."))
+
+"""
 projection(x, center, max_width, slope)
 
 Transform a Tuple x of a neuron into its y-coordinate for plotting.
@@ -51,7 +66,8 @@ function chaingraph(m::Flux.Chain, input_data::Union{Nothing,Array} = nothing)
                 :index_in_layer => last(node_to_neuron[i]),
                 :layer_center => chain_dimensions[first(node_to_neuron[i])+1][1]/2,
                 :loc_x => convert(Float64,first(node_to_neuron[i])),
-                :loc_y => projection(last(node_to_neuron[i]), chain_dimensions[first(node_to_neuron[i])+1][1]/2, max_width)
+                :loc_y => projection(last(node_to_neuron[i]), chain_dimensions[first(node_to_neuron[i])+1][1]/2, max_width),
+                :neuron_color => neuron_color(first(node_to_neuron[i]) == 0 ? :input_layer : m[first(node_to_neuron[i])])
             )
         )
     end
