@@ -37,12 +37,23 @@ themes = [
     :gruvbox_light
 ]
 
-#= m = Chain(Dense(2,5,σ), RNN(5,4,relu), LSTM(4,4), GRU(4,4), Dense(4,3))
-input_data = rand(Float32,6)
-mg = chaingraph(m, input_data)
-@show get_prop(mg, 3, :layer_type)
-@show get_prop(mg, 9, :layer_style)
-@show collect(edges(mg)) =#
+using Colors
+using Cairo
+using Compose
+using LightGraphs
+using MetaGraphs
+using GraphPlot
+
+nnr = Chain(Dense(2,5,σ), RNN(5,4,relu), LSTM(4,4), GRU(4,4), Dense(4,3))
+mg_nnr = ChainPlot.chaingraph(nnr)
+@show get_prop(mg_nnr, 3, :layer_type)
+@show get_prop(mg_nnr, 9, :index_in_layer)
+@show get_prop(mg_nnr, 12, :neuron_color)
+@show collect(edges(mg_nnr))
+locs_x = [get_prop(mg_nnr, v, :loc_x) for v in vertices(mg_nnr)]
+locs_y = [get_prop(mg_nnr, v, :loc_y) for v in vertices(mg_nnr)]
+nodefillc = [parse(Colorant, get_prop(mg_nnr, v, :neuron_color)) for v in vertices(mg_nnr)]
+draw(PNG("img/mg_nnr.png", 600, 400), gplot(mg_nnr, locs_x, locs_y, nodefillc=nodefillc))
 
 dl = Dense(2,3)
 display(plot(dl, title="$dl", titlefontsize=12))

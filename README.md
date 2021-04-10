@@ -150,7 +150,9 @@ julia> plot(nnrs2d, Float32.(rand(4)), title="$nnrs2d", titlefontsize=9)
 
 ![nnrs2d plot](test/img/nnrs2d.png)
 
-## Obtaining the MetaGraph
+### From Chain to MetaGraph
+
+With `ChainPlot.chaingraph()` we can convert a `Flux.Chain` to a `MetaGraph`.
 
 ```julia
 julia> using ChainPlot
@@ -182,14 +184,75 @@ julia> first(edges(mg_nnr)).src
 julia> first(edges(mg_nnr)).dst
 3
 
-julia> julia> outdegree(mg_nnr, 12)
+julia> outdegree(mg_nnr, 12)
 8
 
 julia> get_prop.(Ref(mg_nnr), 15, [:loc_x, :loc_y])
 2-element Vector{Real}:
- 3
+ 3.0
  0.75
 ```
+
+### Visualizing the MetaGraph
+
+We may visualize the generated MetaGraph with [GraphPlot](). We use the attributes `:loc_x`, `:loc_y`, and `:neuron_color` to properly position and color every neuron.
+
+For that, however, we need a bunch of other packages, besides those already loaded as mentioned above.
+
+```julia
+julia> using Colors
+
+julia> using Cairo
+
+julia> using Compose
+
+julia> using GraphPlot
+
+julia> nnr = Chain(Dense(2,5,σ),RNN(5,4,relu), LSTM(4,4), GRU(4,4), Dense(4,3))
+Chain(Dense(2, 5, σ), Recur(RNNCell(5, 4, relu)), Recur(LSTMCell(4, 4)), Recur(GRUCell(4, 4)), Dense(4, 3))
+
+julia> mg_nnr = ChainPlot.chaingraph(nnr)
+{22, 65} undirected Int64 metagraph with Float64 weights defined by :weight (default weight 1.0)
+
+julia> locs_x = [get_prop(mg_nnr, v, :loc_x) for v in vertices(mg_nnr)]
+22-element Vector{Float64}:
+ 0.0
+ 0.0
+ 1.0
+ 1.0
+ ⋮
+ 5.0
+ 5.0
+ 5.0
+
+julia> locs_y = [get_prop(mg_nnr, v, :loc_y) for v in vertices(mg_nnr)]
+22-element Vector{Float64}:
+ 0.4166666666666667
+ 0.5833333333333334
+ 0.16666666666666666
+ 0.3333333333333333
+ ⋮
+ 0.3333333333333333
+ 0.5
+ 0.6666666666666666
+
+julia> nodefillc = [parse(Colorant, get_prop(mg_nnr, v, :neuron_color)) for v in vertices(mg_nnr)]
+22-element Array{RGB{N0f8},1} with eltype RGB{FixedPointNumbers.N0f8}:
+ RGB{N0f8}(1.0,1.0,0.0)
+ RGB{N0f8}(1.0,1.0,0.0)
+ RGB{N0f8}(0.565,0.933,0.565)
+ RGB{N0f8}(0.565,0.933,0.565)
+ ⋮
+ RGB{N0f8}(0.565,0.933,0.565)
+ RGB{N0f8}(0.565,0.933,0.565)
+ RGB{N0f8}(0.565,0.933,0.565)
+
+julia> draw(PNG("img/mg_nnr.png", 600, 400), gplot(mg_nnr, locs_x, locs_y, nodefillc=nodefillc))
+```
+
+And here is the result.
+
+![mg_nnr plot](test/img/mg_nnr.png)
 
 ### Other examples
 
