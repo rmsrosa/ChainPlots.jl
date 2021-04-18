@@ -1,4 +1,4 @@
-module Neurons
+module NeuronNumbers
 
 import Random
 import Base: isless, ==
@@ -32,8 +32,8 @@ const hotneuron = NeuronState(Int8(1))
 Base.show(io::IO, x::NeuronState) = print(io, x == coldneuron ? "cold" : x == hotneuron ? "hot " : "off ")
 Base.show(io::IO, ::MIME"text/plain", x::NeuronState) = print(io, "NeuronState:\n  ", x)
 
-NeuronState(x::T) where {T<:Number} = iszero(x) ? coldneuron : isone(x) ? hotneuron : offneuron
-(::Type{T})(x::NeuronState) where {T<:Number} = x
+NeuronState(x::Number) = iszero(x) ? coldneuron : isone(x) ? hotneuron : offneuron
+(::Type{NeuronState})(x::NeuronState) = x
 Base.convert(::Type{NeuronState}, y::Number) = NeuronState(y)
 Base.convert(::Type{NeuronState}, y::NeuronState) = y
 

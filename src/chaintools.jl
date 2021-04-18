@@ -118,7 +118,7 @@ function neuron_connections_alt(morg::Flux.Chain, input_data::Union{Nothing,Arra
         for idx in neuron_indices(ldim)
             connected = Array{Tuple,1}()
             basis_element[idx...] = hotneuron
-            for j in 1:4 # multiple passes needed to get all the connections in some conv layers
+            for j in 1:8 # multiple passes needed to get all the connections in some conv layers
                 union!(connected, Tuple.(findall(x -> x == hotneuron, l(basis_element))))
             end
             # connected = Tuple.(findall(x -> x == hotneuron, l(basis_element)))

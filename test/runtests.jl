@@ -18,8 +18,8 @@ using Plots
 
 include("../src/ChainPlot.jl")
 
-include("../src/neurons.jl")
-using .Neurons
+include("../src/NeuronNumbers.jl")
+using .NeuronNumbers
 
 gr()
 theme(:default)
