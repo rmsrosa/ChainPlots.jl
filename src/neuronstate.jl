@@ -1,7 +1,7 @@
 # module NeuronState
 
 import Random
-import Base: isless, ==
+import Base: show, isless, ==
 import Adapt: adapt, adapt_storage
 
 """
@@ -27,6 +27,9 @@ end
 const offneuron = NeuronState(Int8(-1))
 const coldneuron = NeuronState(Int8(0))
 const hotneuron = NeuronState(Int8(1))
+
+Base.show(io::IO, x::NeuronState) = print(io, x == coldneuron ? "cold" : x == hotneuron ? "hot " : "off ")
+Base.show(io::IO, ::MIME"text/plain", x::NeuronState) = print(io, "NeuronState:\n  ", x)
 
 NeuronState(x::T) where {T<:Number} = iszero(x) ? offneuron : coldneuron
 (::Type{T})(x::NeuronState) where {T<:Number} = x
