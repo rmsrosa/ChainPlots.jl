@@ -86,8 +86,6 @@ end
 Return all the connections from every neuron in each layer to the corresponding neurons in the next layer.
 """
 function neuron_connections(morg::Flux.Chain, input_data::Union{Nothing,Array} = nothing)
-    # mst = fmap(x -> adapt(NeuronState, x), m)
-    # mst = fmap( x -> turnneuroncold.(x), mst)
     chain_dimensions = get_dimensions(morg, input_data)
     m = fmap(x -> coolneuron.(x), morg)
     connections = Vector{Dict{Tuple, Vector{Tuple}}}()
@@ -110,9 +108,7 @@ end
 
 function neuron_connections_alt(morg::Flux.Chain, input_data::Union{Nothing,Array} = nothing)
     chain_dimensions = get_dimensions(morg, input_data)
-    # m = fmap(x -> coolneuron.(x), morg)
-    m = f64(morg)
-    m = fmap(x -> coolneuron.(x), m)
+    m = fmap(x -> coolneuron.(x), morg)
     connections = Vector{Dict{Tuple, Vector{Tuple}}}()
 
     for (ln, l) in enumerate(m)
@@ -122,7 +118,10 @@ function neuron_connections_alt(morg::Flux.Chain, input_data::Union{Nothing,Arra
         for idx in neuron_indices(ldim)
             connected = Array{Tuple,1}()
             basis_element[idx...] = hotneuron
-            connected = Tuple.(findall(x -> x == hotneuron, l(basis_element)))
+            for j in 1:4 # multiple passes needed to get all the connections in some conv layers
+                union!(connected, Tuple.(findall(x -> x == hotneuron, l(basis_element))))
+            end
+            # connected = Tuple.(findall(x -> x == hotneuron, l(basis_element)))
             push!(layer_connections, idx => connected)
             basis_element[idx...] = coldneuron
         end
@@ -131,35 +130,7 @@ function neuron_connections_alt(morg::Flux.Chain, input_data::Union{Nothing,Arra
     return connections
 end
 
-function neuron_connections_old(morg::Flux.Chain, input_data::Union{Nothing,Array} = nothing)
-    # mst = fmap(x -> adapt(NeuronState, x), m)
-    # mst = fmap( x -> turnneuroncold.(x), mst)
-    chain_dimensions = get_dimensions(morg, input_data)
-    m = fmap(x -> coolneuron.(x), morg)
-    connections = Vector{Dict{Tuple, Vector{Tuple}}}()
-
-    for (ln, l) in enumerate(m)
-        ldim = chain_dimensions[ln]
-        layer_connections = Dict{Tuple,Array{Tuple,1}}()
-        basis_element = Array(reshape(UnitVector{NeuronState}(1, prod(ldim)), ldim...))
-        foreach(1:prod(ldim)) do idx
-            connected = Array{Tuple,1}()
-            basis_element[idx] = hotneuron
-            # basis_element = Array(reshape(UnitVector{NeuronState}(idx, prod(ldim)), ldim...))
-            connected = Tuple.(findall(x -> x == hotneuron, l(basis_element)))
-            if length(connected) > 0
-                push!(layer_connections, Tuple(findfirst(x->x==hotneuron, basis_element)) => connected)
-            end
-            basis_element[idx] = coldneuron
-        end
-        if length(layer_connections) > 0
-            push!(connections, layer_connections)
-        end
-    end
-    return connections
-end
-
-function neuron_connections_oldest(m::Flux.Chain, input_data::Union{Nothing,Array} = nothing)
+function neuron_connections_old(m::Flux.Chain, input_data::Union{Nothing,Array} = nothing)
     chain_dimensions = get_dimensions(m, input_data)
     connections = Vector{Dict{Tuple, Vector{Tuple}}}()
 
