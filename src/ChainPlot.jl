@@ -12,6 +12,10 @@ using RecipesBase
 import Base: getindex, length, size
 export chaingraph
 
+include("neurons.jl")
+
+using .Neurons
+
 include("chaintools.jl")
 include("chaingraph.jl")
 include("chainplotrecipe.jl")

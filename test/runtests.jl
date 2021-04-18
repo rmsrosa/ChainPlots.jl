@@ -18,6 +18,9 @@ using Plots
 
 include("../src/ChainPlot.jl")
 
+include("../src/neurons.jl")
+using .Neurons
+
 gr()
 theme(:default)
 
@@ -54,6 +57,14 @@ locs_x = [get_prop(mg_nnr, v, :loc_x) for v in vertices(mg_nnr)]
 locs_y = [get_prop(mg_nnr, v, :loc_y) for v in vertices(mg_nnr)]
 nodefillc = [parse(Colorant, get_prop(mg_nnr, v, :neuron_color)) for v in vertices(mg_nnr)]
 draw(PNG("img/mg_nnr.png", 600, 400), gplot(mg_nnr, locs_x, locs_y, nodefillc=nodefillc))
+
+m = Chain(Dense(2,3), RNN(3,2))
+mopen = fmap( x -> coolneuron.(x), m)
+mopen([coldneuron, hotneuron])
+
+m = Chain(x -> x[2:end] - x[1:end-1])
+mopen = fmap( x -> coolneuron.(x), m)
+mopen([coldneuron, hotneuron, coldneuron, coldneuron, coldneuron])
 
 dl = Dense(2,3)
 display(plot(dl, title="$dl", titlefontsize=12))
