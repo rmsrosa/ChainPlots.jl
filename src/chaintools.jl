@@ -85,33 +85,6 @@ end
 
 Return all the connections from every neuron in each layer to the corresponding neurons in the next layer.
 """
-function neuron_connections_alt(morg::Flux.Chain, input_data::Union{Nothing,Array} = nothing)
-    chain_dimensions = get_dimensions(morg, input_data)
-    # m = fmap(x -> coolneuron.(x), morg)
-    m = f64(morg)
-    m = fmap(x -> coolneuron.(x), m)
-    connections = Vector{Dict{Tuple, Vector{Tuple}}}()
-
-    for (ln, l) in enumerate(m)
-        ldim = chain_dimensions[ln]
-        layer_connections = Dict{Tuple,Array{Tuple,1}}()
-        basis_element = fill(coldneuron, ldim)
-        for idx in neuron_indices(ldim)
-            connected = Array{Tuple,1}()
-            basis_element[idx...] = hotneuron
-            connected = Tuple.(findall(x -> x == hotneuron, l(basis_element)))
-            if length(connected) > 0
-                push!(layer_connections, idx => connected)
-            end
-            basis_element[idx...] = coldneuron
-        end
-        if length(layer_connections) > 0
-            push!(connections, layer_connections)
-        end
-    end
-    return connections
-end
-
 function neuron_connections(morg::Flux.Chain, input_data::Union{Nothing,Array} = nothing)
     # mst = fmap(x -> adapt(NeuronState, x), m)
     # mst = fmap( x -> turnneuroncold.(x), mst)
@@ -127,14 +100,33 @@ function neuron_connections(morg::Flux.Chain, input_data::Union{Nothing,Array} =
             connected = Array{Tuple,1}()
             basis_element[idx...] = hotneuron
             connected = Tuple.(findall(x -> x == hotneuron, l(basis_element)))
-            if length(connected) > 0
-                push!(layer_connections, idx => connected)
-            end
+            push!(layer_connections, idx => connected)
             basis_element[idx...] = coldneuron
         end
-        if length(layer_connections) > 0
-            push!(connections, layer_connections)
+        push!(connections, layer_connections)
+    end
+    return connections
+end
+
+function neuron_connections_alt(morg::Flux.Chain, input_data::Union{Nothing,Array} = nothing)
+    chain_dimensions = get_dimensions(morg, input_data)
+    # m = fmap(x -> coolneuron.(x), morg)
+    m = f64(morg)
+    m = fmap(x -> coolneuron.(x), m)
+    connections = Vector{Dict{Tuple, Vector{Tuple}}}()
+
+    for (ln, l) in enumerate(m)
+        ldim = chain_dimensions[ln]
+        layer_connections = Dict{Tuple,Array{Tuple,1}}()
+        basis_element = fill(coldneuron, ldim)
+        for idx in neuron_indices(ldim)
+            connected = Array{Tuple,1}()
+            basis_element[idx...] = hotneuron
+            connected = Tuple.(findall(x -> x == hotneuron, l(basis_element)))
+            push!(layer_connections, idx => connected)
+            basis_element[idx...] = coldneuron
         end
+        push!(connections, layer_connections)
     end
     return connections
 end
