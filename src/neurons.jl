@@ -133,7 +133,7 @@ In the conversion, 0.0 turns into `offneuron` and any other value, into `coldneu
 """
 #fNeuronState(m) = fmap(x -> adapt(NeuronState, x), m)
 
-coolneuron(x) = x isa Number ? coldneuron : x
+coolneuron(x) = x isa AbstractFloat ? coldneuron : x
 
 #coolneurons(m) = fmap(x -> coolneuron.(x), m)
 
