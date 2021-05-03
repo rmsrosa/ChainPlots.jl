@@ -4,7 +4,7 @@
 Retrive dimensions of a given fixed-input-size layer.
 """
 layerdimensions(::Any) = (1,1)
-layerdimensions(l::Flux.Dense) = size(l.W)
+layerdimensions(l::Flux.Dense) = size(l.weight)
 layerdimensions(l::Flux.RNNCell) = (size(l.Wh)[2], size(l.Wi)[2])
 layerdimensions(l::Flux.LSTMCell) = (size(l.Wh)[2], size(l.Wi)[2])
 layerdimensions(l::Flux.GRUCell) = (size(l.Wh)[2], size(l.Wi)[2])
