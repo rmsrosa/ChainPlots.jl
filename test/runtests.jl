@@ -15,6 +15,7 @@
 # using ChainPlot
 using Flux
 using Plots
+using Random
 
 include("../src/ChainPlot.jl")
 
@@ -120,12 +121,12 @@ savefig("img/nnrs2d.png")
 display(plot(nncg, Float32.(rand(6,6,1,1)), title="$nncg", titlefontsize=10))
 savefig("img/nncg.png") =#
 
-hdf5()
+#= hdf5()
 plot(nnr, title="$nnr with HDF5", titlefontsize=7)
 Plots.hdf5plot_write("img/nnrhdf5.hdf5")
 gr()
 plthdf5_read = Plots.hdf5plot_read("img/nnrhdf5.hdf5")
-display(plthdf5_read)
+display(plthdf5_read) =#
 
 gr()
 for t in themes
