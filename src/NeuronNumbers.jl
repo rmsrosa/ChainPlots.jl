@@ -21,7 +21,7 @@ The aliases are
     * `coldneuron = NeuronState(Int8(0))`
     * `hotneuron = NeuronState(Int8(1))`
 """
-struct NeuronState
+struct NeuronState <: Number
     state::Int8
 end
 
@@ -119,6 +119,11 @@ for f in [:*, :/, :^, :mod, :div, :rem, :widemul]
 end
 
 for f in [:+, :-, :*, :/, :^, :mod, :div, :rem, :widemul]
+    # specialize to avoid conflict with Base
+    @eval Base.$f(x::NeuronState, ::Integer) = x 
+    @eval Base.$f(::Integer, y::NeuronState) = y
+    @eval Base.$f(x::NeuronState, ::Real) = x
+    @eval Base.$f(::Real, y::NeuronState) = y
     @eval Base.$f(x::NeuronState, ::Number) = x
     @eval Base.$f(::Number, y::NeuronState) = y
 end
