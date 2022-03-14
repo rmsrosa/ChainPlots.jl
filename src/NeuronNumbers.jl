@@ -39,13 +39,13 @@ Base.convert(::Type{NeuronState}, y::NeuronState) = y
 
 Base.float(x::Type{NeuronState}) = x
 
-isless(::NeuronState, ::Number) = true
-isless(::Number, ::NeuronState) = true
-isless(x::NeuronState, y::NeuronState) = isless(x.state, y.state)
-
 ==(::NeuronState, ::Number) = false
 ==(::Number, ::NeuronState) = false
 ==(x::NeuronState, y::NeuronState) = x.state == y.state
+
+isless(x::NeuronState, ::Number) = x != hotneuron
+isless(::Number, x::NeuronState) = x == hotneuron
+isless(x::NeuronState, y::NeuronState) = isless(x.state, y.state)
 
 Base.one(NeuronState) = convert(NeuronState, 1)
 Base.zero(NeuronState) = convert(NeuronState, 0)
