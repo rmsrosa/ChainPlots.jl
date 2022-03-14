@@ -6,7 +6,7 @@
 module ChainPlot
 
 using Flux
-using LightGraphs
+using Graphs
 using MetaGraphs
 using RecipesBase
 import Base: getindex, length, size

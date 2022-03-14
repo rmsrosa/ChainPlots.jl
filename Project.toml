@@ -6,6 +6,6 @@ version = "0.2.1"
 [deps]
 Adapt = "79e6a3ab-5dfb-504d-930d-738a2a938a0e"
 Flux = "587475ba-b771-5e3f-ad9e-33799f191a9c"
-LightGraphs = "093fc24a-ae57-5d10-9952-331d41423f4d"
+Graphs = "86223c79-3864-5bf0-83f7-82e725a168b6"
 MetaGraphs = "626554b9-1ddb-594c-aa3c-2596fe9399a5"
 RecipesBase = "3cdcf5f2-1ef4-517c-9805-6587b60abb01"

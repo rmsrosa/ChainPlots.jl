@@ -44,7 +44,7 @@ themes = [
 using Colors
 using Cairo
 using Compose
-using LightGraphs
+using Graphs
 using MetaGraphs
 using GraphPlot
 
