@@ -34,7 +34,7 @@ In this new version, one can also obtain a metagraph with `mg = chaingraph(m)` o
 
 Here is a little taste of the current state.
 
-In all the examples below, one needs `Flux`, `ChainPlot` and `Plots`, while for the graph one needs `LightGraphs` and `MetaGraphs`.
+In all the examples below, one needs `Flux`, `ChainPlot` and `Plots`, while for the graph one needs `Graphs` and `MetaGraphs`.
 
 ```julia
 julia> using Flux
@@ -157,7 +157,7 @@ With `ChainPlot.chaingraph()` we can convert a `Flux.Chain` to a `MetaGraph`.
 ```julia
 julia> using ChainPlot
 
-julia> using LightGraphs
+julia> using Graphs
 
 julia> using MetaGraphs
 
