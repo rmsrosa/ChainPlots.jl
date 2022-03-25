@@ -60,11 +60,11 @@ nodefillc = [parse(Colorant, get_prop(mg_nnr, v, :neuron_color)) for v in vertic
 draw(PNG("img/mg_nnr.png", 600, 400), gplot(mg_nnr, locs_x, locs_y, nodefillc=nodefillc))
 
 m = Chain(Dense(2,3), RNN(3,2))
-mopen = fmap( x -> coolneuron.(x), m)
+mopen = fmap(x -> cooloffneuron.(x), m)
 mopen([coldneuron, hotneuron])
 
 m = Chain(x -> x[2:end] - x[1:end-1])
-mopen = fmap( x -> coolneuron.(x), m)
+mopen = fmap(x -> cooloffneuron.(x), m)
 mopen([coldneuron, hotneuron, coldneuron, coldneuron, coldneuron])
 
 dl = Dense(2,3)

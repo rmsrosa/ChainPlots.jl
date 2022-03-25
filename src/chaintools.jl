@@ -87,7 +87,7 @@ Return all the connections from every neuron in each layer to the corresponding 
 """
 function neuron_connections(morg::Flux.Chain, input_data::Union{Nothing,Array} = nothing)
     chain_dimensions = get_dimensions(morg, input_data)
-    m = fmap(x -> coolneuron.(x), morg)
+    m = fmap(x -> cooloffneuron.(x), morg)
     connections = Vector{Dict{Tuple, Vector{Tuple}}}()
 
     for (ln, l) in enumerate(m)
@@ -110,7 +110,7 @@ end
 
 function neuron_connections_alt(morg::Flux.Chain, input_data::Union{Nothing,Array} = nothing)
     chain_dimensions = get_dimensions(morg, input_data)
-    m = fmap(x -> coolneuron.(x), morg)
+    m = fmap(x -> cooloffneuron.(x), morg)
     connections = Vector{Dict{Tuple, Vector{Tuple}}}()
 
     for (ln, l) in enumerate(m)

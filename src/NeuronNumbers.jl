@@ -3,7 +3,7 @@ module NeuronNumbers
 import Random
 import Base: isless, ==
 
-export NeuronState, coldneuron, hotneuron, coolneuron
+export NeuronState, coldneuron, hotneuron, cooloffneuron
 
 """
     NeuronState <: Number
@@ -123,6 +123,6 @@ for f in [:+, :-, :*, :/, :^, :mod, :div, :rem, :widemul]
     @eval Base.$f(::Number, y::NeuronState) = y
 end
 
-coolneuron(x) = x isa AbstractFloat ? coldneuron : x
+cooloffneuron(x) = x isa AbstractFloat ? coldneuron : x
 
 end  # module
