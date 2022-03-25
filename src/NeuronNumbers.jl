@@ -2,9 +2,8 @@ module NeuronNumbers
 
 import Random
 import Base: isless, ==
-import Adapt: adapt, adapt_storage
 
-export NeuronState, offneuron, coldneuron, hotneuron, coolneuron
+export NeuronState, coldneuron, hotneuron, coolneuron
 
 """
     NeuronState <: Number
@@ -12,12 +11,10 @@ export NeuronState, offneuron, coldneuron, hotneuron, coolneuron
 NeuronState encodes the "state" of a neuron as an Int8.
 
 The possible states are:
-    * `state = -1` for an "off" state, meaning it cannot be triggered by a signal
-    * `state = 0` for a "cold" state, meaning it can be triggered by a signal but it has not yet been triggered
-    * `state = 1` for a "hot" state, meaning it has been triggered by a signal.
+    * `state = 0` for a "cold", or "off", state, meaning it can be triggered by a signal but it has not yet been triggered
+    * `state = 1` for a "hot", or "on", state, meaning it has been triggered by a signal.
 
 The aliases are
-    * `offneuron = NeuronState(Int8(-1))`
     * `coldneuron = NeuronState(Int8(0))`
     * `hotneuron = NeuronState(Int8(1))`
 """
@@ -25,14 +22,13 @@ struct NeuronState <: Number
     state::Int8
 end
 
-const offneuron = NeuronState(Int8(-1))
 const coldneuron = NeuronState(Int8(0))
 const hotneuron = NeuronState(Int8(1))
 
-Base.show(io::IO, x::NeuronState) = print(io, x == coldneuron ? "cold" : x == hotneuron ? "hot " : "off ")
+Base.show(io::IO, x::NeuronState) = print(io, x == coldneuron ? "cold" : "hot ")
 Base.show(io::IO, ::MIME"text/plain", x::NeuronState) = print(io, "NeuronState:\n  ", x)
 
-NeuronState(x::Number) = iszero(x) ? coldneuron : isone(x) ? hotneuron : offneuron
+NeuronState(x::Number) = iszero(x) ? coldneuron :  hotneuron
 (::Type{NeuronState})(x::NeuronState) = x
 Base.convert(::Type{NeuronState}, y::Number) = NeuronState(y)
 Base.convert(::Type{NeuronState}, y::NeuronState) = y
@@ -51,7 +47,7 @@ Base.one(NeuronState) = convert(NeuronState, 1)
 Base.zero(NeuronState) = convert(NeuronState, 0)
 Base.isnan(::NeuronState) = false
 Base.isfinite(::NeuronState) = true
-Base.typemin(::Type{NeuronState}) = offneuron
+Base.typemin(::Type{NeuronState}) = coldneuron
 Base.typemax(::Type{NeuronState}) = hotneuron
 
 Base.size(::NeuronState) = ()
@@ -72,7 +68,7 @@ Base.keys(::NeuronState) = Base.OneTo(1)
 Base.getindex(x::NeuronState) = x
 
 @inline Base.getindex(x::NeuronState, i::Integer) = @boundscheck i == 1 ? x : throw(BoundsError())
-@inline Base.getindex(x::NeuronState, i::Integer) = @boundscheck all(isone, I) ? x : throw(BoundsError())
+@inline Base.getindex(x::NeuronState, I::Integer...) = @boundscheck all(isone, I) ? x : throw(BoundsError())
 
 Base.first(x::NeuronState) = x
 Base.last(x::NeuronState) = x
@@ -93,7 +89,7 @@ Base.big(::NeuronState) = NeuronState
 Base.promote_rule(::Type{NeuronState}, ::Type{<:Number}) = NeuronState
 
 Random.rand(rng::Random.AbstractRNG, ::Random.SamplerType{NeuronState}) = 
-    rand(rng, (offneuron, coldneuron))
+    rand(rng, (coldneuron, hotneuron))
 
 for f in [:+, :-, :abs, :abs2, :inv, :tanh, 
         :exp, :log, :log1p, :log2, :log10,
@@ -114,8 +110,7 @@ for f in [:+, :-]
 end
 
 for f in [:*, :/, :^, :mod, :div, :rem, :widemul]
-    @eval Base.$f(x::NeuronState, y::NeuronState) = 
-        min(x, y) == offneuron ? offneuron : max(x, y)
+    @eval Base.$f(x::NeuronState, y::NeuronState) = max(x, y)
 end
 
 for f in [:+, :-, :*, :/, :^, :mod, :div, :rem, :widemul]
@@ -128,18 +123,6 @@ for f in [:+, :-, :*, :/, :^, :mod, :div, :rem, :widemul]
     @eval Base.$f(::Number, y::NeuronState) = y
 end
 
-adapt_storage(NeuronState, xs::AbstractArray{<:Number}) = convert.(NeuronState, xs)
-"""
-    fNeuronState(m)
-
-Convert the `eltype` of model's parameters to `NeuronState`.
-
-In the conversion, 0.0 turns into `offneuron` and any other value, into `coldneuron`.
-"""
-#fNeuronState(m) = fmap(x -> adapt(NeuronState, x), m)
-
 coolneuron(x) = x isa AbstractFloat ? coldneuron : x
-
-#coolneurons(m) = fmap(x -> coolneuron.(x), m)
 
 end  # module
