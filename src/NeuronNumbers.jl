@@ -101,19 +101,11 @@ for f in [:+, :-, :abs, :abs2, :inv, :tanh,
     @eval Base.$f(x::NeuronState) = x
 end
 
-for f in [:one, :oneunit]
-    @eval Base.$f(::NeuronState) = hotneuron
-end
+Base.one(::NeuronState) = hotneuron
+Base.oneunit(::NeuronState) = hotneuron
+Base.zero(::NeuronState) = coldneuron
 
-for f in [:zero]
-    @eval Base.$f(::NeuronState) = coldneuron
-end
-
-for f in [:+, :-]
-  @eval Base.$f(x::NeuronState, y::NeuronState) = max(x,y)
-end
-
-for f in [:*, :/, :^, :mod, :div, :rem, :widemul]
+for f in [:+, :-, :*, :/, :^, :mod, :div, :rem, :widemul]
     @eval Base.$f(x::NeuronState, y::NeuronState) = max(x, y)
 end
 
