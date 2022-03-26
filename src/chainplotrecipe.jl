@@ -54,7 +54,6 @@ Plot a Flux.Chain neural network according to recipe.
     # chain_dimensions = get_dimensions(m, input_data)
     max_width, = maximum(chain_dimensions)
     mg = chaingraph(m, input_data)
-    connections = neuron_connections(m, input_data)
 
     axis --> false
     xrotation --> 60

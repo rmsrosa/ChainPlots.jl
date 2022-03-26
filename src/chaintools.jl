@@ -97,30 +97,7 @@ function neuron_connections(morg::Flux.Chain, input_data::Union{Nothing,Array} =
         for idx in neuron_indices(ldim)
             connected = Array{Tuple,1}()
             basis_element[idx...] = hotneuron
-            for j in 1:6 # multiple passes needed to get all the connections in some conv layers; don't know why
-                union!(connected, Tuple.(findall(x -> x == hotneuron, l(basis_element))))
-            end
-            push!(layer_connections, idx => connected)
-            basis_element[idx...] = coldneuron
-        end
-        push!(connections, layer_connections)
-    end
-    return connections
-end
-
-function neuron_connections_alt(morg::Flux.Chain, input_data::Union{Nothing,Array} = nothing)
-    chain_dimensions = get_dimensions(morg, input_data)
-    m = fcooloffneurons(morg)
-    connections = Vector{Dict{Tuple, Vector{Tuple}}}()
-
-    for (ln, l) in enumerate(m)
-        ldim = chain_dimensions[ln]
-        layer_connections = Dict{Tuple,Array{Tuple,1}}()
-        basis_element = fill(coldneuron, ldim)
-        for idx in neuron_indices(ldim)
-            connected = Array{Tuple,1}()
-            basis_element[idx...] = hotneuron
-            for j in 1:10 # multiple passes needed to get all the connections in some conv layers
+            for _ in 1:6 # multiple passes needed to get all the connections in some conv layers; don't know why
                 union!(connected, Tuple.(findall(x -> x == hotneuron, l(basis_element))))
             end
             push!(layer_connections, idx => connected)
