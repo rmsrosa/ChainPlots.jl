@@ -87,7 +87,7 @@ Return all the connections from every neuron in each layer to the corresponding 
 """
 function neuron_connections(morg::Flux.Chain, input_data::Union{Nothing,Array} = nothing)
     chain_dimensions = get_dimensions(morg, input_data)
-    m = fmap(x -> cooloffneuron.(x), morg)
+    m = fcooloffneurons(morg)
     connections = Vector{Dict{Tuple, Vector{Tuple}}}()
 
     for (ln, l) in enumerate(m)
@@ -110,7 +110,7 @@ end
 
 function neuron_connections_alt(morg::Flux.Chain, input_data::Union{Nothing,Array} = nothing)
     chain_dimensions = get_dimensions(morg, input_data)
-    m = fmap(x -> cooloffneuron.(x), morg)
+    m = fcooloffneurons(morg)
     connections = Vector{Dict{Tuple, Vector{Tuple}}}()
 
     for (ln, l) in enumerate(m)
@@ -123,33 +123,11 @@ function neuron_connections_alt(morg::Flux.Chain, input_data::Union{Nothing,Arra
             for j in 1:10 # multiple passes needed to get all the connections in some conv layers
                 union!(connected, Tuple.(findall(x -> x == hotneuron, l(basis_element))))
             end
-            # connected = Tuple.(findall(x -> x == hotneuron, l(basis_element)))
             push!(layer_connections, idx => connected)
             basis_element[idx...] = coldneuron
         end
         push!(connections, layer_connections)
     end
-    return connections
-end
-
-function neuron_connections_old(m::Flux.Chain, input_data::Union{Nothing,Array} = nothing)
-    chain_dimensions = get_dimensions(m, input_data)
-    connections = Vector{Dict{Tuple, Vector{Tuple}}}()
-
-    for (ln, l) in enumerate(m)
-        ldim = chain_dimensions[ln]
-        layer_connections = Dict{Tuple,Array{Tuple,1}}()
-        foreach(1:prod(ldim)) do idx
-            connected = Array{Tuple,1}()
-            basis_element = reshape(UnitVector{Int}(idx, prod(ldim)),ldim...)
-            for rv in convert.(Float32, rand(Int16,1000))
-                union!(connected, Tuple.(findall(x -> abs(x) > eps(), l(rv .* basis_element))))
-            end
-            push!(layer_connections, Tuple(findfirst(x->x==1, basis_element)) => connected)
-        end
-        push!(connections, layer_connections)
-    end
-
     return connections
 end
 

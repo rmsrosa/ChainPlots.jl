@@ -2,8 +2,10 @@ module NeuronNumbers
 
 import Random
 import Base: isless, ==
+import Adapt: adapt, adapt_storage
+import Functors: fmap
 
-export NeuronState, coldneuron, hotneuron, cooloffneuron
+export NeuronState, coldneuron, hotneuron, fcooloffneurons
 
 """
     NeuronState <: Number
@@ -45,8 +47,10 @@ isless(x::NeuronState, y::NeuronState) = isless(x.state, y.state)
 
 Base.one(NeuronState) = convert(NeuronState, 1)
 Base.zero(NeuronState) = convert(NeuronState, 0)
+Base.iszero(x::NeuronState) = x == coldneuron
 Base.isnan(::NeuronState) = false
 Base.isfinite(::NeuronState) = true
+Base.isinf(::NeuronState) = false
 Base.typemin(::Type{NeuronState}) = coldneuron
 Base.typemax(::Type{NeuronState}) = hotneuron
 
@@ -123,6 +127,27 @@ for f in [:+, :-, :*, :/, :^, :mod, :div, :rem, :widemul]
     @eval Base.$f(::Number, y::NeuronState) = y
 end
 
-cooloffneuron(x) = x isa AbstractFloat ? coldneuron : x
+"""
+    cooloffneuron(x)
 
-end  # module
+Convert a Number to coldneuron and leave other types untouched.
+"""
+cooloffneuron(x) = x isa Number ? coldneuron : x
+
+adapt_storage(NeuronState, xs::AbstractArray{<:Number}) = convert.(NeuronState, xs)
+
+"""
+    fneuronstate(m)
+
+Convert the parameters of a model to `NeuronState`.
+"""
+fneuronstate(m) = fmap(x -> x isa AbstractArray{<:Number} ? adapt(NeuronState, x) : x, m)
+
+"""
+    fcooloffneurons(m)
+
+Convert the parameters of a model to `NeuronState` with value `coldneuron`.
+"""
+fcooloffneurons(m) = fmap(x -> x isa AbstractArray{<:Number} ? fill(coldneuron, size(x)) : x, m)
+
+end # module
