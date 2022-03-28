@@ -3,7 +3,6 @@
 
 Retrive dimensions of a given fixed-input-size layer.
 """
-layerdimensions(::Any) = (1,1)
 layerdimensions(l::Flux.Dense) = size(l.weight)
 layerdimensions(l::Flux.RNNCell) = (size(l.Wh)[2], size(l.Wi)[2])
 layerdimensions(l::Flux.LSTMCell) = (size(l.Wh)[2], size(l.Wi)[2])
@@ -18,42 +17,23 @@ List of layers with fixed-sized input data
 const FIXED_INPUT_DIM_LAYERS = (Flux.Dense, Flux.Recur, Flux.RNNCell, Flux.LSTMCell, Flux.GRUCell) # list of types of layers with fixed input dimensions
 
 """
-    get_dimensions(m::Flux.Chain, input_data = nothing)
+    get_dimensions(m::Flux.Chain, input_data::Union{Nothing, Array, Tuple} = nothing)
 
 Return the dimensions of the input and of the output data of each hidden layer.
 
 If `input_data` is not given, the first layer is required to be a layer
 with fixed input dimensions, such as Flux.Dense or Flux.Recur,
-otherwise the given data is used to infer the dimensions of each layer.
+otherwise the given data or shape is used to infer the dimensions of each layer.
 """
-function get_dimensions(m::Flux.Chain, input_data::Union{Nothing,Array} = nothing)
+function get_dimensions(m::Flux.Chain, inp::Union{Nothing,Array} = nothing)
 
-    if (input_data === nothing) & (m.layers[1] isa Union{FIXED_INPUT_DIM_LAYERS...})
-        input_data = rand(Float32, layerdimensions(m.layers[1])[2]) 
-    elseif input_data === nothing
-        throw(ArgumentError("An `input_data` is required when the first layer accepts variable-dimension input"))
-    else
-        input_data = convert.(Float32, input_data)
-    end
+    m.layers[1] isa Union{FIXED_INPUT_DIM_LAYERS...} || inp !== nothing || throw(ArgumentError("An input data or shape is required when the first layer accepts variable-dimension input"))
+
+    input_data = (inp === nothing) && (m.layers[1] isa Union{FIXED_INPUT_DIM_LAYERS...}) ? rand(Float32, layerdimensions(m.layers[1])[2]) : inp isa Tuple ? rand(Float32, ldim) : convert.(Float32, inp)
 
     chain_dimensions = vcat(size(input_data), [size(m[1:nl](input_data)) for nl in 1:length(m.layers)])
     return chain_dimensions
 end
-
-function get_dimensions(m::Flux.Chain)
-    if m.layers[1] isa Union{FIXED_INPUT_DIM_LAYERS...}
-        input_data = rand(Float32, layerdimensions(m.layers[1])[2]) 
-    else
-        throw(ArgumentError("An `input_data` is required when the first layer accepts variable-dimension input"))
-    end
-    return get_dimensions(m, input_data)
-end
-
-function get_dimensions(m::Flux.Chain, ldim::Tuple)
-    input_data = rand(Float32, ldim)
-    return get_dimensions(m, input_data)
-end
-
 
 """
     UnitVector{T}
@@ -85,17 +65,13 @@ end
 
 Return all the connections from every neuron in each layer to the corresponding neurons in the next layer.
 """
-function neuron_connections(morg::Flux.Chain, input_data::Union{Nothing,Array} = nothing)
-    chain_dimensions = get_dimensions(morg, input_data)
-    m = fcooloffneurons(morg)
+function neuron_connections(m::Flux.Chain, input_data::Union{Nothing,Array} = nothing)
+    chain_dimensions = get_dimensions(m, input_data)
+    mn = fcooloffneurons(m)
 
-    # think about changing the representation to a Vector{Vector{Tuple}},
-    # with the first element representing the src neuron and the remaining, the
-    # destination neurons. This is the type in Graphs.jl. It should be faster.
-    # Could also write directly to a graph.
     connections = Vector{Dict{Tuple, Vector{Tuple}}}()
 
-    for (ln, l) in enumerate(m)
+    for (ln, l) in enumerate(mn)
         ldim = chain_dimensions[ln]
         layer_connections = Dict{Tuple,Array{Tuple,1}}()
         basis_element = fill(coldneuron, ldim)
@@ -117,4 +93,4 @@ end
 Get the maximum display width for the chain.
 """
 get_max_width(m::Flux.Chain, input_data::Union{Nothing,Array} = nothing) =
-    mapreduce(x->x[1], max, get_dimensions(m,input_data))
+    mapreduce(x->x[1], max, get_dimensions(m, input_data))
