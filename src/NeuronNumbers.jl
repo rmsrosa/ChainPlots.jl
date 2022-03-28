@@ -30,7 +30,7 @@ const hotneuron = NeuronState(Int8(1))
 Base.show(io::IO, x::NeuronState) = print(io, x == coldneuron ? "cold" : "hot ")
 Base.show(io::IO, ::MIME"text/plain", x::NeuronState) = print(io, "NeuronState:\n  ", x)
 
-NeuronState(x::Number) = iszero(x) ? coldneuron :  hotneuron
+NeuronState(::Number) = coldneuron
 (::Type{NeuronState})(x::NeuronState) = x
 Base.convert(::Type{NeuronState}, y::Number) = NeuronState(y)
 Base.convert(::Type{NeuronState}, y::NeuronState) = y
@@ -45,8 +45,12 @@ isless(x::NeuronState, ::Number) = x != hotneuron
 isless(::Number, x::NeuronState) = x == hotneuron
 isless(x::NeuronState, y::NeuronState) = isless(x.state, y.state)
 
-Base.one(NeuronState) = convert(NeuronState, 1)
-Base.zero(NeuronState) = convert(NeuronState, 0)
+Base.one(::Type{NeuronState}) = hotneuron
+Base.zero(::Type{NeuronState}) = coldneuron
+Base.one(::NeuronState) = hotneuron
+Base.oneunit(::NeuronState) = hotneuron
+Base.zero(::NeuronState) = coldneuron
+
 Base.iszero(x::NeuronState) = x == coldneuron
 Base.isnan(::NeuronState) = false
 Base.isfinite(::NeuronState) = true
@@ -101,10 +105,6 @@ for f in [:+, :-, :abs, :abs2, :inv, :tanh,
     @eval Base.$f(x::NeuronState) = x
 end
 
-Base.one(::NeuronState) = hotneuron
-Base.oneunit(::NeuronState) = hotneuron
-Base.zero(::NeuronState) = coldneuron
-
 for f in [:+, :-, :*, :/, :^, :mod, :div, :rem, :widemul]
     @eval Base.$f(x::NeuronState, y::NeuronState) = max(x, y)
 end
@@ -118,6 +118,9 @@ for f in [:+, :-, :*, :/, :^, :mod, :div, :rem, :widemul]
     @eval Base.$f(x::NeuronState, ::Number) = x
     @eval Base.$f(::Number, y::NeuronState) = y
 end
+
+Base.:*(x::NeuronState, b::Bool) = b === true ? x : coldneuron
+Base.:*(b::Bool, x::NeuronState) = *(x, b)
 
 """
     cooloffneuron(x)
