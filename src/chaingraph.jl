@@ -41,10 +41,9 @@ properties:
 """
 function chaingraph(m::Flux.Chain, input_data::Union{Nothing,Array} = nothing)
     m = f32(m)
+    m.layers[1] isa Union{FIXED_INPUT_DIM_LAYERS...} || input_data !== nothing || throw(ArgumentError("An `input_data` is required when the first layer accepts variable-dimension input"))
     if m.layers[1] isa Union{FIXED_INPUT_DIM_LAYERS...}
         input_data = rand(Float32, layerdimensions(m.layers[1])[2]) 
-    elseif input_data === nothing
-        throw(ArgumentError("An `input_data` is required when the first layer accepts variable-dimension input"))
     else
         input_data = convert.(Float32, input_data)
     end
