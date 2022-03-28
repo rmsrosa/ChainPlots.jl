@@ -33,7 +33,7 @@ function get_dimensions(m::Flux.Chain, input_data::Array)
     return chain_dimensions
 end
 
-function get_dimensions(m::Flux.Chain)
+function get_dimensions(m::Flux.Chain, ::Nothing = nothing)
     m.layers[1] isa Union{FIXED_INPUT_DIM_LAYERS...} || throw(ArgumentError("An input data or shape is required when the first layer accepts variable-dimension input"))
 
     input_data = rand(Float32, layerdimensions(m.layers[1])[2])
@@ -41,7 +41,6 @@ function get_dimensions(m::Flux.Chain)
 end
 
 get_dimensions(m::Flux.Chain, ldim::Tuple) = get_dimensions(m, rand(Float32, ldim))
-
 
 """
     UnitVector{T}
@@ -81,7 +80,7 @@ function neuron_connections(m::Flux.Chain, input_data::Union{Nothing,Array,Tuple
 
     for (ln, l) in enumerate(mn)
         ldim = chain_dimensions[ln]
-        layer_connections = Dict{Tuple,Array{Tuple,1}}()
+        layer_connections = Dict{Tuple, Vector{Tuple}}()
         basis_element = fill(coldneuron, ldim)
         for idx in neuron_indices(ldim)
             connected = Array{Tuple,1}()
