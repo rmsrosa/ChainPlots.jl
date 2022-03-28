@@ -14,7 +14,7 @@ layerdimensions(r::Flux.Recur) = layerdimensions(r.cell)
 
 List of layers with fixed-sized input data
 """
-const FIXED_INPUT_DIM_LAYERS = (Flux.Dense, Flux.Recur, Flux.RNNCell, Flux.LSTMCell, Flux.GRUCell) # list of types of layers with fixed input dimensions
+const FIXED_INPUT_DIM_LAYERS = (Flux.Dense, Flux.Recur, Flux.RNNCell, Flux.LSTMCell, Flux.GRUCell)
 
 """
     get_dimensions(m::Flux.Chain, inp::Union{Nothing, Array, Tuple} = nothing)
@@ -69,7 +69,7 @@ function neuron_indices(ldim::Tuple)
 end
 
 """
-    neuron_connections(m::Flux.Chain) -> Vector{Dict{Tuple, Vector{Tuple}}}
+    neuron_connections(m::Flux.Chain, input_data::Union{Nothing,Array,Tuple} = nothing) -> Vector{Dict{Tuple, Vector{Tuple}}}
 
 Return all the connections from every neuron in each layer to the corresponding neurons in the next layer.
 """
@@ -96,9 +96,9 @@ function neuron_connections(m::Flux.Chain, input_data::Union{Nothing,Array,Tuple
 end
 
 """
-    get_max_width(m::Flux.Chain, input_data::Union{Nothing,Array} = nothing)
+    get_max_width(m::Flux.Chain, input_data::Union{Nothing,Array,Tuple} = nothing)
 
 Get the maximum display width for the chain.
 """
-get_max_width(m::Flux.Chain, input_data::Union{Nothing,Array} = nothing) =
+get_max_width(m::Flux.Chain, input_data::Union{Nothing,Array,Tuple} = nothing) =
     mapreduce(x->x[1], max, get_dimensions(m, input_data))
