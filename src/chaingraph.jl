@@ -21,12 +21,11 @@ Transform a Tuple x of a neuron into its y-coordinate for plotting.
 projection(x, center, max_width, slope=0) = ((x[1] - center + max_width/2)/(max_width + 1))
 
 """
-    chaingraph(m::Flux.Chain, input_data::Union{Nothing,Array} = nothing)
+    chaingraph(m::Flux.Chain, input_data::Array)
 
 Return a MetaGraph representing the graph structure of the neural network.
 
-Each node represents a neuron of the Chain `m` and contains the following
-properties:
+Each node represents a neuron of the Chain `m` and contains the following properties:
     `:layer_number`: Int indicating to each layer it belongs (
         with `0` indicating the input layer, `1, …, length(m)-1` 
         indicating the hidden layers, and with `length(m)` indicating
@@ -39,14 +38,8 @@ properties:
         `RNN(n,m)`, or `(n₁, …, nₖ,m,d,b)` for convolutional layers, and so on;
     `:layer_center`: Float64 with the vertical mid-point of the layer it belongs to.
 """
-function chaingraph(m::Flux.Chain, input_data::Union{Nothing,Array} = nothing)
-    m = f32(m)
-    m.layers[1] isa Union{FIXED_INPUT_DIM_LAYERS...} || input_data !== nothing || throw(ArgumentError("An `input_data` is required when the first layer accepts variable-dimension input"))
-    if m.layers[1] isa Union{FIXED_INPUT_DIM_LAYERS...}
-        input_data = rand(Float32, layerdimensions(m.layers[1])[2]) 
-    else
-        input_data = convert.(Float32, input_data)
-    end
+function chaingraph(m::Flux.Chain, input_data::Array)
+    # m32 = f32(m) # this is not needed so far but leave it as a comment just in case
     chain_dimensions = get_dimensions(m, input_data)
     max_width, = maximum(chain_dimensions)
     connections = neuron_connections(m, input_data)
@@ -78,4 +71,29 @@ function chaingraph(m::Flux.Chain, input_data::Union{Nothing,Array} = nothing)
         end
     end
     return mg
+end
+
+"""
+    chaingraph(m::Flux.Chain, ldim::Tuple)
+
+Return a MetaGraph representing the graph structure of the neural network with an input of shape `ldim`.
+
+See [`chaingraph(m::Flux.Chain, input_data::Array)`](@ref) for the properties of each node of the graph.
+"""
+chaingraph(m::Flux.Chain, ldim::Tuple) = chaingraph(m, rand(Float32, ldim))
+
+"""
+    chaingraph(m::Flux.Chain)
+
+Return a MetaGraph representing the graph structure of the neural network.
+
+In this case, the first layer must be a layer with fixed input dimension.
+
+See [`chaingraph(m::Flux.Chain, input_data::Array)`](@ref) for the properties of each node of the graph.
+"""
+function chaingraph(m::Flux.Chain, ::Nothing = nothing)
+    m.layers[1] isa Union{FIXED_INPUT_DIM_LAYERS...} || throw(ArgumentError("An input data or shape is required when the first layer accepts variable-dimension input"))
+
+    input_data = rand(Float32, layerdimensions(m.layers[1])[2])
+    return chaingraph(m, input_data)
 end

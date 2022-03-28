@@ -17,7 +17,7 @@ List of layers with fixed-sized input data
 const FIXED_INPUT_DIM_LAYERS = (Flux.Dense, Flux.Recur, Flux.RNNCell, Flux.LSTMCell, Flux.GRUCell) # list of types of layers with fixed input dimensions
 
 """
-    get_dimensions(m::Flux.Chain, input_data::Union{Nothing, Array, Tuple} = nothing)
+    get_dimensions(m::Flux.Chain, inp::Union{Nothing, Array, Tuple} = nothing)
 
 Return the dimensions of the input and of the output data of each hidden layer.
 
@@ -25,15 +25,23 @@ If `input_data` is not given, the first layer is required to be a layer
 with fixed input dimensions, such as Flux.Dense or Flux.Recur,
 otherwise the given data or shape is used to infer the dimensions of each layer.
 """
-function get_dimensions(m::Flux.Chain, inp::Union{Nothing,Array} = nothing)
+function get_dimensions(m::Flux.Chain, input_data::Array)
 
-    m.layers[1] isa Union{FIXED_INPUT_DIM_LAYERS...} || inp !== nothing || throw(ArgumentError("An input data or shape is required when the first layer accepts variable-dimension input"))
-
-    input_data = (inp === nothing) && (m.layers[1] isa Union{FIXED_INPUT_DIM_LAYERS...}) ? rand(Float32, layerdimensions(m.layers[1])[2]) : inp isa Tuple ? rand(Float32, ldim) : convert.(Float32, inp)
+    # input_data = convert.(Float32, input_data)
 
     chain_dimensions = vcat(size(input_data), [size(m[1:nl](input_data)) for nl in 1:length(m.layers)])
     return chain_dimensions
 end
+
+function get_dimensions(m::Flux.Chain)
+    m.layers[1] isa Union{FIXED_INPUT_DIM_LAYERS...} || throw(ArgumentError("An input data or shape is required when the first layer accepts variable-dimension input"))
+
+    input_data = rand(Float32, layerdimensions(m.layers[1])[2])
+    return get_dimensions(m, input_data)
+end
+
+get_dimensions(m::Flux.Chain, ldim::Tuple) = get_dimensions(m, rand(Float32, ldim))
+
 
 """
     UnitVector{T}
@@ -65,7 +73,7 @@ end
 
 Return all the connections from every neuron in each layer to the corresponding neurons in the next layer.
 """
-function neuron_connections(m::Flux.Chain, input_data::Union{Nothing,Array} = nothing)
+function neuron_connections(m::Flux.Chain, input_data::Union{Nothing,Array,Tuple} = nothing)
     chain_dimensions = get_dimensions(m, input_data)
     mn = fcooloffneurons(m)
 
