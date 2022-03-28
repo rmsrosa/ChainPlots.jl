@@ -1,6 +1,6 @@
 # ChainPlot
 
-Plot visualization and graph constructor of the topology of [FluxML/Flux.jl](https://github.com/FluxML/Flux.jl)'s neural networks composed with [Flux.Chain](https://fluxml.ai/Flux.jl/stable/models/layers/#Flux.Chain).
+Plot recipes and graph generator of the topology of [FluxML/Flux.jl](https://github.com/FluxML/Flux.jl)'s neural networks composed with [Flux.Chain](https://fluxml.ai/Flux.jl/stable/models/layers/#Flux.Chain).
 
 ## Description
 
@@ -8,13 +8,13 @@ It implements a plot recipe for `Flux.Chain` using the recipe tool from [JuliaPl
 
 It also generates a [MetaGraph.jl](https://github.com/JuliaGraphs/MetaGraphs.jl) from the `Flux.Chain`. The Plot recipe is built from the generated `metagraph`.
 
-This repository is for prototyping the recipe. It is not intended to become a registered Julia package. Instead, the aim is to PR it into [FluxML/Flux.jl](https://github.com/FluxML/Flux.jl).
+This repository is for prototyping the recipe. It is not, at first, intended to become a registered Julia package. Instead, the aim is to PR it into [FluxML/Flux.jl](https://github.com/FluxML/Flux.jl). Or, maybe, a separate package in [FluxML](https://github.com/FluxML).
 
 Nevertheless, one is welcome to install it directly via github, use it, and contribute to improve it.
 
 ## Current state
 
-The aim is to obtain pictorial representations for all types of layers implemented with [Flux.Chain](https://fluxml.ai/Flux.jl/stable/models/layers/#Flux.Chain) and in a way similar to the representations given in the following links:
+The aim is to obtain a pictorial representations for all types of layers implemented with [Flux.Chain](https://fluxml.ai/Flux.jl/stable/models/layers/#Flux.Chain) and in a way similar to the representations given in the following links:
 
 * [Main Types of Neural Networks and its Applications — Tutorial](https://pub.towardsai.net/main-types-of-neural-networks-and-its-applications-tutorial-734480d7ec8e); and
 
@@ -28,7 +28,7 @@ In the former case, just passing a network `m=Chain(...)` to plot works, e.g. `p
 
 Any other argument for plot is accepted, like `plot(m,a, title="Convolutional network with $(length(m)) layers")`
 
-In this new version, one can also obtain a metagraph with `mg = chaingraph(m)` or `mg = chaingraph(m,a)`. The current attributes are can be seen in the docstring for `chaingraph`.
+In this new version, one can also obtain a metagraph with `mg = chaingraph(m)` or `mg = chaingraph(m,a)`. The current attributes can be seen in the docstring for `chaingraph`.
 
 ## Examples
 
