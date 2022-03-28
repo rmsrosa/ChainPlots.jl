@@ -88,6 +88,11 @@ Return all the connections from every neuron in each layer to the corresponding 
 function neuron_connections(morg::Flux.Chain, input_data::Union{Nothing,Array} = nothing)
     chain_dimensions = get_dimensions(morg, input_data)
     m = fcooloffneurons(morg)
+
+    # think about changing the representation to a Vector{Vector{Tuple}},
+    # with the first element representing the src neuron and the remaining, the
+    # destination neurons. This is the type in Graphs.jl. It should be faster.
+    # Could also write directly to a graph.
     connections = Vector{Dict{Tuple, Vector{Tuple}}}()
 
     for (ln, l) in enumerate(m)
