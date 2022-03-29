@@ -2,7 +2,7 @@
     neuron_color()
 
 Define color for each specific type of neuron, depending ot the type of layer it belongs to.
-"""                  
+"""
 neuron_color(::Any) = :gray
 neuron_color(::Flux.Dense) = :lightgreen
 neuron_color(::Flux.RNNCell) = :lightskyblue1
@@ -10,15 +10,15 @@ neuron_color(::Flux.LSTMCell) = :skyblue2
 neuron_color(::Flux.GRUCell) = :skyblue3
 neuron_color(r::Flux.Recur) = neuron_color(r.cell)
 neuron_color(::Flux.Conv) = :plum
-neuron_color(s::Symbol) = s == :input_layer ? :yellow : s == :output_layer ? :orange : 
-    throw(ArgumentError("Color not defined for the given symbol $s."))
+neuron_color(s::Symbol) = s == :input_layer ? :yellow : s == :output_layer ? :orange :
+                          throw(ArgumentError("Color not defined for the given symbol $s."))
 
 """
 projection(x, center, max_width, slope)
 
 Transform a Tuple x of a neuron into its y-coordinate for plotting.
 """
-projection(x, center, max_width, slope=0) = ((x[1] - center + max_width/2)/(max_width + 1))
+projection(x, center, max_width, slope=0) = ((x[1] - center + max_width / 2) / (max_width + 1))
 
 """
     chaingraph(m::Flux.Chain, input_data::Array)
@@ -45,9 +45,9 @@ function chaingraph(m::Flux.Chain, input_data::Array)
     connections = neuron_connections(m, input_data)
 
     neuron_to_node = Dict(
-        (nl, c) =>  nl == 0 ? nc : sum([prod(chain_dimensions[nli+1]) for nli=0:nl-1]) +  nc 
-            for nl in 0:length(m) for (nc,c) in enumerate(sort(neuron_indices(chain_dimensions[nl+1]))))
-    node_to_neuron = Dict{Int, Tuple{Int,Tuple}}(v => k for (k,v) in neuron_to_node)
+        (nl, c) => nl == 0 ? nc : sum([prod(chain_dimensions[nli+1]) for nli = 0:nl-1]) + nc
+        for nl in 0:length(m) for (nc, c) in enumerate(sort(neuron_indices(chain_dimensions[nl+1]))))
+    node_to_neuron = Dict{Int,Tuple{Int,Tuple}}(v => k for (k, v) in neuron_to_node)
 
     mg = MetaGraph(length(node_to_neuron))
     for i in 1:length(node_to_neuron)
@@ -56,9 +56,9 @@ function chaingraph(m::Flux.Chain, input_data::Array)
                 :layer_number => first(node_to_neuron[i]),
                 :layer_type => first(node_to_neuron[i]) == 0 ? "input layer" : string(m[first(node_to_neuron[i])]),
                 :index_in_layer => last(node_to_neuron[i]),
-                :layer_center => chain_dimensions[first(node_to_neuron[i])+1][1]/2,
-                :loc_x => convert(Float64,first(node_to_neuron[i])),
-                :loc_y => projection(last(node_to_neuron[i]), chain_dimensions[first(node_to_neuron[i])+1][1]/2, max_width),
+                :layer_center => chain_dimensions[first(node_to_neuron[i])+1][1] / 2,
+                :loc_x => convert(Float64, first(node_to_neuron[i])),
+                :loc_y => projection(last(node_to_neuron[i]), chain_dimensions[first(node_to_neuron[i])+1][1] / 2, max_width),
                 :neuron_color => neuron_color(first(node_to_neuron[i]) == 0 ? :input_layer : m[first(node_to_neuron[i])])
             )
         )
@@ -66,7 +66,7 @@ function chaingraph(m::Flux.Chain, input_data::Array)
     for nl in 0:length(m)-1
         for ni in neuron_indices(chain_dimensions[nl+1])
             for nj in connections[nl+1][ni]
-                add_edge!(mg, neuron_to_node[(nl,ni)], neuron_to_node[(nl+1,nj)])
+                add_edge!(mg, neuron_to_node[(nl, ni)], neuron_to_node[(nl + 1, nj)])
             end
         end
     end
@@ -91,7 +91,7 @@ In this case, the first layer must be a layer with fixed input dimension.
 
 See [`chaingraph(m::Flux.Chain, input_data::Array)`](@ref) for the properties of each node of the graph.
 """
-function chaingraph(m::Flux.Chain, ::Nothing = nothing)
+function chaingraph(m::Flux.Chain, ::Nothing=nothing)
     m.layers[1] isa Union{FIXED_INPUT_DIM_LAYERS...} || throw(ArgumentError("An input data or shape is required when the first layer accepts variable-dimension input"))
 
     input_data = rand(Float32, layerdimensions(m.layers[1])[2])

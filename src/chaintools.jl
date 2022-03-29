@@ -33,7 +33,7 @@ function get_dimensions(m::Flux.Chain, input_data::Array)
     return chain_dimensions
 end
 
-function get_dimensions(m::Flux.Chain, ::Nothing = nothing)
+function get_dimensions(m::Flux.Chain, ::Nothing=nothing)
     m.layers[1] isa Union{FIXED_INPUT_DIM_LAYERS...} || throw(ArgumentError("An input data or shape is required when the first layer accepts variable-dimension input"))
 
     input_data = rand(Float32, layerdimensions(m.layers[1])[2])
@@ -54,7 +54,7 @@ struct UnitVector{T} <: AbstractVector{T}
     length::Int
 end
 
-Base.getindex(x::UnitVector{T}, i) where T = x.idx == i ? one(T) : zero(T)
+Base.getindex(x::UnitVector{T}, i) where {T} = x.idx == i ? one(T) : zero(T)
 Base.length(x::UnitVector) = x.length
 Base.size(x::UnitVector) = (x.length,)
 
@@ -64,7 +64,7 @@ Base.size(x::UnitVector) = (x.length,)
 Return all possible indices for a given Tuple `ldim`.
 """
 function neuron_indices(ldim::Tuple)
-    return [Tuple(1+mod(div(i,prod(ldim[1:j-1])), ldim[j]) for j in 1:length(ldim)) for i in 0:prod(ldim)-1]
+    return [Tuple(1 + mod(div(i, prod(ldim[1:j-1])), ldim[j]) for j in 1:length(ldim)) for i in 0:prod(ldim)-1]
 end
 
 """
@@ -72,15 +72,15 @@ end
 
 Return all the connections from every neuron in each layer to the corresponding neurons in the next layer.
 """
-function neuron_connections(m::Flux.Chain, input_data::Union{Nothing,Array,Tuple} = nothing)
+function neuron_connections(m::Flux.Chain, input_data::Union{Nothing,Array,Tuple}=nothing)
     chain_dimensions = get_dimensions(m, input_data)
     mn = fcooloffneurons(m)
 
-    connections = Vector{Dict{Tuple, Vector{Tuple}}}()
+    connections = Vector{Dict{Tuple,Vector{Tuple}}}()
 
     for (ln, l) in enumerate(mn)
         ldim = chain_dimensions[ln]
-        layer_connections = Dict{Tuple, Vector{Tuple}}()
+        layer_connections = Dict{Tuple,Vector{Tuple}}()
         basis_element = fill(coldneuron, ldim)
         for idx in neuron_indices(ldim)
             connected = Vector{Tuple}()
@@ -99,5 +99,5 @@ end
 
 Get the maximum display width for the chain.
 """
-get_max_width(m::Flux.Chain, input_data::Union{Nothing,Array,Tuple} = nothing) =
-    mapreduce(x->x[1], max, get_dimensions(m, input_data))
+get_max_width(m::Flux.Chain, input_data::Union{Nothing,Array,Tuple}=nothing) =
+    mapreduce(x -> x[1], max, get_dimensions(m, input_data))

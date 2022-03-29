@@ -96,12 +96,12 @@ Base.big(::NeuronState) = NeuronState
 
 Base.promote_rule(::Type{NeuronState}, ::Type{<:Number}) = NeuronState
 
-Random.rand(rng::Random.AbstractRNG, ::Random.SamplerType{NeuronState}) = 
+Random.rand(rng::Random.AbstractRNG, ::Random.SamplerType{NeuronState}) =
     rand(rng, (coldneuron, hotneuron))
 
-for f in [:+, :-, :abs, :abs2, :inv, :tanh, 
-        :exp, :log, :log1p, :log2, :log10,
-        :conj, :transpose, :adjoint, :angle]
+for f in [:+, :-, :abs, :abs2, :inv, :tanh,
+    :exp, :log, :log1p, :log2, :log10,
+    :conj, :transpose, :adjoint, :angle]
     @eval Base.$f(x::NeuronState) = x
 end
 
@@ -111,7 +111,7 @@ end
 
 for f in [:+, :-, :*, :/, :^, :mod, :div, :rem, :widemul]
     # specialize to avoid conflict with Base
-    @eval Base.$f(x::NeuronState, ::Integer) = x 
+    @eval Base.$f(x::NeuronState, ::Integer) = x
     @eval Base.$f(::Integer, y::NeuronState) = y
     @eval Base.$f(x::NeuronState, ::Real) = x
     @eval Base.$f(::Real, y::NeuronState) = y

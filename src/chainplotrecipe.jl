@@ -1,29 +1,29 @@
-circle_verts = [(1.41*sin(2π*n/20), 1.41*cos(2π*n/20)) for n=-10:10]
-lrnn_verts = [(1.2*sin(2π*n/20), 1.2*(1+cos(2π*n/20))) for n=-10:10]
-lstm_verts = vcat([(1.0*sin(2π*n/20), 1.2 + 1.0*cos(2π*n/20)) for n=-10:10],
-                  [(1.4*sin(2π*n/20), 1.2 + 1.4*cos(2π*n/20)) for n=-10:10])
-lgru_verts = vcat([(0.5*sin(2π*n/20), 1.2 + 1.4*cos(2π*n/20)) for n=-10:10],
-                  [(1.0*sin(2π*n/20), 1.2 + 1.0*cos(2π*n/20)) for n=-10:10])
+circle_verts = [(1.41 * sin(2π * n / 20), 1.41 * cos(2π * n / 20)) for n = -10:10]
+lrnn_verts = [(1.2 * sin(2π * n / 20), 1.2 * (1 + cos(2π * n / 20))) for n = -10:10]
+lstm_verts = vcat([(1.0 * sin(2π * n / 20), 1.2 + 1.0 * cos(2π * n / 20)) for n = -10:10],
+    [(1.4 * sin(2π * n / 20), 1.2 + 1.4 * cos(2π * n / 20)) for n = -10:10])
+lgru_verts = vcat([(0.5 * sin(2π * n / 20), 1.2 + 1.4 * cos(2π * n / 20)) for n = -10:10],
+    [(1.0 * sin(2π * n / 20), 1.2 + 1.0 * cos(2π * n / 20)) for n = -10:10])
 
 """
     layerplotattributes()
 
 Retrive plot attributes for each specific type of layer.
-"""                  
-layerplotattributes(::Any) = (mrkrsize = 12, mrkrshape =  [:circle], mrkrcolor = [:gray])
-layerplotattributes(::Flux.Dense) = (mrkrsize = 12, mrkrshape =  [:circle], mrkrcolor = [:lightgreen])
-layerplotattributes(::Flux.RNNCell) = (mrkrsize = 12, mrkrshape =  [Main.Plots.Shape(lrnn_verts), :circle], mrkrcolor = [false, :lightskyblue1])
-layerplotattributes(::Flux.LSTMCell) = (mrkrsize = 12, mrkrshape =  [Main.Plots.Shape(lstm_verts), :circle], mrkrcolor = [false, :skyblue2])
-layerplotattributes(::Flux.GRUCell) = (mrkrsize = 12, mrkrshape =  [Main.Plots.Shape(lgru_verts), :circle], mrkrcolor = [false, :skyblue3])
+"""
+layerplotattributes(::Any) = (mrkrsize=12, mrkrshape=[:circle], mrkrcolor=[:gray])
+layerplotattributes(::Flux.Dense) = (mrkrsize=12, mrkrshape=[:circle], mrkrcolor=[:lightgreen])
+layerplotattributes(::Flux.RNNCell) = (mrkrsize=12, mrkrshape=[Main.Plots.Shape(lrnn_verts), :circle], mrkrcolor=[false, :lightskyblue1])
+layerplotattributes(::Flux.LSTMCell) = (mrkrsize=12, mrkrshape=[Main.Plots.Shape(lstm_verts), :circle], mrkrcolor=[false, :skyblue2])
+layerplotattributes(::Flux.GRUCell) = (mrkrsize=12, mrkrshape=[Main.Plots.Shape(lgru_verts), :circle], mrkrcolor=[false, :skyblue3])
 layerplotattributes(r::Flux.Recur) = layerplotattributes(r.cell)
-layerplotattributes(::Flux.Conv) = (mrkrsize = 10, mrkrshape = [:square], mrkrcolor = [:plum])
+layerplotattributes(::Flux.Conv) = (mrkrsize=10, mrkrshape=[:square], mrkrcolor=[:plum])
 function layerplotattributes(s::Symbol)
     if s == :input_layer
-        return (mrkrsize = 12, mrkrshape = [Main.Plots.Shape(circle_verts), :rtriangle], mrkrcolor = [false, :yellow]) 
+        return (mrkrsize=12, mrkrshape=[Main.Plots.Shape(circle_verts), :rtriangle], mrkrcolor=[false, :yellow])
     elseif s == :output_layer
-        return (mrkrsize = 12, mrkrshape = [:rtriangle], mrkrcolor = [:orange])
+        return (mrkrsize=12, mrkrshape=[:rtriangle], mrkrcolor=[:orange])
     else
-        return (mrkrsize = 0, mrkrshape = [:none], mrkrcolor = [:none])
+        return (mrkrsize=0, mrkrshape=[:none], mrkrcolor=[:none])
     end
 end
 
@@ -43,7 +43,7 @@ get_layer_type(m::Flux.Chain, i::Int) = i == 0 ? :input_layer : m[i]
 
 Plot a Flux.Chain neural network according to recipe.
 """
-@recipe function plot(m::Flux.Chain, input_data::Union{Nothing,Array} = nothing)
+@recipe function plot(m::Flux.Chain, input_data::Union{Nothing,Array}=nothing)
     m = f32(m)
     if input_data !== nothing
         input_data = convert.(Float32, input_data)
@@ -67,9 +67,9 @@ Plot a Flux.Chain neural network according to recipe.
             )
         )
     end
-    xlims --> length(m).*(-0.2,1.2)
+    xlims --> length(m) .* (-0.2, 1.2)
     yticks --> false
-    ylims --> (-0.1,1.2)
+    ylims --> (-0.1, 1.2)
     legend --> false
 
     # draw connections
@@ -77,47 +77,47 @@ Plot a Flux.Chain neural network according to recipe.
         seriescolor --> :gray
         dataseries = [
             ([get_prop(mg, e.src, :loc_x), get_prop(mg, e.dst, :loc_x)],
-             [get_prop(mg, e.src, :loc_y), get_prop(mg, e.dst, :loc_y)]) for e in edges(mg)]
-        return dataseries  
+                [get_prop(mg, e.src, :loc_y), get_prop(mg, e.dst, :loc_y)]) for e in edges(mg)]
+        return dataseries
     end
 
     # draw neurons
     @series begin
-        scale_sz(sz, max_width) = min(sz, 7.5*sz/max_width)
+        scale_sz(sz, max_width) = min(sz, 7.5 * sz / max_width)
         seriestype --> :scatter
         markersize --> vcat(
             [scale_sz(layerplotattributes(get_layer_type(m, get_prop(mg, v, :layer_number))).mrkrsize, max_width)
-                for v in vertices(mg)],
+             for v in vertices(mg)],
             [scale_sz(layerplotattributes(get_layer_type(m, get_prop(mg, v, :layer_number))).mrkrsize, max_width)
-                for v in vertices(mg)
-                    if length(layerplotattributes(get_layer_type(m, get_prop(mg, v, :layer_number))).mrkrshape)>1],
+             for v in vertices(mg)
+             if length(layerplotattributes(get_layer_type(m, get_prop(mg, v, :layer_number))).mrkrshape) > 1],
             [scale_sz(layerplotattributes(get_layer_type(m, get_prop(mg, v, :layer_number))).mrkrsize, max_width)
-                for v in vertices(mg) if get_prop(mg, v, :layer_number) == length(m)]
+             for v in vertices(mg) if get_prop(mg, v, :layer_number) == length(m)]
         )
         markershape --> vcat(
             [layerplotattributes(get_layer_type(m, get_prop(mg, v, :layer_number))).mrkrshape[1]
-                for v in vertices(mg)],
+             for v in vertices(mg)],
             [layerplotattributes(get_layer_type(m, get_prop(mg, v, :layer_number))).mrkrshape[end]
-                for v in vertices(mg)
-                    if length(layerplotattributes(get_layer_type(m, get_prop(mg, v, :layer_number))).mrkrshape)>1],
+             for v in vertices(mg)
+             if length(layerplotattributes(get_layer_type(m, get_prop(mg, v, :layer_number))).mrkrshape) > 1],
             [layerplotattributes(:output_layer).mrkrshape[end] for v in vertices(mg) if get_prop(mg, v, :layer_number) == length(m)]
         )
         markercolor --> vcat(
             [layerplotattributes(get_layer_type(m, get_prop(mg, v, :layer_number))).mrkrcolor[1]
-                for v in vertices(mg)],
+             for v in vertices(mg)],
             [layerplotattributes(get_layer_type(m, get_prop(mg, v, :layer_number))).mrkrcolor[end]
-                for v in vertices(mg)
-                    if length(layerplotattributes(get_layer_type(m, get_prop(mg, v, :layer_number))).mrkrshape)>1],
+             for v in vertices(mg)
+             if length(layerplotattributes(get_layer_type(m, get_prop(mg, v, :layer_number))).mrkrshape) > 1],
             [layerplotattributes(:output_layer).mrkrcolor[end]
-                for v in vertices(mg)
-                    if get_prop(mg, v, :layer_number) == length(m)]
+             for v in vertices(mg)
+             if get_prop(mg, v, :layer_number) == length(m)]
         )
         dataseries = vcat(
             [(get_prop(mg, v, :loc_x), get_prop(mg, v, :loc_y)) for v in vertices(mg)],
             [(get_prop(mg, v, :loc_x), get_prop(mg, v, :loc_y)) for v in vertices(mg)
-                if length(layerplotattributes(get_layer_type(m, get_prop(mg, v, :layer_number))).mrkrshape)>1],
+             if length(layerplotattributes(get_layer_type(m, get_prop(mg, v, :layer_number))).mrkrshape) > 1],
             [(get_prop(mg, v, :loc_x), get_prop(mg, v, :loc_y)) for v in vertices(mg)
-                if get_prop(mg, v, :layer_number) == length(m)]
+             if get_prop(mg, v, :layer_number) == length(m)]
         )
         return dataseries
     end
@@ -129,12 +129,12 @@ Plot a Flux.Chain neural network according to recipe.
             series_annotations --> Main.Plots.series_annotations(
                 [ln == 0 ? "input" : string(m[ln])], Main.Plots.font("Sans", 8, rotation=20)
             )
-            return [ln], [(nj[1]/2 + 1 + max_width/2)/(max_width+1)]
+            return [ln], [(nj[1] / 2 + 1 + max_width / 2) / (max_width + 1)]
         end
     end
 end
 
-@recipe function plot(d::Union{Flux.Dense, Flux.Recur, Flux.RNNCell, Flux.LSTMCell, Flux.GRUCell})
+@recipe function plot(d::Union{Flux.Dense,Flux.Recur,Flux.RNNCell,Flux.LSTMCell,Flux.GRUCell})
     Flux.Chain(d)
 end
 
@@ -147,6 +147,6 @@ Useful when the neural network starts with a variable-input layer, such as a con
 
 YET TO BE IMPLEMENTED.
 """
-@recipe function plot((m,s)::Tuple{Flux.Chain,Tuple{Int}})
+@recipe function plot((m, s)::Tuple{Flux.Chain,Tuple{Int}})
     nothing
 end
