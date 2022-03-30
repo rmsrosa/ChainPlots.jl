@@ -75,7 +75,7 @@ Return all the connections from every neuron in each layer to the corresponding 
 """
 function neuron_connections(m::Flux.Chain, input_data::Union{Nothing,Array,Tuple}=nothing)
     chain_dimensions = get_dimensions(m, input_data)
-    mn = fcooloffneurons(m)
+    mn = fneutralize(m)
 
     connections = Vector{Dict{Tuple,Vector{Tuple}}}()
 

@@ -5,7 +5,7 @@ import Base: isless, ==
 import Adapt: adapt, adapt_storage
 import Functors: fmap
 
-export NeuronState, coldneuron, hotneuron, fcooloffneurons
+export NeuronState, coldneuron, hotneuron, fneutralize
 
 """
     NeuronState <: Number
@@ -24,18 +24,19 @@ struct NeuronState <: Number
     state::Int8
 end
 
-const coldneuron = NeuronState(Int8(0))
-const hotneuron = NeuronState(Int8(1))
+const neutralneuron = NeuronState(Int8(0))
+const coldneuron = NeuronState(Int8(1))
+const hotneuron = NeuronState(Int8(2))
 
-Base.show(io::IO, x::NeuronState) = print(io, x == coldneuron ? "cold" : "hot ")
+Base.show(io::IO, x::NeuronState) = print(io, x == coldneuron ? "cold   " : x == hotneuron ? "hot    " : "neutral")
 Base.show(io::IO, ::MIME"text/plain", x::NeuronState) = print(io, "NeuronState:\n  ", x)
 
-NeuronState(::Number) = coldneuron
+NeuronState(::Number) = neutralneuron
 (::Type{NeuronState})(x::NeuronState) = x
-Base.convert(::Type{NeuronState}, y::Number) = NeuronState(y)
+Base.convert(::Type{NeuronState}, y::Number) = neutralneuron
 Base.convert(::Type{NeuronState}, y::NeuronState) = y
 
-Base.float(x::Type{NeuronState}) = x
+Base.float(x::NeuronState) = x
 
 ==(::NeuronState, ::Number) = false
 ==(::Number, ::NeuronState) = false
@@ -45,13 +46,13 @@ isless(x::NeuronState, ::Number) = x != hotneuron
 isless(::Number, x::NeuronState) = x == hotneuron
 isless(x::NeuronState, y::NeuronState) = isless(x.state, y.state)
 
-Base.one(::Type{NeuronState}) = hotneuron
-Base.zero(::Type{NeuronState}) = coldneuron
-Base.one(::NeuronState) = hotneuron
-Base.oneunit(::NeuronState) = hotneuron
-Base.zero(::NeuronState) = coldneuron
+Base.one(::Type{NeuronState}) = neutralneuron
+Base.zero(::Type{NeuronState}) = neutralneuron
+Base.one(::NeuronState) = neutralneuron
+Base.oneunit(::NeuronState) = neutralneuron
+Base.zero(::NeuronState) = neutralneuron
 
-Base.iszero(x::NeuronState) = x == coldneuron
+Base.iszero(x::NeuronState) = x == neutralneuron
 Base.isnan(::NeuronState) = false
 Base.isfinite(::NeuronState) = true
 Base.isinf(::NeuronState) = false
@@ -97,9 +98,9 @@ Base.big(::NeuronState) = NeuronState
 Base.promote_rule(::Type{NeuronState}, ::Type{<:Number}) = NeuronState
 
 Random.rand(rng::Random.AbstractRNG, ::Random.SamplerType{NeuronState}) =
-    rand(rng, (coldneuron, hotneuron))
+    rand(rng, (neutralneuron, coldneuron, hotneuron))
 
-for f in [:+, :-, :abs, :abs2, :inv, :tanh,
+for f in [:+, :-, :abs, :abs2, :inv, :tanh, :sqrt,
     :exp, :log, :log1p, :log2, :log10,
     :conj, :transpose, :adjoint, :angle]
     @eval Base.$f(x::NeuronState) = x
@@ -123,11 +124,11 @@ Base.:*(x::NeuronState, b::Bool) = b === true ? x : coldneuron
 Base.:*(b::Bool, x::NeuronState) = *(x, b)
 
 """
-    cooloffneuron(x)
+    neutralize(x)
 
 Convert a Number to coldneuron and leave other types untouched.
 """
-cooloffneuron(x) = x isa Number ? coldneuron : x
+neutralize(x) = x isa Number ? neutralneuron : x
 
 adapt_storage(NeuronState, xs::AbstractArray{<:Number}) = convert.(NeuronState, xs)
 
@@ -139,10 +140,10 @@ Convert the parameters of a model to `NeuronState`.
 fneuronstate(m) = fmap(x -> x isa AbstractArray{<:Number} ? adapt(NeuronState, x) : x, m)
 
 """
-    fcooloffneurons(m)
+    fneutralize(m)
 
 Convert the parameters of a model to `NeuronState` with value `coldneuron`.
 """
-fcooloffneurons(m) = fmap(x -> x isa AbstractArray{<:Number} ? fill(coldneuron, size(x)) : x, m)
+fneutralize(m) = fmap(x -> x isa AbstractArray{<:Number} ? fill(neutralneuron, size(x)) : x, m)
 
 end # module

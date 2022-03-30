@@ -39,11 +39,11 @@ end
 
 @testset "specific neurons" begin
     m = Chain(Dense(2, 3), RNN(3, 2))
-    fm = fcooloffneurons(m)
+    fm = fneutralize(m)
     @test fm([coldneuron, hotneuron]) == [hotneuron, hotneuron]
 
     m = Chain(x -> x[2:end] - x[1:end-1])
-    fm = fcooloffneurons(m)
+    fm = fneutralize(m)
     inp = [coldneuron, hotneuron, coldneuron, coldneuron, coldneuron]
     @test fm(inp) == [hotneuron, hotneuron, coldneuron, coldneuron]
 

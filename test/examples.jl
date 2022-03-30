@@ -5,10 +5,18 @@ using Flux
 using Plots
 using Random
 
+using Colors
+using Cairo
+using Compose
+using Graphs
+using MetaGraphs
+using GraphPlot
+
 include("../src/ChainPlot.jl")
 
-include("../src/NeuronNumbers.jl")
-using .NeuronNumbers
+using .ChainPlot
+
+import .ChainPlot.NeuronNumbers: coldneuron, hotneuron, fneutralize
 
 gr()
 theme(:default)
@@ -16,7 +24,7 @@ theme(:default)
 themes = [
     :default
     :dark
-    :ggplot2 # somehow throwing error
+    :ggplot2
     :juno
     :lime
     :orange
@@ -28,13 +36,6 @@ themes = [
     :gruvbox_dark
     :gruvbox_light
 ]
-
-using Colors
-using Cairo
-using Compose
-using Graphs
-using MetaGraphs
-using GraphPlot
 
 nnr = Chain(Dense(2, 5, σ), RNN(5, 4, relu), LSTM(4, 4), GRU(4, 4), Dense(4, 3))
 mg_nnr = ChainPlot.chaingraph(nnr)
@@ -48,12 +49,12 @@ nodefillc = [parse(Colorant, get_prop(mg_nnr, v, :neuron_color)) for v in vertic
 draw(PNG("img/mg_nnr.png", 600, 400), gplot(mg_nnr, locs_x, locs_y, nodefillc=nodefillc))
 
 m = Chain(Dense(2, 3), RNN(3, 2))
-mopen = fcooloffneurons(m) # fmap(x -> cooloffneuron.(x), m)
-mopen([coldneuron, hotneuron])
+mn = fneutralize(m)
+mn([coldneuron, hotneuron])
 
 m = Chain(x -> x[2:end] - x[1:end-1])
-mopen = fcooloffneurons(m) # fmap(x -> cooloffneuron.(x), m)
-mopen([coldneuron, hotneuron, coldneuron, coldneuron, coldneuron])
+mn = fneutralize(m)
+mn([coldneuron, hotneuron, coldneuron, coldneuron, coldneuron])
 
 dl = Dense(2, 3)
 display(plot(dl, title="$dl", titlefontsize=12))
@@ -105,20 +106,20 @@ savefig("img/nnrlwide.png")
 
 reshape6x1x1(a) = reshape(a, 6, 1, 1)
 slice(a) = a[:, 1, 1]
-nnrs = Chain(x³, Dense(3, 6), reshape6x1x1, Conv((2,), 1 => 1), slice, Dense(5, 4))
+nnrs = Chain(x³, Dense(3, 6), reshape6x1x1, Conv((2,), 1 => 1), vec, Dense(5, 4))
 display(plot(nnrs, Float32.(rand(3)), title="$nnrs", titlefontsize=9))
 savefig("img/nnrs.png")
 @info "img/nnrs.png"
 
 reshape3x3x1x1(a) = reshape(a, 3, 3, 1, 1)
-nnrs2d = Chain(x³, Dense(4, 9), reshape3x3x1x1, Conv((2, 2), 1 => 1), slice)
+nnrs2d = Chain(x³, Dense(4, 9), reshape3x3x1x1, Conv((2, 2), 1 => 1), vec)
 display(plot(nnrs2d, Float32.(rand(4)), title="$nnrs2d", titlefontsize=9))
 savefig("img/nnrs2d.png")
 @info "img/nnrs2d.png"
 
-#= nncg = Chain(Conv((3,3), 1=>8, leakyrelu, pad = 1),GroupNorm(8,4))
+nncg = Chain(Conv((3,3), 1=>8, leakyrelu, pad = 1),GroupNorm(8,4))
 display(plot(nncg, Float32.(rand(6,6,1,1)), title="$nncg", titlefontsize=10))
-savefig("img/nncg.png") =#
+savefig("img/nncg.png")
 
 #= hdf5()
 plot(nnr, title="$nnr with HDF5", titlefontsize=7)
