@@ -135,6 +135,12 @@ end
     reshape6x1x1(a) = reshape(a, 6, 1, 1)
     reshape3x3x1x1(a) = reshape(a, 3, 3, 1, 1)
 
+    m = Chain(Conv((2,), 1 => 1))
+    input_data = rand(Float32, 5, 1, 1)
+    @test_skip mg = ChainPlot.chaingraph(m, input_data)
+    @test_skip nv(mg) == 5 + 4 == 9
+    @test_skip ne(mg) == 2 * 4 == 8
+
     m = Chain(x³, Dense(3, 6), reshape6x1x1, Conv((2,), 1 => 1), vec, Dense(5, 4))
     input_data = rand(Float32, 3)
     @test_skip mg = ChainPlot.chaingraph(m, input_data)
