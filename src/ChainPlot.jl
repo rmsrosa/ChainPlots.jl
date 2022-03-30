@@ -16,8 +16,8 @@ include("NeuronNumbers.jl")
 
 using .NeuronNumbers
 
-include("chaintools.jl")
+include("utils.jl")
 include("chaingraph.jl")
-include("chainplotrecipe.jl")
+include("plotrecipe.jl")
 
 end
