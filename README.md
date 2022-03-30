@@ -280,26 +280,17 @@ See [Plots backends](https://docs.juliaplots.org/latest/backends/)
 
 * Get Error: plotly() and plotlyjs() do not support custom shapes
 
-#### PGFPlotsX backend
-
-* Haven't tried it yet
-
 #### UnicodePlots backend
 
 * custom shapes and :rtriangle are unsupported. Choose from: [:none, :auto, :circle]
 
 #### HDF5 backend
 
-* It is working fine, despite saying in Plots's page that it is currently missing support for SeriesAnnotations. Maybe it was fixed since SeriesAnnotations is used to display the type/activation function of each layer.
+* It is working partially. Neurons are not showing up. On the other hand, despite saying in Plots's page that it is currently missing support for SeriesAnnotations, this seems to be working, since SeriesAnnotations is used to display the type/activation function of each layer.
 
-#### InspectDR backend
+#### Backends not tried yet
 
-* Haven't tried it yet
-
-### Plotly and PlotlyJS
-
-* Haven't tried it yet
-
-### Gadfly
-
-* Haven't tried it yet
+* InspectDR
+* Plotly
+* PlotlyJS
+* Gadfly
