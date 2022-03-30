@@ -97,3 +97,10 @@ function chaingraph(m::Flux.Chain, ::Nothing=nothing)
     input_data = rand(Float32, layerdimensions(m.layers[1])[2])
     return chaingraph(m, input_data)
 end
+
+"""
+    chaingraph(l::Union{Flux.Dense,Flux.Recur,Flux.RNNCell,Flux.LSTMCell,Flux.GRUCell})
+
+Return a MetaGraph representing the graph structure of a neural network composed of the single layer `l`.
+"""
+chaingraph(l::Union{Flux.Dense,Flux.Recur,Flux.RNNCell,Flux.LSTMCell,Flux.GRUCell}) = chaingraph(Flux.Chain(l))
