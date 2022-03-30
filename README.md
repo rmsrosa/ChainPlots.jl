@@ -270,7 +270,7 @@ See [Plots backends](https://docs.juliaplots.org/latest/backends/)
 
 #### GR backend
 
-* This is okay. Only problem is with theme ggplot2
+* This works fine.
 
 #### PyPlot backend
 
