@@ -8,7 +8,7 @@ using ChainPlot
 include("../src/NeuronNumbers.jl")
 using .NeuronNumbers
 
-#= 
+
 @testset "nnr" begin
     nnr = Chain(Dense(2, 5, σ), RNN(5, 4, relu), LSTM(4, 4), GRU(4, 4), Dense(4, 3))
     mg = ChainPlot.chaingraph(nnr)
@@ -110,7 +110,7 @@ end
     mg = ChainPlot.chaingraph(nna)
     @test nv(mg) == 2 + 5 + 4 + 6 + 6 + 4 + 4 + 3 == 34
     @test ne(mg) == 2 * 5 + 2 * 4 + 4 * 6 + 1 * 6  + 6 * 4 + 4 * 4 + 4 * 3 == 100
-end =#
+end
 
 @testset "variable input" begin
     x³(x) = x .^ 3
