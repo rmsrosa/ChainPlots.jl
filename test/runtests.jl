@@ -1,156 +1,151 @@
-# Usually, running tests work with either
-# 1) inside VSCode with ⌘⇧T (command+shift+T) (but plots will show up externally)
-# 2) in shell=>Julia with `]test` (which work the same as above)
-# 3) by launching the VSCode REPL and then `]test` (but now no plots are displayed)
-#
-# To overcome the plotting issue and have the plots displayed in the plots panel:
-# - I added all the dependencies for the Package in the Package.toml of the test package
-# - Replaced `using ChainPlot` with `include("../src/ChainPlot.jl")`
-# - Open up `runtests.jl` in VSCode
-# - "Julia: Change to This Directory"
-# - "Julia: Activate This Environment" (dismiss popup warning if it appears)
-# - "Julia: Execute File in REPL"
-# voilá!
-
-# using ChainPlot
 using Flux
-using Plots
+using Graphs
+using MetaGraphs
 using Random
+using Test
 
-include("../src/ChainPlot.jl")
-
+using ChainPlot
 include("../src/NeuronNumbers.jl")
 using .NeuronNumbers
 
-gr()
-theme(:default)
+#= 
+@testset "nnr" begin
+    nnr = Chain(Dense(2, 5, σ), RNN(5, 4, relu), LSTM(4, 4), GRU(4, 4), Dense(4, 3))
+    mg = ChainPlot.chaingraph(nnr)
+    @test nv(mg) == 2 + 5 + 4 + 4 + 4 + 3 == 22
+    @test ne(mg) == 2 * 5 + 5 * 4 + 4 * 4 + 4 * 4 + 4 * 3 == 74
+    @test all(==("input layer"), get_prop.(Ref(mg), 1:2, :layer_type))
+    @test all(==("Dense(2, 5, σ)"), get_prop.(Ref(mg), 3:7, :layer_type))
+    @test all(==("Recur(RNNCell(5, 4, relu))"), get_prop.(Ref(mg), 8:11, :layer_type))
+    @test all(==("Recur(LSTMCell(4, 4))"), get_prop.(Ref(mg), 12:15, :layer_type))
+    @test all(==("Recur(GRUCell(4, 4))"), get_prop.(Ref(mg), 16:19, :layer_type))
+    @test all(==("Dense(4, 3)"), get_prop.(Ref(mg), 20:22, :layer_type))
+    @test get_prop(mg, 1, :index_in_layer) == (1,)
+    @test get_prop(mg, 2, :index_in_layer) == (2,)
+    @test get_prop(mg, 3, :index_in_layer) == (1,)
+    @test get_prop(mg, 7, :index_in_layer) == (5,)
+    @test get_prop(mg, 3, :neuron_color) == ChainPlot.neuron_color(Dense(2, 5, σ))
+    @test get_prop(mg, 8, :neuron_color) == ChainPlot.neuron_color(RNN(5, 4, relu))
+    @test neighbors(mg, 1) == neighbors(mg, 2) == (3:7)
+    @test all(==([(1:2); (8:11)]), neighbors.(Ref(mg), 3:7))
+    @test all(==([(3:7); (12:15)]), neighbors.(Ref(mg), 8:11))
+    @test all(==([(8:11); (16:19)]), neighbors.(Ref(mg), 12:15))
+    @test all(==([(12:15); (20:22)]), neighbors.(Ref(mg), 16:19))
+    @test all(==((16:19)), neighbors.(Ref(mg), 20:22))
+    @test length(get_prop(mg, v, :loc_x) for v in vertices(mg)) == 22
+    @test length(get_prop(mg, v, :loc_y) for v in vertices(mg)) == 22
+    @test unique(get_prop(mg, v, :loc_x) for v in vertices(mg)) == (0.0:length(nnr))
+end
 
-themes = [
-    :default
-    :dark
-    :ggplot2 # somehow throwing error
-    :juno
-    :lime
-    :orange
-    :sand
-    :solarized
-    :solarized_light
-    :wong
-    :wong2
-    :gruvbox_dark
-    :gruvbox_light
-]
+@testset "specific neurons" begin
+    m = Chain(Dense(2, 3), RNN(3, 2))
+    fm = fcooloffneurons(m)
+    @test fm([coldneuron, hotneuron]) == [hotneuron, hotneuron]
 
-using Colors
-using Cairo
-using Compose
-using Graphs
-using MetaGraphs
-using GraphPlot
+    m = Chain(x -> x[2:end] - x[1:end-1])
+    fm = fcooloffneurons(m)
+    inp = [coldneuron, hotneuron, coldneuron, coldneuron, coldneuron]
+    @test fm(inp) == [hotneuron, hotneuron, coldneuron, coldneuron]
 
-nnr = Chain(Dense(2, 5, σ), RNN(5, 4, relu), LSTM(4, 4), GRU(4, 4), Dense(4, 3))
-mg_nnr = ChainPlot.chaingraph(nnr)
-@show get_prop(mg_nnr, 3, :layer_type)
-@show get_prop(mg_nnr, 9, :index_in_layer)
-@show get_prop(mg_nnr, 12, :neuron_color)
-@show collect(edges(mg_nnr))
-locs_x = [get_prop(mg_nnr, v, :loc_x) for v in vertices(mg_nnr)]
-locs_y = [get_prop(mg_nnr, v, :loc_y) for v in vertices(mg_nnr)]
-nodefillc = [parse(Colorant, get_prop(mg_nnr, v, :neuron_color)) for v in vertices(mg_nnr)]
-draw(PNG("img/mg_nnr.png", 600, 400), gplot(mg_nnr, locs_x, locs_y, nodefillc=nodefillc))
+    m = Chain(Conv((2,), 1 => 1))
+    inp = [hotneuron; coldneuron; coldneuron; coldneuron; coldneuron;;;]
+    @test m(inp) == [hotneuron; coldneuron; coldneuron; coldneuron;;;]
+    inp = [coldneuron; hotneuron; coldneuron; coldneuron; coldneuron;;;]
+    @test m(inp) == [hotneuron; hotneuron; coldneuron; coldneuron;;;]
+    inp = [coldneuron; coldneuron; hotneuron; coldneuron; coldneuron;;;]
+    @test m(inp) == [coldneuron; hotneuron; hotneuron; coldneuron;;;]
+    inp = [coldneuron; coldneuron; coldneuron; hotneuron; coldneuron;;;]
+    @test m(inp) == [coldneuron; coldneuron; hotneuron; hotneuron;;;]
+    inp = [coldneuron; coldneuron; coldneuron; coldneuron; hotneuron;;;]
+    @test m(inp) == [coldneuron; coldneuron; coldneuron; hotneuron;;;]
+end
 
-m = Chain(Dense(2, 3), RNN(3, 2))
-mopen = fcooloffneurons(m) # fmap(x -> cooloffneuron.(x), m)
-mopen([coldneuron, hotneuron])
-
-m = Chain(x -> x[2:end] - x[1:end-1])
-mopen = fcooloffneurons(m) # fmap(x -> cooloffneuron.(x), m)
-mopen([coldneuron, hotneuron, coldneuron, coldneuron, coldneuron])
-
-dl = Dense(2, 3)
-display(plot(dl, title="$dl", titlefontsize=12))
-savefig("img/dl.png")
-@info "img/dl.png"
-
-rl = RNN(3, 5)
-display(plot(rl, title="$rl", titlefontsize=12))
-savefig("img/rl.png")
-@info "img/rl.png"
-
-llstm = LSTM(4, 7)
-display(plot(llstm, title="$llstm", titlefontsize=12))
-savefig("img/llstm.png")
-@info "img/llstm.png"
-
-lgru = GRU(5, 7)
-display(plot(lgru, title="$lgru", titlefontsize=12))
-savefig("img/lgru.png")
-@info "img/lgru.png"
-
-nnd = Chain(Dense(2, 5), Dense(5, 7, σ), Dense(7, 2, relu), Dense(2, 3))
-display(plot(nnd, title="$nnd", titlefontsize=10, xaxis=nothing))
-savefig("img/nnd.png")
-@info "img/nnd.png"
-
-nnr = Chain(Dense(2, 5, σ), RNN(5, 4, relu), LSTM(4, 4), GRU(4, 4), Dense(4, 3))
-display(plot(nnr, title="$nnr", titlefontsize=7))
-savefig("img/nnr.png")
-@info "img/nnr.png"
-
-dx(x) = x[2:end] - x[1:end-1]
-x³(x) = x .^ 3
-nna = Chain(Dense(2, 5, σ), dx, RNN(4, 6, relu), x³, LSTM(6, 4), GRU(4, 4), Dense(4, 3))
-display(plot(nna, title="$nna", titlefontsize=7))
-savefig("img/nna.png")
-@info "img/nna.png"
-
-nnx = Chain(x³, dx, LSTM(5, 10), Dense(10, 5))
-input_data = rand(6)
-display(plot(nnx, input_data, title="$nnx", titlefontsize=9))
-savefig("img/nnx.png")
-@info "img/nnx.png"
-
-nnrlwide = Chain(Dense(5, 8), RNN(8, 20), LSTM(20, 10), Dense(10, 7))
-display(plot(nnrlwide, title="$nnrlwide", titlefontsize=9))
-savefig("img/nnrlwide.png")
-@info "img/nnrlwide.png"
-
-reshape6x1x1(a) = reshape(a, 6, 1, 1)
-slice(a) = a[:, 1, 1]
-nnrs = Chain(x³, Dense(3, 6), reshape6x1x1, Conv((2,), 1 => 1), slice, Dense(5, 4))
-display(plot(nnrs, Float32.(rand(3)), title="$nnrs", titlefontsize=9))
-savefig("img/nnrs.png")
-@info "img/nnrs.png"
-
-reshape3x3x1x1(a) = reshape(a, 3, 3, 1, 1)
-nnrs2d = Chain(x³, Dense(4, 9), reshape3x3x1x1, Conv((2, 2), 1 => 1), slice)
-display(plot(nnrs2d, Float32.(rand(4)), title="$nnrs2d", titlefontsize=9))
-savefig("img/nnrs2d.png")
-@info "img/nnrs2d.png"
-
-#= nncg = Chain(Conv((3,3), 1=>8, leakyrelu, pad = 1),GroupNorm(8,4))
-display(plot(nncg, Float32.(rand(6,6,1,1)), title="$nncg", titlefontsize=10))
-savefig("img/nncg.png") =#
-
-#= hdf5()
-plot(nnr, title="$nnr with HDF5", titlefontsize=7)
-Plots.hdf5plot_write("img/nnrhdf5.hdf5")
-gr()
-plthdf5_read = Plots.hdf5plot_read("img/nnrhdf5.hdf5")
-display(plthdf5_read) =#
-
-gr()
-for t in themes
-    theme(t)
-    try
-        display(plot(nnr, title="With theme $t", titlefontsize=10))
-        savefig("img/nnr_$t.png")
-        @info "img/nnr_$t.png"
-    catch err
-        println("Error in chain plot with theme $t: $err")
+@testset "layers" begin
+    for (l, ni, no) in (
+        (:Dense, 2, 3),
+        (:RNN, 3, 5),
+        (:LSTM, 7, 4),
+        (:GRU, 8, 5)
+    )
+        @testset "$l" begin
+            @eval m = Flux.$l($ni, $no)
+            mg = ChainPlot.chaingraph(m)
+            @test nv(mg) == ni + no
+            @test ne(mg) == ni * no
+            @test get_prop(mg, 1, :layer_type) == get_prop(mg, ni, :layer_type) == "input layer"
+            @test occursin("$l", get_prop(mg, ni + 1, :layer_type))
+            @test occursin("$l", get_prop(mg, ni + no, :layer_type))
+            @test get_prop(mg, 1, :layer_number) == 0
+            @test get_prop(mg, ni + 1, :layer_number) == 1
+            @test get_prop(mg, 1, :layer_center) == ni / 2
+            @test get_prop(mg, ni + 1, :layer_center) == no / 2
+            @test get_prop(mg, 1, :index_in_layer) == get_prop(mg, ni + 1, :index_in_layer) == (1,)
+            @test get_prop(mg, ni, :index_in_layer) == (ni,)
+            @test get_prop(mg, ni + no, :index_in_layer) == (no,)
+            @test neighbors(mg, 1) == neighbors(mg, ni) == (ni+1:ni+no)
+            @test neighbors(mg, ni + 1) == neighbors(mg, ni + no) == (1:ni)
+            @test length(get_prop.(Ref(mg), vertices(mg), :loc_x)) == length(get_prop.(Ref(mg), vertices(mg), :loc_y)) == ni + no
+            @test unique(get_prop(mg, v, :loc_x) for v in vertices(mg)) == (0.0:1.0)
+        end
     end
 end
 
-theme(:default)
+@testset "chains" begin
+    for (m, num_vert, num_edges) in (
+        (Chain(Dense(2, 5), Dense(5, 7, σ), Dense(7, 2, relu), Dense(2, 3)), 19, 65),
+        (Chain(Dense(2, 5, σ), RNN(5, 4, relu), LSTM(4, 4), GRU(4, 4), Dense(4, 3)), 22, 74),
+        (Chain(Dense(5, 8), RNN(8, 20), LSTM(20, 10), Dense(10, 7)), 50, 470)
 
-nothing
+    )
+        mg = ChainPlot.chaingraph(m)
+        @test nv(mg) == num_vert
+        @test ne(mg) == num_edges
+    end
+end
+
+@testset "functional" begin
+    x³(x) = x .^ 3
+    dx(x) = x[2:end] - x[1:end-1]
+    nna = Chain(Dense(2, 5, σ), dx, RNN(4, 6, relu), x³, LSTM(6, 4), GRU(4, 4), Dense(4, 3))
+    mg = ChainPlot.chaingraph(nna)
+    @test nv(mg) == 2 + 5 + 4 + 6 + 6 + 4 + 4 + 3 == 34
+    @test ne(mg) == 2 * 5 + 2 * 4 + 4 * 6 + 1 * 6  + 6 * 4 + 4 * 4 + 4 * 3 == 100
+end =#
+
+@testset "variable input" begin
+    x³(x) = x .^ 3
+    dx(x) = x[2:end] - x[1:end-1]
+    
+    m = Chain(x³, dx, LSTM(5, 4), Dense(4, 5))
+    input_data = rand(Float32, 6)
+    mg = ChainPlot.chaingraph(m, input_data)
+    @test nv(mg) == 6 + 6 + 5 + 4 + 5 == 26
+    @test ne(mg) == 6 + 2 * 5 + 5 * 4 + 4 * 5 == 56
+
+    m = Chain(x³, dx, LSTM(10, 4), Dense(4, 2))
+    input_data = rand(Float32, 11)
+    mg = ChainPlot.chaingraph(m, input_data)
+    @test nv(mg) == 38
+    @test ne(mg) == 79
+end
+
+# Convolution tests work in REPL but not in `]test`...
+@testset "Convolutions" begin
+    x³(x) = x .^ 3
+    reshape6x1x1(a) = reshape(a, 6, 1, 1)
+    reshape3x3x1x1(a) = reshape(a, 3, 3, 1, 1)
+
+    m = Chain(x³, Dense(3, 6), reshape6x1x1, Conv((2,), 1 => 1), vec, Dense(5, 4))
+    input_data = rand(Float32, 3)
+    @test_skip mg = ChainPlot.chaingraph(m, input_data)
+
+    m = Chain(x³, Dense(4, 9), reshape3x3x1x1, Conv((2, 2), 1 => 1), vec)
+    input_data = rand(Float32, 4)
+    @test_skip mg = ChainPlot.chaingraph(m, input_data)
+    @test_skip nv(mg) == 4 + 4 + 9 + 9 + 4 + 4 == 34
+    @test_skip ne(mg) == 69
+
+    m = Chain(Conv((3, 3), 1 => 8, leakyrelu, pad=1), GroupNorm(8, 4))
+    input_data = rand(6,5,1,1)
+    @test_skip mg = ChainPlot.chaingraph(m, input_data)
+end
