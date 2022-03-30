@@ -27,9 +27,10 @@ otherwise the given data or shape is used to infer the dimensions of each layer.
 """
 function get_dimensions(m::Flux.Chain, input_data::Array)
 
-    # input_data = convert.(Float32, input_data)
+    input_data = convert.(Float32, input_data)
+    m32 = f32(m)
 
-    chain_dimensions = vcat(size(input_data), [size(m[1:nl](input_data)) for nl in 1:length(m.layers)])
+    chain_dimensions = vcat(size(input_data), [size(m32[1:nl](input_data)) for nl in 1:length(m32.layers)])
     return chain_dimensions
 end
 
