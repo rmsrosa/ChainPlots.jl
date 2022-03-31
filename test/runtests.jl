@@ -74,7 +74,6 @@ end
         (Chain(Dense(2, 5), Dense(5, 7, σ), Dense(7, 2, relu), Dense(2, 3)), 19, 65),
         (Chain(Dense(2, 5, σ), RNN(5, 4, relu), LSTM(4, 4), GRU(4, 4), Dense(4, 3)), 22, 74),
         (Chain(Dense(5, 8), RNN(8, 20), LSTM(20, 10), Dense(10, 7)), 50, 470)
-
     )
         mg = ChainPlot.chaingraph(m)
         @test nv(mg) == num_vert
@@ -144,21 +143,25 @@ end
 
     m = Chain(Conv((2,), 1 => 1))
     input_data = rand(Float32, 5, 1, 1)
-    @test_skip mg = ChainPlot.chaingraph(m, input_data)
-    @test_skip nv(mg) == 5 + 4 == 9
-    @test_skip ne(mg) == 2 * 4 == 8
+    mg = ChainPlot.chaingraph(m, input_data)
+    nv(mg) == 5 + 4 == 9
+    ne(mg) == 2 * 4 == 8
 
     m = Chain(x³, Dense(3, 6), reshape6x1x1, Conv((2,), 1 => 1), vec, Dense(5, 4))
     input_data = rand(Float32, 3)
-    @test_skip mg = ChainPlot.chaingraph(m, input_data)
+    mg = ChainPlot.chaingraph(m, input_data)
+    @test nv(mg) == 3 + 3 + 6 + 6 + 5 + 5 + 4 == 32
+    @test ne(mg) == 3 + 3 * 6 + 6 + 2 * 5 + 5 + 5 * 4 == 62
 
     m = Chain(x³, Dense(4, 9), reshape3x3x1x1, Conv((2, 2), 1 => 1), vec)
     input_data = rand(Float32, 4)
-    @test_skip mg = ChainPlot.chaingraph(m, input_data)
-    @test_skip nv(mg) == 4 + 4 + 9 + 9 + 4 + 4 == 34
-    @test_skip ne(mg) == 69
+    mg = ChainPlot.chaingraph(m, input_data)
+    @test nv(mg) == 4 + 4 + 9 + 9 + 4 + 4 == 34
+    @test ne(mg) == 4 + 4 * 9 + 9 + 4 * 4 + 4 == 69
 
     m = Chain(Conv((3, 3), 1 => 8, leakyrelu, pad=1), GroupNorm(8, 4))
     input_data = rand(6,5,1,1)
-    @test_skip mg = ChainPlot.chaingraph(m, input_data)
+    mg = ChainPlot.chaingraph(m, input_data)
+    @test nv(mg) == 6 * 5 + 6 * 5 * 8 * 2 == 510
+    @test ne(mg) == (4 * 3 * 9 + ( 2 * 4 + 2 * 3 ) * 6 + 4 * 4 ) * 8 + ( 6 * 5 )^2 * 2  * 8 == 16064
 end
