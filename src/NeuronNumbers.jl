@@ -13,20 +13,22 @@ export NeuronState, coldneuron, hotneuron, fneutralize
 NeuronState encodes the "state" of a neuron as an Int8.
 
 The possible states are:
-    * `state = 0` for a "cold", or "off", state, meaning it can be triggered by a signal but it has not yet been triggered
-    * `state = 1` for a "hot", or "on", state, meaning it has been triggered by a signal.
+    * `state = Int8(-1)` for a "cold", or "off", state, meaning it can be triggered by a signal but it has not yet been triggered
+    * `state = Int8(0)` for a "neutral", state, meaning it is a neutral element in any diadic operation.
+    * `state = Int8(1)` for a "hot", or "on", state, meaning it has been triggered by a signal.
 
 The aliases are
-    * `coldneuron = NeuronState(Int8(0))`
+    * `coldneuron = NeuronState(Int8(-1))`
+    * `neutralneuron` = NeuronState(Int8(0))
     * `hotneuron = NeuronState(Int8(1))`
 """
 struct NeuronState <: Number
     state::Int8
 end
 
-const neutralneuron = NeuronState(Int8(0))
-const coldneuron = NeuronState(Int8(1))
-const hotneuron = NeuronState(Int8(2))
+const neutralneuron = NeuronState(Int8(-1))
+const coldneuron = NeuronState(Int8(0))
+const hotneuron = NeuronState(Int8(1))
 
 Base.show(io::IO, x::NeuronState) = print(io, x == coldneuron ? "cold   " : x == hotneuron ? "hot    " : "neutral")
 Base.show(io::IO, ::MIME"text/plain", x::NeuronState) = print(io, "NeuronState:\n  ", x)
@@ -42,8 +44,8 @@ Base.float(x::NeuronState) = x
 ==(::Number, ::NeuronState) = false
 ==(x::NeuronState, y::NeuronState) = x.state == y.state
 
-isless(x::NeuronState, ::Number) = x != hotneuron
-isless(::Number, x::NeuronState) = x == hotneuron
+isless(x::NeuronState, ::Number) = false
+isless(::Number, x::NeuronState) = true
 isless(x::NeuronState, y::NeuronState) = isless(x.state, y.state)
 
 Base.one(::Type{NeuronState}) = neutralneuron
@@ -122,6 +124,8 @@ end
 
 Base.:*(x::NeuronState, b::Bool) = b === true ? x : coldneuron
 Base.:*(b::Bool, x::NeuronState) = *(x, b)
+
+Base.clamp(x::NeuronState, y...) = x
 
 """
     neutralize(x)

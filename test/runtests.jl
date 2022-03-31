@@ -6,37 +6,9 @@ using Test
 
 using ChainPlot
 
-import ChainPlot.NeuronNumbers: coldneuron, hotneuron, fneutralize
+import ChainPlot.NeuronNumbers: neutralneuron, coldneuron, hotneuron, fneutralize
 
-@testset "nnr" begin
-    nnr = Chain(Dense(2, 5, σ), RNN(5, 4, relu), LSTM(4, 4), GRU(4, 4), Dense(4, 3))
-    mg = ChainPlot.chaingraph(nnr)
-    @test nv(mg) == 2 + 5 + 4 + 4 + 4 + 3 == 22
-    @test ne(mg) == 2 * 5 + 5 * 4 + 4 * 4 + 4 * 4 + 4 * 3 == 74
-    @test all(==("input layer"), get_prop.(Ref(mg), 1:2, :layer_type))
-    @test all(==("Dense(2, 5, σ)"), get_prop.(Ref(mg), 3:7, :layer_type))
-    @test all(==("Recur(RNNCell(5, 4, relu))"), get_prop.(Ref(mg), 8:11, :layer_type))
-    @test all(==("Recur(LSTMCell(4, 4))"), get_prop.(Ref(mg), 12:15, :layer_type))
-    @test all(==("Recur(GRUCell(4, 4))"), get_prop.(Ref(mg), 16:19, :layer_type))
-    @test all(==("Dense(4, 3)"), get_prop.(Ref(mg), 20:22, :layer_type))
-    @test get_prop(mg, 1, :index_in_layer) == (1,)
-    @test get_prop(mg, 2, :index_in_layer) == (2,)
-    @test get_prop(mg, 3, :index_in_layer) == (1,)
-    @test get_prop(mg, 7, :index_in_layer) == (5,)
-    @test get_prop(mg, 3, :neuron_color) == ChainPlot.neuron_color(Dense(2, 5, σ))
-    @test get_prop(mg, 8, :neuron_color) == ChainPlot.neuron_color(RNN(5, 4, relu))
-    @test neighbors(mg, 1) == neighbors(mg, 2) == (3:7)
-    @test all(==([(1:2); (8:11)]), neighbors.(Ref(mg), 3:7))
-    @test all(==([(3:7); (12:15)]), neighbors.(Ref(mg), 8:11))
-    @test all(==([(8:11); (16:19)]), neighbors.(Ref(mg), 12:15))
-    @test all(==([(12:15); (20:22)]), neighbors.(Ref(mg), 16:19))
-    @test all(==((16:19)), neighbors.(Ref(mg), 20:22))
-    @test length(get_prop(mg, v, :loc_x) for v in vertices(mg)) == 22
-    @test length(get_prop(mg, v, :loc_y) for v in vertices(mg)) == 22
-    @test unique(get_prop(mg, v, :loc_x) for v in vertices(mg)) == (0.0:length(nnr))
-end
-
-@testset "specific neurons" begin
+@testset "neurons" begin
     m = Chain(Dense(2, 3), RNN(3, 2))
     fm = fneutralize(m)
     @test fm([coldneuron, hotneuron]) == [hotneuron, hotneuron]
@@ -57,6 +29,14 @@ end
     @test m(inp) == [coldneuron; coldneuron; hotneuron; hotneuron;;;]
     inp = [coldneuron; coldneuron; coldneuron; coldneuron; hotneuron;;;]
     @test m(inp) == [coldneuron; coldneuron; coldneuron; hotneuron;;;]
+end
+
+@testset "activations" begin
+    for fn in Flux.NNlib.ACTIVATIONS
+        for x in (coldneuron, neutralneuron, hotneuron)
+            @test eval(fn)(x) == x
+        end
+    end
 end
 
 @testset "layers" begin
@@ -100,6 +80,34 @@ end
         @test nv(mg) == num_vert
         @test ne(mg) == num_edges
     end
+end
+
+@testset "nnr" begin
+    nnr = Chain(Dense(2, 5, σ), RNN(5, 4, relu), LSTM(4, 4), GRU(4, 4), Dense(4, 3))
+    mg = ChainPlot.chaingraph(nnr)
+    @test nv(mg) == 2 + 5 + 4 + 4 + 4 + 3 == 22
+    @test ne(mg) == 2 * 5 + 5 * 4 + 4 * 4 + 4 * 4 + 4 * 3 == 74
+    @test all(==("input layer"), get_prop.(Ref(mg), 1:2, :layer_type))
+    @test all(==("Dense(2, 5, σ)"), get_prop.(Ref(mg), 3:7, :layer_type))
+    @test all(==("Recur(RNNCell(5, 4, relu))"), get_prop.(Ref(mg), 8:11, :layer_type))
+    @test all(==("Recur(LSTMCell(4, 4))"), get_prop.(Ref(mg), 12:15, :layer_type))
+    @test all(==("Recur(GRUCell(4, 4))"), get_prop.(Ref(mg), 16:19, :layer_type))
+    @test all(==("Dense(4, 3)"), get_prop.(Ref(mg), 20:22, :layer_type))
+    @test get_prop(mg, 1, :index_in_layer) == (1,)
+    @test get_prop(mg, 2, :index_in_layer) == (2,)
+    @test get_prop(mg, 3, :index_in_layer) == (1,)
+    @test get_prop(mg, 7, :index_in_layer) == (5,)
+    @test get_prop(mg, 3, :neuron_color) == ChainPlot.neuron_color(Dense(2, 5, σ))
+    @test get_prop(mg, 8, :neuron_color) == ChainPlot.neuron_color(RNN(5, 4, relu))
+    @test neighbors(mg, 1) == neighbors(mg, 2) == (3:7)
+    @test all(==([(1:2); (8:11)]), neighbors.(Ref(mg), 3:7))
+    @test all(==([(3:7); (12:15)]), neighbors.(Ref(mg), 8:11))
+    @test all(==([(8:11); (16:19)]), neighbors.(Ref(mg), 12:15))
+    @test all(==([(12:15); (20:22)]), neighbors.(Ref(mg), 16:19))
+    @test all(==((16:19)), neighbors.(Ref(mg), 20:22))
+    @test length(get_prop(mg, v, :loc_x) for v in vertices(mg)) == 22
+    @test length(get_prop(mg, v, :loc_y) for v in vertices(mg)) == 22
+    @test unique(get_prop(mg, v, :loc_x) for v in vertices(mg)) == (0.0:length(nnr))
 end
 
 @testset "functional" begin
