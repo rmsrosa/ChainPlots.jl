@@ -16,8 +16,6 @@ include("../src/ChainPlot.jl")
 
 using .ChainPlot
 
-import .ChainPlot.NeuronNumbers: coldneuron, hotneuron, fneutralize
-
 gr()
 theme(:default)
 
@@ -36,25 +34,6 @@ themes = [
     :gruvbox_dark
     :gruvbox_light
 ]
-
-nnr = Chain(Dense(2, 5, σ), RNN(5, 4, relu), LSTM(4, 4), GRU(4, 4), Dense(4, 3))
-mg_nnr = ChainPlot.chaingraph(nnr)
-@show get_prop(mg_nnr, 3, :layer_type)
-@show get_prop(mg_nnr, 9, :index_in_layer)
-@show get_prop(mg_nnr, 12, :neuron_color)
-@show collect(edges(mg_nnr))
-locs_x = [get_prop(mg_nnr, v, :loc_x) for v in vertices(mg_nnr)]
-locs_y = [get_prop(mg_nnr, v, :loc_y) for v in vertices(mg_nnr)]
-nodefillc = [parse(Colorant, get_prop(mg_nnr, v, :neuron_color)) for v in vertices(mg_nnr)]
-draw(PNG("img/mg_nnr.png", 600, 400), gplot(mg_nnr, locs_x, locs_y, nodefillc=nodefillc))
-
-m = Chain(Dense(2, 3), RNN(3, 2))
-mn = fneutralize(m)
-mn([coldneuron, hotneuron])
-
-m = Chain(x -> x[2:end] - x[1:end-1])
-mn = fneutralize(m)
-mn([coldneuron, hotneuron, coldneuron, coldneuron, coldneuron])
 
 dl = Dense(2, 3)
 display(plot(dl, title="$dl", titlefontsize=12))
@@ -105,7 +84,6 @@ savefig("img/nnrlwide.png")
 @info "img/nnrlwide.png"
 
 reshape6x1x1(a) = reshape(a, 6, 1, 1)
-slice(a) = a[:, 1, 1]
 nnrs = Chain(x³, Dense(3, 6), reshape6x1x1, Conv((2,), 1 => 1), vec, Dense(5, 4))
 display(plot(nnrs, Float32.(rand(3)), title="$nnrs", titlefontsize=9))
 savefig("img/nnrs.png")
