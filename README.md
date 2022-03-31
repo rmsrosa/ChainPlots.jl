@@ -256,7 +256,15 @@ And here is the result.
 
 ### Other examples
 
-Other examples can be seen in [test/runtest.jl](test/runtest.jl), with the several created plots saved to the folder [test/img](test/img/).
+Other examples can be seen in [test/examples.jl](test/examples.jl), with all the plots saved to the folder [test/img](test/img/).
+
+## Roadmap
+
+There is a lot to be done:
+
+* Visualization for multidimensional layers.
+* Optimization of the plot recipe (large networks take too long, and sometimes plotting seem to hang, but building just the graph works fine).
+* Add other plotting options (e.g. not annotate the plot with the type of the layer; only use circles as markers since they are accepted by all the backends)
 
 ## Compatibility
 
