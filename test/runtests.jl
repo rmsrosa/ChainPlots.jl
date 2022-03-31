@@ -5,9 +5,8 @@ using Random
 using Test
 
 using ChainPlot
-include("../src/NeuronNumbers.jl")
-using .NeuronNumbers
 
+import ChainPlot.NeuronNumbers: coldneuron, hotneuron, fneutralize
 
 @testset "nnr" begin
     nnr = Chain(Dense(2, 5, σ), RNN(5, 4, relu), LSTM(4, 4), GRU(4, 4), Dense(4, 3))
