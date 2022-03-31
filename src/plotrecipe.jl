@@ -44,30 +44,24 @@ get_layer_type(m::Flux.Chain, i::Int) = i == 0 ? :input_layer : m[i]
 Plot a Flux.Chain neural network according to recipe.
 """
 @recipe function plot(m::Flux.Chain, input_data::Union{Nothing,Array}=nothing)
-    m = f32(m)
-    if input_data !== nothing
-        input_data = convert.(Float32, input_data)
-        chain_dimensions = get_dimensions(m, input_data)
-    else
-        chain_dimensions = get_dimensions(m)
-    end
-    # chain_dimensions = get_dimensions(m, input_data)
+    chain_dimensions = get_dimensions(m, input_data)
     max_width, = maximum(chain_dimensions)
     mg = chaingraph(m, input_data)
+    m_len = length(m)
 
     axis --> false
     xrotation --> 60
     xticks --> begin
-        ll = 0:length(m)
+        ll = 0:m_len
         (ll,
             vcat(
                 ["input \nlayer "],
-                ["hidden \n   layer $n" for n in ll[1:end-2]],
+                ["hidden \n   layer $n" for n in 1:m_len-1],
                 ["output \nlayer   "]
             )
         )
     end
-    xlims --> length(m) .* (-0.2, 1.2)
+    xlims --> m_len .* (-0.2, 1.2)
     yticks --> false
     ylims --> (-0.1, 1.2)
     legend --> false
@@ -92,7 +86,7 @@ Plot a Flux.Chain neural network according to recipe.
              for v in vertices(mg)
              if length(layerplotattributes(get_layer_type(m, get_prop(mg, v, :layer_number))).mrkrshape) > 1],
             [scale_sz(layerplotattributes(get_layer_type(m, get_prop(mg, v, :layer_number))).mrkrsize, max_width)
-             for v in vertices(mg) if get_prop(mg, v, :layer_number) == length(m)]
+             for v in vertices(mg) if get_prop(mg, v, :layer_number) == m_len]
         )
         markershape --> vcat(
             [layerplotattributes(get_layer_type(m, get_prop(mg, v, :layer_number))).mrkrshape[1]
@@ -100,7 +94,7 @@ Plot a Flux.Chain neural network according to recipe.
             [layerplotattributes(get_layer_type(m, get_prop(mg, v, :layer_number))).mrkrshape[end]
              for v in vertices(mg)
              if length(layerplotattributes(get_layer_type(m, get_prop(mg, v, :layer_number))).mrkrshape) > 1],
-            [layerplotattributes(:output_layer).mrkrshape[end] for v in vertices(mg) if get_prop(mg, v, :layer_number) == length(m)]
+            [layerplotattributes(:output_layer).mrkrshape[end] for v in vertices(mg) if get_prop(mg, v, :layer_number) == m_len]
         )
         markercolor --> vcat(
             [layerplotattributes(get_layer_type(m, get_prop(mg, v, :layer_number))).mrkrcolor[1]
@@ -110,20 +104,20 @@ Plot a Flux.Chain neural network according to recipe.
              if length(layerplotattributes(get_layer_type(m, get_prop(mg, v, :layer_number))).mrkrshape) > 1],
             [layerplotattributes(:output_layer).mrkrcolor[end]
              for v in vertices(mg)
-             if get_prop(mg, v, :layer_number) == length(m)]
+             if get_prop(mg, v, :layer_number) == m_len]
         )
         dataseries = vcat(
             [(get_prop(mg, v, :loc_x), get_prop(mg, v, :loc_y)) for v in vertices(mg)],
             [(get_prop(mg, v, :loc_x), get_prop(mg, v, :loc_y)) for v in vertices(mg)
              if length(layerplotattributes(get_layer_type(m, get_prop(mg, v, :layer_number))).mrkrshape) > 1],
             [(get_prop(mg, v, :loc_x), get_prop(mg, v, :loc_y)) for v in vertices(mg)
-             if get_prop(mg, v, :layer_number) == length(m)]
+             if get_prop(mg, v, :layer_number) == m_len]
         )
         return dataseries
     end
 
     # display layer type
-    for ln in 0:length(m)
+    for ln in 0:m_len
         @series begin
             nj = chain_dimensions[ln+1]
             series_annotations --> Main.Plots.series_annotations(
