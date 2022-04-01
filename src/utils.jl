@@ -12,7 +12,7 @@ layerdimensions(r::Flux.Recur) = layerdimensions(r.cell)
 """
     FIXED_INPUT_DIM_LAYERS
 
-List of layers with fixed-sized input data
+List of layers with fixed-size input data
 """
 const FIXED_INPUT_DIM_LAYERS = (Flux.Dense, Flux.Recur, Flux.RNNCell, Flux.LSTMCell, Flux.GRUCell)
 
