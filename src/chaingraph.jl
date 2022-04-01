@@ -14,11 +14,16 @@ neuron_color(s::Symbol) = s == :input_layer ? :yellow : s == :output_layer ? :or
                           throw(ArgumentError("Color not defined for the given symbol $s."))
 
 """
-projection(x, center, max_width, slope)
+    projection(z, center, max_width)
 
-Transform a Tuple x of a neuron into its y-coordinate for plotting.
+Transform the indexing of a neuron into its x and y coordinates for plotting.
 """
-projection(x, center, max_width, slope=0) = ((x[1] - center + max_width / 2) / (max_width + 1))
+function projection(z::Tuple, center, max_width)
+    a, b = z
+    x = a #convert(Float64, a)
+    y = ((b[1] - center + max_width / 2) / (max_width + 1))
+    return x, y
+end
 
 """
     chaingraph(m::Flux.Chain, input_data::Array)
@@ -51,14 +56,16 @@ function chaingraph(m::Flux.Chain, input_data::Array)
 
     mg = MetaGraph(length(node_to_neuron))
     for i in 1:length(node_to_neuron)
+        center = chain_dimensions[first(node_to_neuron[i])+1][1] / 2
+        x, y = projection(node_to_neuron[i], center, max_width)
         set_props!(
             mg, i, Dict(
                 :layer_number => first(node_to_neuron[i]),
                 :layer_type => first(node_to_neuron[i]) == 0 ? "input layer" : string(m[first(node_to_neuron[i])]),
                 :index_in_layer => last(node_to_neuron[i]),
-                :layer_center => chain_dimensions[first(node_to_neuron[i])+1][1] / 2,
-                :loc_x => convert(Float64, first(node_to_neuron[i])),
-                :loc_y => projection(last(node_to_neuron[i]), chain_dimensions[first(node_to_neuron[i])+1][1] / 2, max_width),
+                :layer_center => center,
+                :loc_x => x,
+                :loc_y => y,
                 :neuron_color => neuron_color(first(node_to_neuron[i]) == 0 ? :input_layer : m[first(node_to_neuron[i])])
             )
         )
