@@ -1,5 +1,6 @@
-# This used to be used as test, but now it is just used to generate some example plots.
+# This used to be runtests.jl, but now it is just used to generate example plots.
 # Just run this file from this folder and with the folder's project activated.
+# Plan to Literate this file to show the contents instead of linking some of the example plots in the README
 
 using Flux
 using Plots
@@ -108,7 +109,7 @@ nnc = Chain(Conv((3,3), 1=>2))
 display(plot(nnc, rand(Float32, 10, 10, 1, 1), title="$nnc", titlefontsize=10))
 savefig("img/nnc.png")
 
-nncg = Chain(Conv((3,3), 1=>8, leakyrelu, pad = 1),GroupNorm(8,4))
+nncg = Chain(Conv((3,3), 1=>4, leakyrelu, pad = 1),GroupNorm(4,2))
 display(plot(nncg, Float32.(rand(6,6,1,1)), title="$nncg", titlefontsize=10))
 savefig("img/nncg.png")
 

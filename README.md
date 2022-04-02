@@ -20,7 +20,7 @@ The aim is to obtain a pictorial representations for all types of layers impleme
 
 * [The mostly complete chart of Neural Networks, explained](https://towardsdatascience.com/the-mostly-complete-chart-of-neural-networks-explained-3fb6f2367464).
 
-At the moment, the recipe works for Dense and Recurrent layers, for  taylor-made functional layers, as well as for Chains of such layers. There is only partial suppport for Convolutional and Pooling layers, in the sense that the view is "flat", no 2d or 3d view, and no coloring for all of them, but hopefully soon there will be a proper 3D-like visualization for them, as well.
+At the moment, the recipe works for Dense and Recurrent layers, for  taylor-made functional layers, and with partial visualization for Convolutional and Pooling layers, in the sense that only 1d and 2d views are available, and with the 2d visualization not being that great yet. But hopefully soon there will be a proper multidimensional visualization for them, as well. Batch lots are not properly shown either; they all collapse into a single batch.
 
 There is a distinction between netwoks starting with a layer with fixed-size input (Dense and Recurrent) and networks starting with a layer with variable-size input (Convolutional,  Pooling, and functional).
 
@@ -60,7 +60,7 @@ Chain(Dense(2, 5, σ), Recur(RNNCell(5, 4, relu)), Recur(LSTMCell(4, 4)), Dense(
 julia> plot(nnr, title="With theme solarized_light", titlefontsize=10)
 ```
 
-![nnr_solarized_light plot](test/img/nnr_solarized_light.png)
+![nnr_solarized_light plot](examples/img/nnr_solarized_light.png)
 
 and
 
@@ -70,7 +70,7 @@ julia> theme(:default)
 julia> plot(nnr, title="With theme default", titlefontsize=10)
 ```
 
-![nnr_default plot](test/img/nnr_default.png)
+![nnr_default plot](examples/img/nnr_default.png)
 
 ### A wide neural network
 
@@ -85,7 +85,7 @@ Chain(Dense(5, 8, relu), Recur(RNNCell(8, 20, tanh)), Recur(LSTMCell(20, 10)), D
 julia> plot(nnrlwide, title="$nnrlwide", titlefontsize=9)
 ```
 
-![nnrlwide plot](test/img/nnrlwide.png)
+![nnrlwide plot](examples/img/nnrlwide.png)
 
 ### Variable-input layer
 
@@ -104,7 +104,7 @@ Chain(Dense(2, 5, σ), dx, Recur(RNNCell(4, 6, relu)), x³, Recur(LSTMCell(6, 4)
 julia> plot(nna, title="$nna", titlefontsize=7)
 ```
 
-![nna plot](test/img/nna.png)
+![nna plot](examples/img/nna.png)
 
 ```julia
 julia> nnx = Chain(x³, dx, LSTM(5,10), Dense(10,5))
@@ -115,7 +115,7 @@ julia> input_data = rand(6);
 julia> plot(nnx, input_data, title="$nnx", titlefontsize=9)
 ```
 
-![nnx plot](test/img/nnx.png)
+![nnx plot](examples/img/nnx.png)
 
 ### Convolutional networks
 
@@ -134,21 +134,21 @@ Chain(x³, Dense(3, 6), reshape6x1x1, Conv((2,), 1=>1), slice, Dense(5, 4))
 julia> plot(nnrs, Float32.(rand(3)), title="$nnrs", titlefontsize=9)
 ```
 
-![nnrs plot](test/img/nnrs.png)
+![nnrs plot](examples/img/nnrs.png)
 
 Now with a two-dimensional convolution, but with a one-dimensional visualization (of the convolutional layer).
 
 ```julia
-julia> reshape3x3x1x1(a) = reshape(a, 3, 3, 1, 1)
-reshape3x3x1x1 (generic function with 1 method)
+julia> reshape4x4x1x1(a) = reshape(a, 4, 4, 1, 1)
+reshape4x4x1x1 (generic function with 1 method)
 
-julia> nnrs2d = Chain(x³, Dense(4,9), reshape3x3x1x1, Conv((2,2), 1=>1), slice)
-Chain(x³, Dense(4, 9), reshape3x3x1x1, Conv((2, 2), 1=>1), slice)
+julia> nnrs2d = Chain(x³, Dense(4,16), reshape4x4x1x1, Conv((2,2), 1=>1), slice)
+Chain(x³, Dense(4, 16), reshape4x4x1x1, Conv((2, 2), 1=>1), slice)
 
 julia> plot(nnrs2d, Float32.(rand(4)), title="$nnrs2d", titlefontsize=9)
 ```
 
-![nnrs2d plot](test/img/nnrs2d.png)
+![nnrs2d plot](examples/img/nnrs2d.png)
 
 ### From Chain to MetaGraph
 
@@ -252,11 +252,11 @@ julia> draw(PNG("img/mg_nnr.png", 600, 400), gplot(mg_nnr, locs_x, locs_y, nodef
 
 And here is the result.
 
-![mg_nnr plot](test/img/mg_nnr.png)
+![mg_nnr plot](examples/img/mg_nnr.png)
 
 ### Other examples
 
-Other examples can be seen in [test/examples.jl](test/examples.jl), with all the plots saved to the folder [test/img](test/img/).
+Other examples can be seen in [examples/examples.jl](examples/examples.jl), with all the plots saved to the folder [examples/img](examples/img/).
 
 ## Roadmap
 
@@ -272,7 +272,7 @@ Packages tested or to be tested: Plots.jl, Plotly.jl, PlotlyJS.jl, Gadfly.jl.
 
 ### Plots.jl
 
-This depends on the backend and on the themes. I haven't tried all combinations. Themes were just tested with gr() backend
+This depends on the backend and on the themes. I haven't tried all combinations. Themes were just tested with the `gr()` backend
 
 See [Plots backends](https://docs.juliaplots.org/latest/backends/)
 
