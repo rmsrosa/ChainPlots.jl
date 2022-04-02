@@ -19,16 +19,18 @@ import ChainPlot.NeuronNumbers: neutralneuron, coldneuron, hotneuron, fneutraliz
     @test fm(inp) == [hotneuron, hotneuron, coldneuron, coldneuron]
 
     m = Chain(Conv((2,), 1 => 1))
-    inp = [hotneuron; coldneuron; coldneuron; coldneuron; coldneuron;;;]
-    @test m(inp) == [hotneuron; coldneuron; coldneuron; coldneuron;;;]
-    inp = [coldneuron; hotneuron; coldneuron; coldneuron; coldneuron;;;]
-    @test m(inp) == [hotneuron; hotneuron; coldneuron; coldneuron;;;]
-    inp = [coldneuron; coldneuron; hotneuron; coldneuron; coldneuron;;;]
-    @test m(inp) == [coldneuron; hotneuron; hotneuron; coldneuron;;;]
-    inp = [coldneuron; coldneuron; coldneuron; hotneuron; coldneuron;;;]
-    @test m(inp) == [coldneuron; coldneuron; hotneuron; hotneuron;;;]
-    inp = [coldneuron; coldneuron; coldneuron; coldneuron; hotneuron;;;]
-    @test m(inp) == [coldneuron; coldneuron; coldneuron; hotneuron;;;]
+    fm = fneutralize(m)
+    inp = fill(coldneuron, 5, 1, 1)
+    inp[1] = hotneuron
+    @test fm(inp) == reshape([hotneuron; coldneuron; coldneuron; coldneuron;;;], 4, 1, 1)
+    inp[1:2] .= [coldneuron, hotneuron]
+    @test fm(inp) == reshape([hotneuron; hotneuron; coldneuron; coldneuron;;;], 4, 1, 1)
+    inp[2:3] .= [coldneuron, hotneuron]
+    @test fm(inp) == reshape([coldneuron; hotneuron; hotneuron; coldneuron;;;], 4, 1, 1)
+    inp[3:4] .= [coldneuron, hotneuron]
+    @test fm(inp) == reshape([coldneuron; coldneuron; hotneuron; hotneuron;;;], 4, 1, 1)
+    inp[4:5] .= [coldneuron, hotneuron]
+    @test fm(inp) == reshape([coldneuron; coldneuron; coldneuron; hotneuron;;;], 4, 1, 1)
 end
 
 @testset "activations" begin
