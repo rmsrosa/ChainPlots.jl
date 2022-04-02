@@ -1,5 +1,7 @@
 # ChainPlot
 
+![Main Tests Workflow Status](https://github.com/rmsrosa/ChainPlot.jl/workflows/CI/badge.svg) [![codecov](https://codecov.io/gh/rmsrosa/ChainPlot.jl/branch/main/graph/badge.svg)](https://codecov.io/gh/rmsrosa/ChainPlot.jl) [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT) ![GitHub repo size](https://img.shields.io/github/repo-size/rmsrosa/ChainPlot.jl) ![OSS Lifecycle](https://img.shields.io/osslifecycle/rmsrosa/ChainPlot.jl)
+
 Plot recipes and graph generator of the topology of [FluxML/Flux.jl](https://github.com/FluxML/Flux.jl)'s neural networks composed with [Flux.Chain](https://fluxml.ai/Flux.jl/stable/models/layers/#Flux.Chain).
 
 ## Description
