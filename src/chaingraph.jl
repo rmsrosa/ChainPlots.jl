@@ -14,21 +14,16 @@ neuron_color(s::Symbol) = s == :input_layer ? :yellow : s == :output_layer ? :or
                           throw(ArgumentError("Color not defined for the given symbol $s."))
 
 """
-    projection(z, center, max_widths)
+    projection(z, center, max_widths, dimensions)
 
 Transform the indexing of a neuron into its x and y coordinates for plotting.
 """
-function projection(z::Tuple, center, max_widths)
-    a, b = z
-    x = a
-    y = ((b[1] - center + max_widths[1] / 2) / (max_widths[1] + 1))
-    return x, y
-end
-
-function projection(z::Tuple{T, Tuple{2, T}}, center, max_widths) where T
-    a, b = z
-    x = a + 0.2 * (b[2])
-    y = ((b[1] - center + max_widths[1] / 2) / (max_widths[1] + 1))
+function projection(z::Tuple{T, NTuple{N, T}}, center, max_width, dimensions) where {T, N}
+    layer, pos = z
+    slope = 0.2
+    span = 0.3
+    x = N > 2 && dimensions[2] > 1 ? layer + span * ( ( pos[2] - 1 ) / ( dimensions[2] - 1) - 0.5) : layer
+    y = ((pos[1] - center + max_width / 2) / (max_width + 1)) + slope * (x - layer)
     return x, y
 end
 
@@ -53,12 +48,13 @@ Each node represents a neuron of the Chain `m` and contains the following proper
 function chaingraph(m::Flux.Chain, input_data::Array)
     # m32 = f32(m) # this is not needed so far but leave it as a comment just in case
     chain_dimensions = get_dimensions(m, input_data)
-    max_dim = maximum(length.(chain_dimensions))
+    #= max_dim = maximum(length.(chain_dimensions))
     full_dimensions = [
         Tuple(length(v) ≥ n ? v[n] : 1 for n in 1:max_dim) for v in chain_dimensions
     ]
-    max_widths = [maximum(getindex.(full_dimensions, i)) for i in 1:max_dim]
+    max_widths = [maximum(getindex.(full_dimensions, i)) for i in 1:max_dim] =#
     # max_width, = maximum(chain_dimensions)
+    max_width = maximum(getindex.(chain_dimensions, 1))
     connections = neuron_connections(m, input_data)
 
     neuron_to_node = Dict(
@@ -69,7 +65,7 @@ function chaingraph(m::Flux.Chain, input_data::Array)
     mg = MetaGraph(length(node_to_neuron))
     for i in 1:length(node_to_neuron)
         center = chain_dimensions[first(node_to_neuron[i])+1][1] / 2
-        x, y = projection(node_to_neuron[i], center, max_widths)
+        x, y = projection(node_to_neuron[i], center, max_width, chain_dimensions[first(node_to_neuron[i])+1])
         set_props!(
             mg, i, Dict(
                 :layer_number => first(node_to_neuron[i]),

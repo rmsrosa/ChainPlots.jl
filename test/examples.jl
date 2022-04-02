@@ -5,12 +5,12 @@ using Flux
 using Plots
 using Random
 
-using Colors
-using Cairo
-using Compose
-using Graphs
-using MetaGraphs
-using GraphPlot
+#using Colors
+#using Cairo
+#using Compose
+#using Graphs
+#using MetaGraphs
+#using GraphPlot
 
 include("../src/ChainPlot.jl")
 
@@ -89,11 +89,16 @@ display(plot(nnrs, Float32.(rand(3)), title="$nnrs", titlefontsize=9))
 savefig("img/nnrs.png")
 @info "img/nnrs.png"
 
-reshape3x3x1x1(a) = reshape(a, 3, 3, 1, 1)
-nnrs2d = Chain(x³, Dense(4, 9), reshape3x3x1x1, Conv((2, 2), 1 => 1), vec)
+N = 3
+reshapeNxNx1x1(a) = reshape(a, N, N, 1, 1)
+nnrs2d = Chain(x³, Dense(4, N^2), reshapeNxNx1x1, Conv((2, 2), 1 => 1), vec)
 display(plot(nnrs2d, Float32.(rand(4)), title="$nnrs2d", titlefontsize=9))
 savefig("img/nnrs2d.png")
 @info "img/nnrs2d.png"
+
+nnc = Chain(Conv((3,3), 1=>2))
+display(plot(nnc, rand(Float32, 10, 10, 1, 1), title="$nnc", titlefontsize=10))
+savefig("img/nnc.png")
 
 nncg = Chain(Conv((3,3), 1=>8, leakyrelu, pad = 1),GroupNorm(8,4))
 display(plot(nncg, Float32.(rand(6,6,1,1)), title="$nncg", titlefontsize=10))
