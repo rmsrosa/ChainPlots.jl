@@ -5,12 +5,12 @@ using Flux
 using Plots
 using Random
 
-#using Colors
-#using Cairo
-#using Compose
-#using Graphs
-#using MetaGraphs
-#using GraphPlot
+using Colors
+using Cairo
+using Compose
+using Graphs
+using MetaGraphs
+using GraphPlot
 
 include("../src/ChainPlot.jl")
 
@@ -34,6 +34,14 @@ themes = [
     :gruvbox_dark
     :gruvbox_light
 ]
+
+nnr = Chain(Dense(2, 5, σ), RNN(5, 4, relu), LSTM(4, 4), GRU(4, 4), Dense(4, 3))
+mg_nnr = ChainPlot.chaingraph(nnr)
+locs_x = [get_prop(mg_nnr, v, :loc_x) for v in vertices(mg_nnr)]
+locs_y = [get_prop(mg_nnr, v, :loc_y) for v in vertices(mg_nnr)]
+nodefillc = [parse(Colorant, get_prop(mg_nnr, v, :neuron_color)) for v in vertices(mg_nnr)] 
+plt = gplot(mg_nnr, locs_x, locs_y, nodefillc=nodefillc)
+draw(PNG("img/mg_nnr.png", 600, 400), plt)
 
 dl = Dense(2, 3)
 display(plot(dl, title="$dl", titlefontsize=12))
@@ -89,7 +97,7 @@ display(plot(nnrs, Float32.(rand(3)), title="$nnrs", titlefontsize=9))
 savefig("img/nnrs.png")
 @info "img/nnrs.png"
 
-N = 3
+N = 4
 reshapeNxNx1x1(a) = reshape(a, N, N, 1, 1)
 nnrs2d = Chain(x³, Dense(4, N^2), reshapeNxNx1x1, Conv((2, 2), 1 => 1), vec)
 display(plot(nnrs2d, Float32.(rand(4)), title="$nnrs2d", titlefontsize=9))
