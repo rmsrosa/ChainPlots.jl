@@ -139,7 +139,7 @@ end
 @testset "Convolutions" begin
     x³(x) = x .^ 3
     reshape6x1x1(a) = reshape(a, 6, 1, 1)
-    reshape3x3x1x1(a) = reshape(a, 3, 3, 1, 1)
+    reshape4x4x1x1(a) = reshape(a, 4, 4, 1, 1)
 
     m = Chain(Conv((2,), 1 => 1))
     input_data = rand(Float32, 5, 1, 1)
@@ -153,15 +153,21 @@ end
     @test nv(mg) == 3 + 3 + 6 + 6 + 5 + 5 + 4 == 32
     @test ne(mg) == 3 + 3 * 6 + 6 + 2 * 5 + 5 + 5 * 4 == 62
 
-    m = Chain(x³, Dense(4, 9), reshape3x3x1x1, Conv((2, 2), 1 => 1), vec)
+    m = Chain(x³, Dense(4, 16), reshape4x4x1x1, Conv((2, 2), 1 => 1), vec)
     input_data = rand(Float32, 4)
     mg = ChainPlot.chaingraph(m, input_data)
-    @test nv(mg) == 4 + 4 + 9 + 9 + 4 + 4 == 34
-    @test ne(mg) == 4 + 4 * 9 + 9 + 4 * 4 + 4 == 69
+    @test nv(mg) == 4 + 4 + 16 + 16 + 9 + 9 == 58
+    @test ne(mg) == 4 + 4 * 16 + 16 + 9 * 4 + 9 == 129
 
-    m = Chain(Conv((3, 3), 1 => 8, leakyrelu, pad=1), GroupNorm(8, 4))
+    m = Chain(Conv((3,3), 1=>2))
+    input_data = rand(Float32, 10, 10, 1, 1)
+    mg = ChainPlot.chaingraph(m, input_data)
+    @test nv(mg) == 10 * 10 + 8 * 8 * 2 == 228
+    @test ne(mg) == 8 * 8 * 9 * 2 == 1152
+
+    m = Chain(Conv((3, 3), 1 => 4, leakyrelu, pad=1), GroupNorm(4, 2))
     input_data = rand(6,5,1,1)
     mg = ChainPlot.chaingraph(m, input_data)
-    @test nv(mg) == 6 * 5 + 6 * 5 * 8 * 2 == 510
-    @test ne(mg) == (4 * 3 * 9 + ( 2 * 4 + 2 * 3 ) * 6 + 4 * 4 ) * 8 + ( 6 * 5 )^2 * 2  * 8 == 16064
+    @test nv(mg) == 6 * 5 + 6 * 5 * 4 * 2 == 270
+    @test ne(mg) == (4 * 3 * 9 + ( 2 * 4 + 2 * 3 ) * 6 + 4 * 4 ) * 4 + ( 6 * 5 )^2 * 2 * 4 == 8032
 end
