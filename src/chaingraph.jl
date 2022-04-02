@@ -24,7 +24,7 @@ function projection(z::Tuple{T, NTuple{N, T}}, center, max_width, dimensions) wh
     span = 0.3
     x = N > 2 && dimensions[2] > 1 ? layer + span * ( ( pos[2] - 1 ) / ( dimensions[2] - 1) - 0.5) : layer
     y = ((pos[1] - center + max_width / 2) / (max_width + 1)) + slope * (x - layer)
-    return x, y
+    return float(x), float(y)
 end
 
 """
