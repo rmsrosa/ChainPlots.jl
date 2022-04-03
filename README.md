@@ -8,13 +8,9 @@ Plot recipes and graph generator of the topology of [FluxML/Flux.jl](https://git
 
 It implements a plot recipe for `Flux.Chain` using the recipe tool from [JuliaPlots/RecipesBase.jl](https://github.com/JuliaPlots/RecipesBase.jl).
 
-It also generates a [MetaGraph.jl](https://github.com/JuliaGraphs/MetaGraphs.jl) from the `Flux.Chain`. The Plot recipe is built from the generated `metagraph`.
+It first generates a [MetaGraph.jl](https://github.com/JuliaGraphs/MetaGraphs.jl) from the `Flux.Chain` and then apply a plot recipe based on the generated metagraph.
 
-This repository is for prototyping the recipe. It is not, at first, intended to become a registered Julia package. Instead, the aim is to PR it into [FluxML/Flux.jl](https://github.com/FluxML/Flux.jl). Or, maybe, a separate package in [FluxML](https://github.com/FluxML).
-
-Nevertheless, one is welcome to install it directly via github, use it, and contribute to improve it.
-
-## Current state
+## Aim
 
 The aim is to obtain a pictorial representations for all types of layers implemented with [Flux.Chain](https://fluxml.ai/Flux.jl/stable/models/layers/#Flux.Chain) and in a way similar to the representations given in the following links:
 
@@ -22,74 +18,42 @@ The aim is to obtain a pictorial representations for all types of layers impleme
 
 * [The mostly complete chart of Neural Networks, explained](https://towardsdatascience.com/the-mostly-complete-chart-of-neural-networks-explained-3fb6f2367464).
 
-At the moment, the recipe works for Dense and Recurrent layers, for  taylor-made functional layers, and with partial visualization for Convolutional and Pooling layers, in the sense that only 1d and 2d views are available, and with the 2d visualization not being that great yet. But hopefully soon there will be a proper multidimensional visualization for them, as well. Batch lots are not properly shown either; they all collapse into a single batch.
+## Current state
 
-There is a distinction between netwoks starting with a layer with fixed-size input (Dense and Recurrent) and networks starting with a layer with variable-size input (Convolutional,  Pooling, and functional).
+At the moment, the recipe has been tested with most of the layers in [Flux.jl/Basic Layers](https://fluxml.ai/Flux.jl/stable/models/layers/), as well as with a number of "functional" layers (e.g. `x³ = x -> x .^ 3`, `dx = x -> x[2:end] - x[1:end-1]`), and with all activation functions in [Flux/NNlib](https://fluxml.ai/Flux.jl/stable/models/nnlib/).
 
-In the former case, just passing a network `m=Chain(...)` to plot works, e.g. `plot(m)`. In the latter case, one needs to pass along an initial input `a` as the second argument, like `plot(m,a)`, so that the plot recipe can properly figure out the size of each layer.
+There is, however, only partial support for multidimensional layers (convolutional and pooling layers, as well as data with multiple batches) in the sense that only 1d and 2d views are available, and with the 2d visualization not being that great yet. But hopefully soon there will be a proper multidimensional visualization for them. Batches are collapse into a single lot.
 
-Any other argument for plot is accepted, like `plot(m,a, title="Convolutional network with $(length(m)) layers")`
+## How it works
 
-In this new version, one can also obtain a metagraph with `mg = chaingraph(m)` or `mg = chaingraph(m,a)`. The current attributes can be seen in the docstring for `chaingraph`.
+There is a distinction between netwoks starting with a layer with fixed-size input (Dense and Recurrent) and networks starting with a layer with variable-size input (Convolutional, Pooling, and functional).
+
+In the former case, just passing a network `m = Chain(...)` to plot works, e.g. `plot(m)`. In the latter case, one needs to pass along an initial input `a` as the second argument, like `plot(m, a)`, so that the plot recipe can properly figure out the size of each layer.
+
+Any other argument for plot is accepted, like `plot(m, a, title="Convolutional network with $(length(m)) layers", titlefont = 12)`
+
+One can also obtain a metagraph with `mg = ChainPlot.chaingraph(m)` or `mg = ChainPlot.chaingraph(m, a)`. The current attributes can be seen in the docstring for `chaingraph`.
 
 ## Examples
 
-Here is a little taste of the current state.
+There are several examples in the Literated file [examples/build/examples.md](examples/build/examples.md) (the source file is in  [examples/examples.jl](examples/examples.jl), with all the plots saved to the folder [examples/img](examples/img/)).
 
-In all the examples below, one needs `Flux`, `ChainPlot` and `Plots`, while for the graph one needs `Graphs` and `MetaGraphs`.
+Here is a little taste of it.
 
-```julia
-julia> using Flux
+In all the examples below, one needs `Flux`, `ChainPlot` and `Plots`, while for the graph, one needs `Graphs` and `MetaGraphs`. One can also display the metagraph using `GraphPlot`, for which one also needs `Cairo` and `Compose`.
 
-julia> using ChainPlot
-
-julia> using Plots
-
-julia> gr()
-Plots.GRBackend()
-```
-
-### Dense and Recurrent layers with a gruvbox_light theme
-
-In our first example, we do it with two plot themes: `gruvbox_light` and `default`:
+### Dense and Recurrent layers
 
 ```julia
-julia> theme(:gruvbox_light)
-
 julia> nnr = Chain(Dense(2,5,σ),RNN(5,4,relu), LSTM(4,4), GRU(4,4), Dense(4,3))
 Chain(Dense(2, 5, σ), Recur(RNNCell(5, 4, relu)), Recur(LSTMCell(4, 4)), Dense(4, 3))
-
-julia> plot(nnr, title="With theme solarized_light", titlefontsize=10)
-```
-
-![nnr_solarized_light plot](examples/img/nnr_solarized_light.png)
-
-and
-
-```julia
-julia> theme(:default)
 
 julia> plot(nnr, title="With theme default", titlefontsize=10)
 ```
 
 ![nnr_default plot](examples/img/nnr_default.png)
 
-### A wide neural network
-
-Another example:
-
-```julia
-julia> theme(:default)
-
-julia> nnrlwide = Chain(Dense(5,8,relu), RNN(8,20), LSTM(20,10), Dense(10,7))
-Chain(Dense(5, 8, relu), Recur(RNNCell(8, 20, tanh)), Recur(LSTMCell(20, 10)), Dense(10, 7))
-
-julia> plot(nnrlwide, title="$nnrlwide", titlefontsize=9)
-```
-
-![nnrlwide plot](examples/img/nnrlwide.png)
-
-### Variable-input layer
+### Variable-input layers
 
 Variable-input functional layers are also accepted. If given as the first layer, then an initial input must be provided, otherwise, the input data is not needed. Here are two examples, illustrating each case.
 
@@ -121,7 +85,7 @@ julia> plot(nnx, input_data, title="$nnx", titlefontsize=9)
 
 ### Convolutional networks
 
-A neural network with a one-dimensional convolutional layer
+A neural network with a one-dimensional convolutional layer:
 
 ```julia
 julia> reshape6x1x1(a) = reshape(a, 6,  1, 1)
@@ -138,7 +102,7 @@ julia> plot(nnrs, Float32.(rand(3)), title="$nnrs", titlefontsize=9)
 
 ![nnrs plot](examples/img/nnrs.png)
 
-Now with a two-dimensional convolution, but with a one-dimensional visualization (of the convolutional layer).
+Now with a two-dimensional convolution:
 
 ```julia
 julia> reshape4x4x1x1(a) = reshape(a, 4, 4, 1, 1)
@@ -157,14 +121,6 @@ julia> plot(nnrs2d, Float32.(rand(4)), title="$nnrs2d", titlefontsize=9)
 With `ChainPlot.chaingraph()` we can convert a `Flux.Chain` to a `MetaGraph`.
 
 ```julia
-julia> using ChainPlot
-
-julia> using Graphs
-
-julia> using MetaGraphs
-
-julia> using Flux
-
 julia> nnr = Chain(Dense(2,5,σ),RNN(5,4,relu), LSTM(4,4), GRU(4,4), Dense(4,3))
 Chain(Dense(2, 5, σ), Recur(RNNCell(5, 4, relu)), Recur(LSTMCell(4, 4)), Recur(GRUCell(4, 4)), Dense(4, 3))
 
@@ -199,17 +155,7 @@ julia> get_prop.(Ref(mg_nnr), 15, [:loc_x, :loc_y])
 
 We may visualize the generated MetaGraph with [JuliaGraphs/GraphPlot.jl](https://github.com/JuliaGraphs/GraphPlot.jl). We use the attributes `:loc_x`, `:loc_y`, and `:neuron_color` to properly position and color every neuron.
 
-For that, however, we need a bunch of other packages, besides those already loaded as mentioned above.
-
 ```julia
-julia> using Colors
-
-julia> using Cairo
-
-julia> using Compose
-
-julia> using GraphPlot
-
 julia> nnr = Chain(Dense(2,5,σ),RNN(5,4,relu), LSTM(4,4), GRU(4,4), Dense(4,3))
 Chain(Dense(2, 5, σ), Recur(RNNCell(5, 4, relu)), Recur(LSTMCell(4, 4)), Recur(GRUCell(4, 4)), Dense(4, 3))
 
@@ -256,51 +202,24 @@ And here is the result.
 
 ![mg_nnr plot](examples/img/mg_nnr.png)
 
-### Other examples
-
-Other examples can be seen in [examples/examples.jl](examples/examples.jl), with all the plots saved to the folder [examples/img](examples/img/). The examples can also be seen in the [Literated examples](examples/build/examples.md).
-
 ## Roadmap
 
 There is a lot to be done:
 
-* Visualization for multidimensional layers.
-* Optimization of the plot recipe (large networks take too long, and sometimes plotting seem to hang, but building just the graph works fine).
+* Proper visualization for multidimensional layers.
+* Optimization of the plot recipe (large networks (with hundreds of neurons) take too long, and sometimes plotting seem to hang, but building just the graph works fine).
 * Add other plotting options (e.g. not annotate the plot with the type of the layer; only use circles as markers since they are accepted by all the backends)
 
 ## Compatibility
 
-Packages tested or to be tested: Plots.jl, Plotly.jl, PlotlyJS.jl, Gadfly.jl.
+All the above works fine with the `GR` backend for `Plots.jl`. There are many [Plots backends](https://docs.juliaplots.org/latest/backends/), however, which have some issue:
 
-### Plots.jl
+* Get Warning: `pyplot()` backend does not have :rtriangle and seems not to scale properly.
 
-This depends on the backend and on the themes. I haven't tried all combinations. Themes were just tested with the `gr()` backend
+* Get Error: `plotly()` and `plotlyjs()` do not support custom shapes.
 
-See [Plots backends](https://docs.juliaplots.org/latest/backends/)
+* `hdf5()` works partially. Neurons are not showing up. On the other hand, despite saying in Plots's page that it is currently missing support for SeriesAnnotations, this seems to be working, since SeriesAnnotations is used to display the type/activation function of each layer.
 
-#### GR backend
+* `unicodeplots()` does not accept custom shapes, nor :rtriangle. Should choose from: [:none, :auto, :circle].
 
-* This works fine.
-
-#### PyPlot backend
-
-* Get Warning: pyplot() backend does not have :rtriangle and seems not to scale properly.
-
-#### Plotly and PlotlyJS backends
-
-* Get Error: plotly() and plotlyjs() do not support custom shapes
-
-#### UnicodePlots backend
-
-* custom shapes and :rtriangle are unsupported. Choose from: [:none, :auto, :circle]
-
-#### HDF5 backend
-
-* It is working partially. Neurons are not showing up. On the other hand, despite saying in Plots's page that it is currently missing support for SeriesAnnotations, this seems to be working, since SeriesAnnotations is used to display the type/activation function of each layer.
-
-#### Backends not tried yet
-
-* InspectDR
-* Plotly
-* PlotlyJS
-* Gadfly
+* Have not tried others.
