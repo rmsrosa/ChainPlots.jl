@@ -258,7 +258,7 @@ And here is the result.
 
 ### Other examples
 
-Other examples can be seen in [examples/examples.jl](examples/examples.jl), with all the plots saved to the folder [examples/img](examples/img/).
+Other examples can be seen in [examples/examples.jl](examples/examples.jl), with all the plots saved to the folder [examples/img](examples/img/). The examples can also be seen in the [Literated examples](examples/build/examples.md).
 
 ## Roadmap
 
