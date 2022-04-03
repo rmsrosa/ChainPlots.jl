@@ -323,19 +323,19 @@ for t in themes
 end
 ````
 
-![](../img/nnr_default.png)
-![](../img/nnr_dark.png)
-![](../img/nnr_ggplot2.png)
-![](../img/nnr_juno.png)
-![](../img/nnr_lime.png)
-![](../img/nnr_orange.png)
-![](../img/nnr_sand.png)
-![](../img/nnr_solarized.png)
-![](../img/nnr_solarized_light.png)
-![](../img/nnr_wong.png)
-![](../img/nnr_wong2.png)
-![](../img/nnr_gruvbox_dark.png)
-![](../img/nnr_gruvbox_light.png)
+![](../imgnnr_default.png)
+![](../imgnnr_dark.png)
+![](../imgnnr_ggplot2.png)
+![](../imgnnr_juno.png)
+![](../imgnnr_lime.png)
+![](../imgnnr_orange.png)
+![](../imgnnr_sand.png)
+![](../imgnnr_solarized.png)
+![](../imgnnr_solarized_light.png)
+![](../imgnnr_wong.png)
+![](../imgnnr_wong2.png)
+![](../imgnnr_gruvbox_dark.png)
+![](../imgnnr_gruvbox_light.png)
 
 Back to `:default` theme.
 
@@ -345,6 +345,5 @@ theme(:default)
 
 ---
 
-*This page was generated using [Literate.jl](https://github.com/fredrikekre/Literate.jl), with*
-*`Literate.markdown("examples.jl", "build", execute = true, flavor = Literate.CommonMarkFlavor(), postprocess = s -> replace(s, "![](../img" => "![](../img"), credit=false)`.*
+*This page was generated using [Literate.jl](https://github.com/fredrikekre/Literate.jl), with `Literate.markdown("examples.jl", "build", execute = true, flavor = Literate.CommonMarkFlavor(), postprocess = s -> replace(s, r"(?!")!\[\]\(img\/" => "![](../img"), credit=false)`.*
 
