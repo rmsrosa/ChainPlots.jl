@@ -1,6 +1,6 @@
 # # Examples
 #
-# The aim of `ChainPlot.jl` is to provide a visualization of the topology of a neural network constructed with `Flux.Chain`. It does that by applying a `Plots.jl` recipe. The recipe is built by first constructing a MetaGraph.
+# The aim of `ChainPlot.jl` is to provide a visualization of the topology of a neural network constructed with `Flux.Chain`. It does that by applying a `Plots.jl` recipe. The recipe is built by first constructing a `MetaGraph`.
 #
 # Here, we consider some examples of building both a MetaGraph and some plots.
 #
@@ -73,9 +73,9 @@ plt = gplot(mg_nnr, locs_x, locs_y, nodefillc=nodefillc)
 #
 draw(PNG("img/mg_nnr.png", 600, 400), plt)
 
-# But it is easier to use a `Plots.jl` recipe, as we show next.
+# ## Now with Plots.jl
 
-# ## Plotting directly
+# It is easier, however, to use a `Plots.jl` recipe, as we show here.
 
 # ### Single layer networks
 #
