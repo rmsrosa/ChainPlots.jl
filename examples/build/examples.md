@@ -343,13 +343,8 @@ Back to `:default` theme.
 theme(:default)
 ````
 
-Build with `Literate.markdown("examples.jl", "build", execute = true, flavor = Literate.CommonMarkFlavor())`
-
-````julia
-nothing
-````
-
 ---
 
-*This page was generated using [Literate.jl](https://github.com/fredrikekre/Literate.jl).*
+*This page was generated using [Literate.jl](https://github.com/fredrikekre/Literate.jl), with*
+*`Literate.markdown("examples.jl", "build", execute = true, flavor = Literate.CommonMarkFlavor(), postprocess = s -> replace(s, "![](../img" => "![](../img"), credit=false)`.*
 
