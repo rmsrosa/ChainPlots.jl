@@ -86,7 +86,6 @@ plot(dl, title="$dl", titlefontsize=12)
 #-
 
 savefig("img/dl.png")
-@info "img/dl.png"
 
 #-
 
@@ -223,4 +222,4 @@ theme(:default)
 
 # ---
 
-# *This page was generated using [Literate.jl](https://github.com/fredrikekre/Literate.jl), with `Literate.markdown("examples.jl", "build", execute = true, flavor = Literate.CommonMarkFlavor(), postprocess = s -> replace(s, r"(?!\")!\[\]\(img\/" => "![](../img"), credit=false)`.*
+# *This page was generated using [Literate.jl](https://github.com/fredrikekre/Literate.jl), with `Literate.markdown("examples.jl", "build", execute = true, flavor = Literate.CommonMarkFlavor(), postprocess = s -> replace(s, r"(?!\")!\[\]\(img\/" => "![](../img/"), credit=false)`.*
