@@ -12,9 +12,9 @@ using RecipesBase
 import Base: getindex, length, size
 export chaingraph
 
-include("NeuronNumbers.jl")
+include("NeuralNumbers.jl")
 
-using .NeuronNumbers
+import .NeuralNumbers: cold, hot, fneutralize
 
 include("utils.jl")
 include("chaingraph.jl")

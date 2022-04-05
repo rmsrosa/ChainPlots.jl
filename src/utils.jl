@@ -82,13 +82,13 @@ function neuron_connections(m::Flux.Chain, input_data::Union{Nothing,Array,Tuple
     for (ln, l) in enumerate(mn)
         ldim = chain_dimensions[ln]
         layer_connections = Dict{Tuple,Vector{Tuple}}()
-        basis_element = fill(coldneuron, ldim)
+        basis_element = fill(cold, ldim)
         for idx in neuron_indices(ldim)
             connected = Vector{Tuple}()
-            basis_element[idx...] = hotneuron
-            union!(connected, Tuple.(findall(x -> x == hotneuron, l(basis_element))))
+            basis_element[idx...] = hot
+            union!(connected, Tuple.(findall(x -> x == hot, l(basis_element))))
             push!(layer_connections, idx => connected)
-            basis_element[idx...] = coldneuron
+            basis_element[idx...] = cold
         end
         push!(connections, layer_connections)
     end

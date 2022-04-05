@@ -6,36 +6,36 @@ using Test
 
 using ChainPlot
 
-import ChainPlot.NeuronNumbers: neutralneuron, coldneuron, hotneuron, fneutralize
+import ChainPlot.NeuralNumbers: cold, hot, fneutralize
 
 @testset "neurons" begin
     m = Chain(Dense(2, 3), RNN(3, 2))
     fm = fneutralize(m)
-    @test fm([coldneuron, hotneuron]) == [hotneuron, hotneuron]
+    @test fm([cold, hot]) == [hot, hot]
 
     m = Chain(x -> x[2:end] - x[1:end-1])
     fm = fneutralize(m)
-    inp = [coldneuron, hotneuron, coldneuron, coldneuron, coldneuron]
-    @test fm(inp) == [hotneuron, hotneuron, coldneuron, coldneuron]
+    inp = [cold, hot, cold, cold, cold]
+    @test fm(inp) == [hot, hot, cold, cold]
 
     m = Chain(Conv((2,), 1 => 1))
     fm = fneutralize(m)
-    inp = fill(coldneuron, 5, 1, 1)
-    inp[1] = hotneuron
-    @test fm(inp) == reshape([hotneuron; coldneuron; coldneuron; coldneuron;;;], 4, 1, 1)
-    inp[1:2] .= [coldneuron, hotneuron]
-    @test fm(inp) == reshape([hotneuron; hotneuron; coldneuron; coldneuron;;;], 4, 1, 1)
-    inp[2:3] .= [coldneuron, hotneuron]
-    @test fm(inp) == reshape([coldneuron; hotneuron; hotneuron; coldneuron;;;], 4, 1, 1)
-    inp[3:4] .= [coldneuron, hotneuron]
-    @test fm(inp) == reshape([coldneuron; coldneuron; hotneuron; hotneuron;;;], 4, 1, 1)
-    inp[4:5] .= [coldneuron, hotneuron]
-    @test fm(inp) == reshape([coldneuron; coldneuron; coldneuron; hotneuron;;;], 4, 1, 1)
+    inp = fill(cold, 5, 1, 1)
+    inp[1] = hot
+    @test fm(inp) == reshape([hot; cold; cold; cold;;;], 4, 1, 1)
+    inp[1:2] .= [cold, hot]
+    @test fm(inp) == reshape([hot; hot; cold; cold;;;], 4, 1, 1)
+    inp[2:3] .= [cold, hot]
+    @test fm(inp) == reshape([cold; hot; hot; cold;;;], 4, 1, 1)
+    inp[3:4] .= [cold, hot]
+    @test fm(inp) == reshape([cold; cold; hot; hot;;;], 4, 1, 1)
+    inp[4:5] .= [cold, hot]
+    @test fm(inp) == reshape([cold; cold; cold; hot;;;], 4, 1, 1)
 end
 
 @testset "activations" begin
     for fn in Flux.NNlib.ACTIVATIONS
-        for x in (coldneuron, neutralneuron, hotneuron)
+        for x in (cold, hot)
             @test eval(fn)(x) == x
         end
     end
@@ -50,7 +50,7 @@ end
     )
         @testset "$l" begin
             @eval m = Flux.$l($ni, $no)
-            mg = ChainPlot.chaingraph(m)
+            mg = chaingraph(m)
             @test nv(mg) == ni + no
             @test ne(mg) == ni * no
             @test get_prop(mg, 1, :layer_type) == get_prop(mg, ni, :layer_type) == "input layer"
@@ -77,7 +77,7 @@ end
         (Chain(Dense(2, 5, σ), RNN(5, 4, relu), LSTM(4, 4), GRU(4, 4), Dense(4, 3)), 22, 74),
         (Chain(Dense(5, 8), RNN(8, 20), LSTM(20, 10), Dense(10, 7)), 50, 470)
     )
-        mg = ChainPlot.chaingraph(m)
+        mg = chaingraph(m)
         @test nv(mg) == num_vert
         @test ne(mg) == num_edges
     end
@@ -85,7 +85,7 @@ end
 
 @testset "nnr" begin
     nnr = Chain(Dense(2, 5, σ), RNN(5, 4, relu), LSTM(4, 4), GRU(4, 4), Dense(4, 3))
-    mg = ChainPlot.chaingraph(nnr)
+    mg = chaingraph(nnr)
     @test nv(mg) == 2 + 5 + 4 + 4 + 4 + 3 == 22
     @test ne(mg) == 2 * 5 + 5 * 4 + 4 * 4 + 4 * 4 + 4 * 3 == 74
     @test all(==("input layer"), get_prop.(Ref(mg), 1:2, :layer_type))
@@ -115,7 +115,7 @@ end
     x³(x) = x .^ 3
     dx(x) = x[2:end] - x[1:end-1]
     nna = Chain(Dense(2, 5, σ), dx, RNN(4, 6, relu), x³, LSTM(6, 4), GRU(4, 4), Dense(4, 3))
-    mg = ChainPlot.chaingraph(nna)
+    mg = chaingraph(nna)
     @test nv(mg) == 2 + 5 + 4 + 6 + 6 + 4 + 4 + 3 == 34
     @test ne(mg) == 2 * 5 + 2 * 4 + 4 * 6 + 1 * 6  + 6 * 4 + 4 * 4 + 4 * 3 == 100
 end
@@ -126,13 +126,13 @@ end
     
     m = Chain(x³, dx, LSTM(5, 4), Dense(4, 5))
     input_data = rand(Float32, 6)
-    mg = ChainPlot.chaingraph(m, input_data)
+    mg = chaingraph(m, input_data)
     @test nv(mg) == 6 + 6 + 5 + 4 + 5 == 26
     @test ne(mg) == 6 + 2 * 5 + 5 * 4 + 4 * 5 == 56
 
     m = Chain(x³, dx, LSTM(10, 4), Dense(4, 2))
     input_data = rand(Float32, 11)
-    mg = ChainPlot.chaingraph(m, input_data)
+    mg = chaingraph(m, input_data)
     @test nv(mg) == 38
     @test ne(mg) == 79
 end
@@ -145,31 +145,31 @@ end
 
     m = Chain(Conv((2,), 1 => 1))
     input_data = rand(Float32, 5, 1, 1)
-    mg = ChainPlot.chaingraph(m, input_data)
+    mg = chaingraph(m, input_data)
     nv(mg) == 5 + 4 == 9
     ne(mg) == 2 * 4 == 8
 
     m = Chain(x³, Dense(3, 6), reshape6x1x1, Conv((2,), 1 => 1), vec, Dense(5, 4))
     input_data = rand(Float32, 3)
-    mg = ChainPlot.chaingraph(m, input_data)
+    mg = chaingraph(m, input_data)
     @test nv(mg) == 3 + 3 + 6 + 6 + 5 + 5 + 4 == 32
     @test ne(mg) == 3 + 3 * 6 + 6 + 2 * 5 + 5 + 5 * 4 == 62
 
     m = Chain(x³, Dense(4, 16), reshape4x4x1x1, Conv((2, 2), 1 => 1), vec)
     input_data = rand(Float32, 4)
-    mg = ChainPlot.chaingraph(m, input_data)
+    mg = chaingraph(m, input_data)
     @test nv(mg) == 4 + 4 + 16 + 16 + 9 + 9 == 58
     @test ne(mg) == 4 + 4 * 16 + 16 + 9 * 4 + 9 == 129
 
     m = Chain(Conv((3,3), 1=>2))
     input_data = rand(Float32, 10, 10, 1, 1)
-    mg = ChainPlot.chaingraph(m, input_data)
+    mg = chaingraph(m, input_data)
     @test nv(mg) == 10 * 10 + 8 * 8 * 2 == 228
     @test ne(mg) == 8 * 8 * 9 * 2 == 1152
 
     m = Chain(Conv((3, 3), 1 => 4, leakyrelu, pad=1), GroupNorm(4, 2))
     input_data = rand(6,5,1,1)
-    mg = ChainPlot.chaingraph(m, input_data)
+    mg = chaingraph(m, input_data)
     @test nv(mg) == 6 * 5 + 6 * 5 * 4 * 2 == 270
     @test ne(mg) == (4 * 3 * 9 + ( 2 * 4 + 2 * 3 ) * 6 + 4 * 4 ) * 4 + ( 6 * 5 )^2 * 2 * 4 == 8032
 end

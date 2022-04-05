@@ -1,10 +1,8 @@
-module NeuronNumbers
+module NeuralNumbers
 
 import Random
 import Base: isless, ==
 import Functors: fmap
-
-export NeuronState, coldneuron, hotneuron, fneutralize
 
 """
     NeuronState <: Number
@@ -12,29 +10,26 @@ export NeuronState, coldneuron, hotneuron, fneutralize
 NeuronState encodes the "state" of a neuron as an Int8.
 
 The possible states are:
-    * `state = Int8(-1)` for a "cold", or "off", state, meaning it can be triggered by a signal but it has not yet been triggered
-    * `state = Int8(0)` for a "neutral", state, meaning it is a neutral element in any diadic operation.
+    * `state = Int8(0)` for a "cold", or "off", state, meaning it can be triggered by a signal but it has not yet been triggered. It works as a neutral element in any diadic operation.
     * `state = Int8(1)` for a "hot", or "on", state, meaning it has been triggered by a signal.
 
 The aliases are
-    * `coldneuron = NeuronState(Int8(-1))`
-    * `neutralneuron` = NeuronState(Int8(0))
-    * `hotneuron = NeuronState(Int8(1))`
+    * `cold = NeuronState(Int8(0))`
+    * `hot = NeuronState(Int8(1))`
 """
 struct NeuronState <: Number
     state::Int8
 end
 
-const neutralneuron = NeuronState(Int8(-1))
-const coldneuron = NeuronState(Int8(0))
-const hotneuron = NeuronState(Int8(1))
+const cold = NeuronState(Int8(0))
+const hot = NeuronState(Int8(1))
 
-Base.show(io::IO, x::NeuronState) = print(io, x == coldneuron ? "cold   " : x == hotneuron ? "hot    " : "neutral")
+Base.show(io::IO, x::NeuronState) = print(io, x == hot ? "hot    " : "neutral")
 Base.show(io::IO, ::MIME"text/plain", x::NeuronState) = print(io, "NeuronState:\n  ", x)
 
-NeuronState(::Number) = neutralneuron
+NeuronState(::Number) = cold
 (::Type{NeuronState})(x::NeuronState) = x
-Base.convert(::Type{NeuronState}, y::Number) = neutralneuron
+Base.convert(::Type{NeuronState}, y::Number) = cold
 Base.convert(::Type{NeuronState}, y::NeuronState) = y
 
 Base.float(x::NeuronState) = x
@@ -47,18 +42,18 @@ isless(x::NeuronState, ::Number) = false
 isless(::Number, x::NeuronState) = true
 isless(x::NeuronState, y::NeuronState) = isless(x.state, y.state)
 
-Base.one(::Type{NeuronState}) = neutralneuron
-Base.zero(::Type{NeuronState}) = neutralneuron
-Base.one(::NeuronState) = neutralneuron
-Base.oneunit(::NeuronState) = neutralneuron
-Base.zero(::NeuronState) = neutralneuron
+Base.one(::Type{NeuronState}) = cold
+Base.zero(::Type{NeuronState}) = cold
+Base.one(::NeuronState) = cold
+Base.oneunit(::NeuronState) = cold
+Base.zero(::NeuronState) = cold
 
-Base.iszero(x::NeuronState) = x == neutralneuron
+Base.iszero(x::NeuronState) = x == cold
 Base.isnan(::NeuronState) = false
 Base.isfinite(::NeuronState) = true
 Base.isinf(::NeuronState) = false
-Base.typemin(::Type{NeuronState}) = coldneuron
-Base.typemax(::Type{NeuronState}) = hotneuron
+Base.typemin(::Type{NeuronState}) = cold
+Base.typemax(::Type{NeuronState}) = hot
 
 Base.size(::NeuronState) = ()
 Base.size(::NeuronState, d::Integer) = d < 1 ? throw(BoundsError()) : 1
@@ -99,7 +94,7 @@ Base.big(::NeuronState) = NeuronState
 Base.promote_rule(::Type{NeuronState}, ::Type{<:Number}) = NeuronState
 
 Random.rand(rng::Random.AbstractRNG, ::Random.SamplerType{NeuronState}) =
-    rand(rng, (neutralneuron, coldneuron, hotneuron))
+    rand(rng, (cold, hot))
 
 for f in [:+, :-, :abs, :abs2, :inv, :tanh, :sqrt,
     :exp, :log, :log1p, :log2, :log10,
@@ -121,7 +116,7 @@ for f in [:+, :-, :*, :/, :^, :mod, :div, :rem, :widemul]
     @eval Base.$f(::Number, y::NeuronState) = y
 end
 
-Base.:*(x::NeuronState, b::Bool) = b === true ? x : coldneuron
+Base.:*(x::NeuronState, b::Bool) = b === true ? x : cold
 Base.:*(b::Bool, x::NeuronState) = *(x, b)
 
 Base.clamp(x::NeuronState, y...) = x
@@ -129,8 +124,8 @@ Base.clamp(x::NeuronState, y...) = x
 """
     fneutralize(m)
 
-Convert the parameters of a model to `NeuronState` with value `coldneuron`.
+Convert the parameters of a model to `NeuronState` with value `cold`.
 """
-fneutralize(m) = fmap(x -> x isa AbstractArray{<:Number} ? fill(neutralneuron, size(x)) : x, m)
+fneutralize(m) = fmap(x -> x isa AbstractArray{<:Number} ? fill(cold, size(x)) : x, m)
 
 end # module
