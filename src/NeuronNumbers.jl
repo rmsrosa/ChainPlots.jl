@@ -134,7 +134,7 @@ Convert a Number to coldneuron and leave other types untouched.
 """
 neutralize(x) = x isa Number ? neutralneuron : x
 
-adapt_storage(NeuronState, xs::AbstractArray{<:Number}) = convert.(NeuronState, xs)
+adapt_storage(::Type{NeuronState}, xs::AbstractArray{<:Number}) = convert.(NeuronState, xs)
 
 """
     fneuronstate(m)
