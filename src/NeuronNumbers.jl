@@ -2,7 +2,6 @@ module NeuronNumbers
 
 import Random
 import Base: isless, ==
-import Adapt: adapt, adapt_storage
 import Functors: fmap
 
 export NeuronState, coldneuron, hotneuron, fneutralize
@@ -126,22 +125,6 @@ Base.:*(x::NeuronState, b::Bool) = b === true ? x : coldneuron
 Base.:*(b::Bool, x::NeuronState) = *(x, b)
 
 Base.clamp(x::NeuronState, y...) = x
-
-"""
-    neutralize(x)
-
-Convert a Number to coldneuron and leave other types untouched.
-"""
-neutralize(x) = x isa Number ? neutralneuron : x
-
-adapt_storage(::Type{NeuronState}, xs::AbstractArray{<:Number}) = convert.(NeuronState, xs)
-
-"""
-    fneuronstate(m)
-
-Convert the parameters of a model to `NeuronState`.
-"""
-fneuronstate(m) = fmap(x -> x isa AbstractArray{<:Number} ? adapt(NeuronState, x) : x, m)
 
 """
     fneutralize(m)
