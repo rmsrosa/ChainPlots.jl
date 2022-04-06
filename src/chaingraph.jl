@@ -1,17 +1,28 @@
 """
+    NEURON_COLORS::Dict{Symbol, Symbol}
+
+Specify the color for each type of layer.
+"""
+NEURON_COLORS = Dict(
+    :Any => :gray,
+    :Dense => :lightgreen,
+    :RNNCell => :lightskyblue1,
+    :LSTMCell => :skyblue2,
+    :GRUCell => :skyblue3,
+    :Conv => :plum,
+    :input_layer => :yellow,
+    :output_layer => :orange
+)
+"""
     neuron_color()
 
-Define color for each specific type of neuron, depending ot the type of layer it belongs to.
+Grab the color for each specific type of neuron.
+    
+The color depends on the type of layer the neuron belongs to and the colorset given by [`NEURON_COLORS`](@ref).
 """
-neuron_color(::Any) = :gray
-neuron_color(::Flux.Dense) = :lightgreen
-neuron_color(::Flux.RNNCell) = :lightskyblue1
-neuron_color(::Flux.LSTMCell) = :skyblue2
-neuron_color(::Flux.GRUCell) = :skyblue3
-neuron_color(r::Flux.Recur) = neuron_color(r.cell)
-neuron_color(::Flux.Conv) = :plum
-neuron_color(s::Symbol) = s == :input_layer ? :yellow : s == :output_layer ? :orange :
-                          throw(ArgumentError("Color not defined for the given symbol $s."))
+neuron_color(::T; neuron_colorset = NEURON_COLORS) where T = nameof(T) in keys(neuron_colorset) ? neuron_colorset[nameof(T)] : neuron_colorset[:Any]
+neuron_color(r::Flux.Recur; neuron_colorset = NEURON_COLORS) = neuron_color(r.cell; neuron_colorset)
+neuron_color(s::Symbol; neuron_colorset = NEURON_COLORS) = s in keys(neuron_colorset) ? neuron_colorset[s] : throw(ArgumentError("Color not defined for the given symbol $s."))
 
 """
     projection(z, center, max_widths, dimensions)
@@ -93,7 +104,7 @@ end
 
 Return a MetaGraph representing the graph structure of the neural network with an input of shape `ldim`.
 
-See [`chaingraph(m::Flux.Chain, input_data::Array)`](@ref) for the properties of each node of the graph.
+See [`chaingraph`](@ref) for the properties of each node of the graph.
 """
 chaingraph(m::Flux.Chain, ldim::Tuple) = chaingraph(m, rand(Float32, ldim))
 
@@ -104,7 +115,7 @@ Return a MetaGraph representing the graph structure of the neural network.
 
 In this case, the first layer must be a layer with fixed input dimension.
 
-See [`chaingraph(m::Flux.Chain, input_data::Array)`](@ref) for the properties of each node of the graph.
+See [`chaingraph`](@ref) for the properties of each node of the graph.
 """
 function chaingraph(m::Flux.Chain, ::Nothing=nothing)
     m.layers[1] isa Union{FIXED_INPUT_DIM_LAYERS...} || throw(ArgumentError("An input data or shape is required when the first layer accepts variable-dimension input"))
