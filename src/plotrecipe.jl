@@ -47,7 +47,8 @@ Plot a Flux.Chain neural network according to recipe.
     m::Flux.Chain,
     input_data::Union{Nothing,Array}=nothing;
     connection_color=:gray68,
-    neuron_color=:auto
+    neuron_color=:auto,
+    neuron_shape=:auto
 )
     chain_dimensions = get_dimensions(m, input_data)
     max_width, = maximum(chain_dimensions)
@@ -93,14 +94,16 @@ Plot a Flux.Chain neural network according to recipe.
             [scale_sz(layerplotattributes(get_layer_type(m, get_prop(mg, v, :layer_number))).mrkrsize, max_width)
              for v in vertices(mg) if get_prop(mg, v, :layer_number) == m_len]
         )
-        markershape --> vcat(
-            [layerplotattributes(get_layer_type(m, get_prop(mg, v, :layer_number))).mrkrshape[1]
-             for v in vertices(mg)],
-            [layerplotattributes(get_layer_type(m, get_prop(mg, v, :layer_number))).mrkrshape[end]
-             for v in vertices(mg)
-             if length(layerplotattributes(get_layer_type(m, get_prop(mg, v, :layer_number))).mrkrshape) > 1],
-            [layerplotattributes(:output_layer).mrkrshape[end] for v in vertices(mg) if get_prop(mg, v, :layer_number) == m_len]
-        )
+        markershape --> begin
+            neuron_shape == :auto ? vcat(
+                [layerplotattributes(get_layer_type(m, get_prop(mg, v, :layer_number))).mrkrshape[1]
+                 for v in vertices(mg)],
+                [layerplotattributes(get_layer_type(m, get_prop(mg, v, :layer_number))).mrkrshape[end]
+                 for v in vertices(mg)
+                 if length(layerplotattributes(get_layer_type(m, get_prop(mg, v, :layer_number))).mrkrshape) > 1],
+                [layerplotattributes(:output_layer).mrkrshape[end] for v in vertices(mg) if get_prop(mg, v, :layer_number) == m_len]
+            ) : neuron_shape
+        end
         markercolor --> begin
             neuron_color == :auto ? vcat(
                 [layerplotattributes(get_layer_type(m, get_prop(mg, v, :layer_number))).mrkrcolor[1]
