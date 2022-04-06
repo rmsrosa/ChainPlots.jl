@@ -4,16 +4,15 @@ using Flux
 import Flux.NNlib: check_dims, input_size, calc_padding_regions, channels_in, kernel_size, channels_out, padding, dilation, stride, flipkernel
 
 include("../src/ChainPlot.jl")
-include("../src/NeuralNumbers.jl")
 
 using .ChainPlot
-using .NeuronNumbers
+import ChainPlot.NeuralNumbers: cold, hot, fneutralize
 
 m = Chain(Conv((2,), 1 => 1))
 
-fm = fcooloffneurons(m)
+fm = fneutralize(m)
 
-inp = [hotneuron; coldneuron; coldneuron; coldneuron; coldneuron;;;]
+inp = [hot; cold; cold; cold; cold;;;]
 
 w = fm[1].weight
 w = [w[:,:,1];;;;;]

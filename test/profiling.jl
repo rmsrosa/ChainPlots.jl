@@ -1,45 +1,45 @@
 include("../src/ChainPlot.jl")
-include("../src/NeuralNumbers.jl")
 
 using Flux
 using Plots
 using Test
-using .NeuronNumbers
 using .ChainPlot
 
+import .ChainPlot.NeuralNumbers: cold, hot, fneutralize
+
 m = Chain(Conv((2,), 1 => 1))
-fm = fcooloffneurons(m)
+fm = fneutralize(m)
 
 inp = [1; 0; 0; 0; 0;;;]
 @profview m(inp)
 
-inp = [hotneuron; coldneuron; coldneuron; coldneuron; coldneuron;;;]
+inp = [hot; cold; cold; cold; cold;;;]
 
-@test m(inp) == [hotneuron; coldneuron; coldneuron; coldneuron;;;]
-@test fm(inp) == [hotneuron; coldneuron; coldneuron; coldneuron;;;]
+@test m(inp) == [hot; cold; cold; cold;;;]
+@test fm(inp) == [hot; cold; cold; cold;;;]
 
-inp = [coldneuron; hotneuron; coldneuron; coldneuron; coldneuron;;;]
+inp = [cold; hot; cold; cold; cold;;;]
 
-@test m(inp) == [hotneuron; hotneuron; coldneuron; coldneuron;;;]
-@test fm(inp) == [hotneuron; hotneuron; coldneuron; coldneuron;;;]
+@test m(inp) == [hot; hot; cold; cold;;;]
+@test fm(inp) == [hot; hot; cold; cold;;;]
 
-inp = [coldneuron; coldneuron; coldneuron; coldneuron; hotneuron;;;]
+inp = [cold; cold; cold; cold; hot;;;]
 
-@test m(inp) == [coldneuron; coldneuron; coldneuron; hotneuron;;;]
-@test fm(inp) == [coldneuron; coldneuron; coldneuron; hotneuron;;;]
+@test m(inp) == [cold; cold; cold; hot;;;]
+@test fm(inp) == [cold; cold; cold; hot;;;]
 
 @profview m(inp)
 
 m2d = Chain(Conv((2,2), 1 => 1))
-fm2d = fcooloffneurons(m2d)
+fm2d = fneutralize(m2d)
 
 m2d([1 0 0; 0 0 0; 0 0 0; 0 0 0; 0 0 0;;;;])
 
-inp2d = [hotneuron coldneuron coldneuron;
-       coldneuron coldneuron coldneuron;
-       coldneuron coldneuron coldneuron;
-       coldneuron coldneuron coldneuron;
-       coldneuron coldneuron coldneuron;;;;]
+inp2d = [hot cold cold;
+       cold cold cold;
+       cold cold cold;
+       cold cold cold;
+       cold cold cold;;;;]
 
 m2d(inp2d)
 fm2d(inp2d)
