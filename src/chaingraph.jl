@@ -14,11 +14,11 @@ NEURON_COLORS = Dict(
     :output_layer => :orange
 )
 """
-    neuron_color()
+    neuron_color(s; neuron_colors = NEURON_COLORS)
 
 Grab the color for each specific type of neuron.
     
-The color depends on the type of layer the neuron belongs to and the colorset given by [`NEURON_COLORS`](@ref).
+The color depends on the type of layer the neuron belongs to and the colorset given `neuron_colors`, which defaults to [`NEURON_COLORS`](@ref).
 """
 neuron_color(::T; neuron_colors = NEURON_COLORS) where T = nameof(T) in keys(neuron_colors) ? neuron_colors[nameof(T)] : neuron_colors[:Any]
 neuron_color(r::Flux.Recur; neuron_colors = NEURON_COLORS) = neuron_color(r.cell; neuron_colors)
