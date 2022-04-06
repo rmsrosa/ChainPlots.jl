@@ -68,7 +68,7 @@ Plot a Flux.Chain neural network according to recipe.
 
     # draw connections
     @series begin
-        seriescolor --> :gray
+        seriescolor --> :gray68
         dataseries = [
             ([get_prop(mg, e.src, :loc_x), get_prop(mg, e.dst, :loc_x)],
                 [get_prop(mg, e.src, :loc_y), get_prop(mg, e.dst, :loc_y)]) for e in edges(mg)]
