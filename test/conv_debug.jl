@@ -4,7 +4,7 @@ using Flux
 import Flux.NNlib: check_dims, input_size, calc_padding_regions, channels_in, kernel_size, channels_out, padding, dilation, stride, flipkernel
 
 include("../src/ChainPlot.jl")
-include("../src/NeuronNumbers.jl")
+include("../src/NeuralNumbers.jl")
 
 using .ChainPlot
 using .NeuronNumbers

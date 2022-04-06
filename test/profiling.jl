@@ -1,5 +1,5 @@
 include("../src/ChainPlot.jl")
-include("../src/NeuronNumbers.jl")
+include("../src/NeuralNumbers.jl")
 
 using Flux
 using Plots
