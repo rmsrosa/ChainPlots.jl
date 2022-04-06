@@ -43,7 +43,10 @@ get_layer_type(m::Flux.Chain, i::Int) = i == 0 ? :input_layer : m[i]
 
 Plot a Flux.Chain neural network according to recipe.
 """
-@recipe function plot(m::Flux.Chain, input_data::Union{Nothing,Array}=nothing)
+@recipe function plot(
+    m::Flux.Chain,
+    input_data::Union{Nothing,Array}=nothing; connection_color=:gray68
+)
     chain_dimensions = get_dimensions(m, input_data)
     max_width, = maximum(chain_dimensions)
     mg = chaingraph(m, input_data)
@@ -68,7 +71,7 @@ Plot a Flux.Chain neural network according to recipe.
 
     # draw connections
     @series begin
-        seriescolor --> :gray68
+        seriescolor --> connection_color
         dataseries = [
             ([get_prop(mg, e.src, :loc_x), get_prop(mg, e.dst, :loc_x)],
                 [get_prop(mg, e.src, :loc_y), get_prop(mg, e.dst, :loc_y)]) for e in edges(mg)]
