@@ -20,9 +20,9 @@ Grab the color for each specific type of neuron.
     
 The color depends on the type of layer the neuron belongs to and the colorset given by [`NEURON_COLORS`](@ref).
 """
-neuron_color(::T; neuron_colorset = NEURON_COLORS) where T = nameof(T) in keys(neuron_colorset) ? neuron_colorset[nameof(T)] : neuron_colorset[:Any]
-neuron_color(r::Flux.Recur; neuron_colorset = NEURON_COLORS) = neuron_color(r.cell; neuron_colorset)
-neuron_color(s::Symbol; neuron_colorset = NEURON_COLORS) = s in keys(neuron_colorset) ? neuron_colorset[s] : throw(ArgumentError("Color not defined for the given symbol $s."))
+neuron_color(::T; neuron_colors = NEURON_COLORS) where T = nameof(T) in keys(neuron_colors) ? neuron_colors[nameof(T)] : neuron_colors[:Any]
+neuron_color(r::Flux.Recur; neuron_colors = NEURON_COLORS) = neuron_color(r.cell; neuron_colors)
+neuron_color(s::Symbol; neuron_colors = NEURON_COLORS) = s in keys(neuron_colors) ? neuron_colors[s] : throw(ArgumentError("Color not defined for the given symbol $s."))
 
 """
     projection(z, center, max_widths, dimensions)

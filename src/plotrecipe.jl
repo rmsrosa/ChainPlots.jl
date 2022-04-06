@@ -10,28 +10,28 @@ lgru_verts = vcat([(0.5 * sin(2π * n / 20), 1.2 + 1.4 * cos(2π * n / 20)) for 
 
 Retrive plot attributes for each specific type of layer.
 """
-function layerplotattributes(s::Symbol; neuron_colorset = NEURON_COLORS)
+function layerplotattributes(s::Symbol; neuron_colors = NEURON_COLORS)
     if s == :input_layer
-        return (mrkrsize=12, mrkrshape=[Main.Plots.Shape(circle_verts), :rtriangle], mrkrcolor=[false, neuron_colorset[s]])
+        return (mrkrsize=12, mrkrshape=[Main.Plots.Shape(circle_verts), :rtriangle], mrkrcolor=[false, neuron_colors[s]])
     elseif s == :output_layer
-        return (mrkrsize=12, mrkrshape=[:rtriangle], mrkrcolor=[neuron_colorset[s]])
+        return (mrkrsize=12, mrkrshape=[:rtriangle], mrkrcolor=[neuron_colors[s]])
     elseif s == :Dense
-        return (mrkrsize=12, mrkrshape=[:circle], mrkrcolor=[neuron_colorset[s]])
+        return (mrkrsize=12, mrkrshape=[:circle], mrkrcolor=[neuron_colors[s]])
     elseif s == :RNNCell
-        return (mrkrsize=12, mrkrshape=[Main.Plots.Shape(lrnn_verts), :circle], mrkrcolor=[false, neuron_colorset[s]])
+        return (mrkrsize=12, mrkrshape=[Main.Plots.Shape(lrnn_verts), :circle], mrkrcolor=[false, neuron_colors[s]])
     elseif s == :LSTMCell
-        return (mrkrsize=12, mrkrshape=[Main.Plots.Shape(lstm_verts), :circle], mrkrcolor=[false, neuron_colorset[s]])
+        return (mrkrsize=12, mrkrshape=[Main.Plots.Shape(lstm_verts), :circle], mrkrcolor=[false, neuron_colors[s]])
     elseif s == :GRUCell
-        return (mrkrsize=12, mrkrshape=[Main.Plots.Shape(lgru_verts), :circle], mrkrcolor=[false, neuron_colorset[s]])
+        return (mrkrsize=12, mrkrshape=[Main.Plots.Shape(lgru_verts), :circle], mrkrcolor=[false, neuron_colors[s]])
     elseif s == :Conv
-        return (mrkrsize=10, mrkrshape=[:square], mrkrcolor=[neuron_colorset[s]])
+        return (mrkrsize=10, mrkrshape=[:square], mrkrcolor=[neuron_colors[s]])
     else
-        return (mrkrsize=12, mrkrshape=[:circle], mrkrcolor=[neuron_colorset[:Any]])
+        return (mrkrsize=12, mrkrshape=[:circle], mrkrcolor=[neuron_colors[:Any]])
     end
 end
 
 """
-    plot(m::Flux.Chain, input_data::Union{Nothing,Array} = nothing)
+    plot(m::Flux.Chain, input_data::Union{Nothing,Array} = nothing; kargs...)
 
 Plot a Flux.Chain neural network according to recipe.
 """
@@ -39,7 +39,7 @@ Plot a Flux.Chain neural network according to recipe.
     m::Flux.Chain,
     input_data::Union{Nothing,Array}=nothing;
     connection_color=:gray68,
-    neuron_color=:auto,
+    neuron_colors=NEURON_COLORS,
     neuron_shape=:auto
 )
     chain_dimensions = get_dimensions(m, input_data)
@@ -97,16 +97,16 @@ Plot a Flux.Chain neural network according to recipe.
             ) : neuron_shape
         end
         markercolor --> begin
-            neuron_color == :auto ? vcat(
-                [layerplotattributes(get_prop(mg, v, :layer_type)).mrkrcolor[1]
+            neuron_colors isa Dict ? vcat(
+                [layerplotattributes(get_prop(mg, v, :layer_type); neuron_colors).mrkrcolor[1]
                  for v in vertices(mg)],
-                [layerplotattributes(get_prop(mg, v, :layer_type)).mrkrcolor[end]
+                [layerplotattributes(get_prop(mg, v, :layer_type); neuron_colors).mrkrcolor[end]
                  for v in vertices(mg)
                  if length(layerplotattributes(get_prop(mg, v, :layer_type)).mrkrshape) > 1],
-                [layerplotattributes(:output_layer).mrkrcolor[end]
+                [layerplotattributes(:output_layer; neuron_colors).mrkrcolor[end]
                  for v in vertices(mg)
                  if get_prop(mg, v, :layer_number) == m_len]
-            ) : neuron_color
+            ) : neuron_colors
         end
         dataseries = vcat(
             [(get_prop(mg, v, :loc_x), get_prop(mg, v, :loc_y)) for v in vertices(mg)],
