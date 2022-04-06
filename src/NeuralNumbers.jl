@@ -5,7 +5,7 @@ import Base: isless, ==
 import Functors: fmap
 
 """
-    NeuronState <: Number
+    NeuronState <: Real
 
 NeuronState encodes the "state" of a neuron as an Int8.
 
@@ -17,14 +17,14 @@ The aliases are
     * `cold = NeuronState(Int8(0))`
     * `hot = NeuronState(Int8(1))`
 """
-struct NeuronState <: Number
+struct NeuronState <: Real
     state::Int8
 end
 
 const cold = NeuronState(Int8(0))
 const hot = NeuronState(Int8(1))
 
-Base.show(io::IO, x::NeuronState) = print(io, x == hot ? "hot    " : "neutral")
+Base.show(io::IO, x::NeuronState) = print(io, x == hot ? "hot" : "cold")
 Base.show(io::IO, ::MIME"text/plain", x::NeuronState) = print(io, "NeuronState:\n  ", x)
 
 NeuronState(::Number) = cold
@@ -42,10 +42,13 @@ isless(x::NeuronState, ::Number) = false
 isless(::Number, x::NeuronState) = true
 isless(x::NeuronState, y::NeuronState) = isless(x.state, y.state)
 
+Base.:<(x::NeuronState, y::NeuronState) = x.state < y.state
+Base.:≤(x::NeuronState, y::NeuronState) = x.state ≤ y.state
+
 Base.one(::Type{NeuronState}) = cold
 Base.zero(::Type{NeuronState}) = cold
-Base.one(::NeuronState) = cold
-Base.oneunit(::NeuronState) = cold
+Base.one(x::NeuronState) = x
+Base.oneunit(x::NeuronState) = x
 Base.zero(::NeuronState) = cold
 
 Base.iszero(x::NeuronState) = x == cold
@@ -93,8 +96,7 @@ Base.big(::NeuronState) = NeuronState
 
 Base.promote_rule(::Type{NeuronState}, ::Type{<:Number}) = NeuronState
 
-Random.rand(rng::Random.AbstractRNG, ::Random.SamplerType{NeuronState}) =
-    rand(rng, (cold, hot))
+Random.rand(rng::Random.AbstractRNG, ::Random.SamplerType{NeuronState}) = cold
 
 for f in [:+, :-, :abs, :abs2, :inv, :tanh, :sqrt,
     :exp, :log, :log1p, :log2, :log10,
