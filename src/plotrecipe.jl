@@ -45,7 +45,9 @@ Plot a Flux.Chain neural network according to recipe.
 """
 @recipe function plot(
     m::Flux.Chain,
-    input_data::Union{Nothing,Array}=nothing; connection_color=:gray68
+    input_data::Union{Nothing,Array}=nothing;
+    connection_color=:gray68,
+    neuron_color=:auto
 )
     chain_dimensions = get_dimensions(m, input_data)
     max_width, = maximum(chain_dimensions)
@@ -99,16 +101,18 @@ Plot a Flux.Chain neural network according to recipe.
              if length(layerplotattributes(get_layer_type(m, get_prop(mg, v, :layer_number))).mrkrshape) > 1],
             [layerplotattributes(:output_layer).mrkrshape[end] for v in vertices(mg) if get_prop(mg, v, :layer_number) == m_len]
         )
-        markercolor --> vcat(
-            [layerplotattributes(get_layer_type(m, get_prop(mg, v, :layer_number))).mrkrcolor[1]
-             for v in vertices(mg)],
-            [layerplotattributes(get_layer_type(m, get_prop(mg, v, :layer_number))).mrkrcolor[end]
-             for v in vertices(mg)
-             if length(layerplotattributes(get_layer_type(m, get_prop(mg, v, :layer_number))).mrkrshape) > 1],
-            [layerplotattributes(:output_layer).mrkrcolor[end]
-             for v in vertices(mg)
-             if get_prop(mg, v, :layer_number) == m_len]
-        )
+        markercolor --> begin
+            neuron_color == :auto ? vcat(
+                [layerplotattributes(get_layer_type(m, get_prop(mg, v, :layer_number))).mrkrcolor[1]
+                 for v in vertices(mg)],
+                [layerplotattributes(get_layer_type(m, get_prop(mg, v, :layer_number))).mrkrcolor[end]
+                 for v in vertices(mg)
+                 if length(layerplotattributes(get_layer_type(m, get_prop(mg, v, :layer_number))).mrkrshape) > 1],
+                [layerplotattributes(:output_layer).mrkrcolor[end]
+                 for v in vertices(mg)
+                 if get_prop(mg, v, :layer_number) == m_len]
+            ) : neuron_color
+        end
         dataseries = vcat(
             [(get_prop(mg, v, :loc_x), get_prop(mg, v, :loc_y)) for v in vertices(mg)],
             [(get_prop(mg, v, :loc_x), get_prop(mg, v, :loc_y)) for v in vertices(mg)
