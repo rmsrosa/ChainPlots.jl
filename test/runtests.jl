@@ -53,9 +53,9 @@ end
             mg = chaingraph(m)
             @test nv(mg) == ni + no
             @test ne(mg) == ni * no
-            @test get_prop(mg, 1, :layer_type) == get_prop(mg, ni, :layer_type) == "input layer"
-            @test occursin("$l", get_prop(mg, ni + 1, :layer_type))
-            @test occursin("$l", get_prop(mg, ni + no, :layer_type))
+            @test get_prop(mg, 1, :layer_name) == get_prop(mg, ni, :layer_name) == "input layer"
+            @test occursin("$l", get_prop(mg, ni + 1, :layer_name))
+            @test occursin("$l", get_prop(mg, ni + no, :layer_name))
             @test get_prop(mg, 1, :layer_number) == 0
             @test get_prop(mg, ni + 1, :layer_number) == 1
             @test get_prop(mg, 1, :layer_center) == ni / 2
@@ -88,12 +88,12 @@ end
     mg = chaingraph(nnr)
     @test nv(mg) == 2 + 5 + 4 + 4 + 4 + 3 == 22
     @test ne(mg) == 2 * 5 + 5 * 4 + 4 * 4 + 4 * 4 + 4 * 3 == 74
-    @test all(==("input layer"), get_prop.(Ref(mg), 1:2, :layer_type))
-    @test all(==("Dense(2, 5, σ)"), get_prop.(Ref(mg), 3:7, :layer_type))
-    @test all(==("Recur(RNNCell(5, 4, relu))"), get_prop.(Ref(mg), 8:11, :layer_type))
-    @test all(==("Recur(LSTMCell(4, 4))"), get_prop.(Ref(mg), 12:15, :layer_type))
-    @test all(==("Recur(GRUCell(4, 4))"), get_prop.(Ref(mg), 16:19, :layer_type))
-    @test all(==("Dense(4, 3)"), get_prop.(Ref(mg), 20:22, :layer_type))
+    @test all(==("input layer"), get_prop.(Ref(mg), 1:2, :layer_name))
+    @test all(==("Dense(2, 5, σ)"), get_prop.(Ref(mg), 3:7, :layer_name))
+    @test all(==("Recur(RNNCell(5, 4, relu))"), get_prop.(Ref(mg), 8:11, :layer_name))
+    @test all(==("Recur(LSTMCell(4, 4))"), get_prop.(Ref(mg), 12:15, :layer_name))
+    @test all(==("Recur(GRUCell(4, 4))"), get_prop.(Ref(mg), 16:19, :layer_name))
+    @test all(==("Dense(4, 3)"), get_prop.(Ref(mg), 20:22, :layer_name))
     @test get_prop(mg, 1, :index_in_layer) == (1,)
     @test get_prop(mg, 2, :index_in_layer) == (2,)
     @test get_prop(mg, 3, :index_in_layer) == (1,)

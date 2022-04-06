@@ -48,8 +48,8 @@ Each node represents a neuron of the Chain `m` and contains the following proper
         with `0` indicating the input layer, `1, …, length(m)-1` 
         indicating the hidden layers, and with `length(m)` indicating
         the output layer);
-    `:layer_type`: string indicating the layer type it is part of in the Chain
-        (e.g. "Dense()", "Recur()", "Conv()", …);
+    `:layer_type`: symbol indicating the layer type it is part of in the Chain
+        (e.g. `:Dense`, `:GRUCell`, `:Conv`, …);
     `:index_in_layer`: `Tuple` indicating the position of the neuron
         within the layer. The indices cover the size of the layer, which is 
         given by a Tuple, e.g. of the form `(n,)` for `Dense(n,m)` and
@@ -80,7 +80,8 @@ function chaingraph(m::Flux.Chain, input_data::Array)
         set_props!(
             mg, i, Dict(
                 :layer_number => first(node_to_neuron[i]),
-                :layer_type => first(node_to_neuron[i]) == 0 ? "input layer" : string(m[first(node_to_neuron[i])]),
+                :layer_name => first(node_to_neuron[i]) == 0 ? "input layer" : string(m[first(node_to_neuron[i])]),
+                :layer_type => first(node_to_neuron[i]) == 0 ? :input_layer : m[first(node_to_neuron[i])] isa Flux.Recur ? nameof(typeof(m[first(node_to_neuron[i])].cell)) : nameof(typeof(m[first(node_to_neuron[i])])),
                 :index_in_layer => last(node_to_neuron[i]),
                 :layer_center => center,
                 :loc_x => x,

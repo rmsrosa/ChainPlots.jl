@@ -10,33 +10,25 @@ lgru_verts = vcat([(0.5 * sin(2π * n / 20), 1.2 + 1.4 * cos(2π * n / 20)) for 
 
 Retrive plot attributes for each specific type of layer.
 """
-layerplotattributes(::Any) = (mrkrsize=12, mrkrshape=[:circle], mrkrcolor=[:gray])
-layerplotattributes(::Flux.Dense) = (mrkrsize=12, mrkrshape=[:circle], mrkrcolor=[:lightgreen])
-layerplotattributes(::Flux.RNNCell) = (mrkrsize=12, mrkrshape=[Main.Plots.Shape(lrnn_verts), :circle], mrkrcolor=[false, :lightskyblue1])
-layerplotattributes(::Flux.LSTMCell) = (mrkrsize=12, mrkrshape=[Main.Plots.Shape(lstm_verts), :circle], mrkrcolor=[false, :skyblue2])
-layerplotattributes(::Flux.GRUCell) = (mrkrsize=12, mrkrshape=[Main.Plots.Shape(lgru_verts), :circle], mrkrcolor=[false, :skyblue3])
-layerplotattributes(r::Flux.Recur) = layerplotattributes(r.cell)
-layerplotattributes(::Flux.Conv) = (mrkrsize=10, mrkrshape=[:square], mrkrcolor=[:plum])
-function layerplotattributes(s::Symbol)
+function layerplotattributes(s::Symbol; neuron_colorset = NEURON_COLORS)
     if s == :input_layer
-        return (mrkrsize=12, mrkrshape=[Main.Plots.Shape(circle_verts), :rtriangle], mrkrcolor=[false, :yellow])
+        return (mrkrsize=12, mrkrshape=[Main.Plots.Shape(circle_verts), :rtriangle], mrkrcolor=[false, neuron_colorset[s]])
     elseif s == :output_layer
-        return (mrkrsize=12, mrkrshape=[:rtriangle], mrkrcolor=[:orange])
+        return (mrkrsize=12, mrkrshape=[:rtriangle], mrkrcolor=[neuron_colorset[s]])
+    elseif s == :Dense
+        return (mrkrsize=12, mrkrshape=[:circle], mrkrcolor=[neuron_colorset[s]])
+    elseif s == :RNNCell
+        return (mrkrsize=12, mrkrshape=[Main.Plots.Shape(lrnn_verts), :circle], mrkrcolor=[false, neuron_colorset[s]])
+    elseif s == :LSTMCell
+        return (mrkrsize=12, mrkrshape=[Main.Plots.Shape(lstm_verts), :circle], mrkrcolor=[false, neuron_colorset[s]])
+    elseif s == :GRUCell
+        return (mrkrsize=12, mrkrshape=[Main.Plots.Shape(lgru_verts), :circle], mrkrcolor=[false, neuron_colorset[s]])
+    elseif s == :Conv
+        return (mrkrsize=10, mrkrshape=[:square], mrkrcolor=[neuron_colorset[s]])
     else
-        return (mrkrsize=0, mrkrshape=[:none], mrkrcolor=[:none])
+        return (mrkrsize=12, mrkrshape=[:circle], mrkrcolor=[neuron_colorset[:Any]])
     end
 end
-
-"""
-    get_layer_type(m::Flux.Chain, i::Int)
-
-Return `:input_layer` if "layer number" `i` is zero and the layer `m[i]` itself,
-otherwise.
-
-For use with [`layerplotattributes`](@ref), for properly retrieving the 
-corresponding plot attributes.
-"""
-get_layer_type(m::Flux.Chain, i::Int) = i == 0 ? :input_layer : m[i]
 
 """
     plot(m::Flux.Chain, input_data::Union{Nothing,Array} = nothing)
@@ -86,31 +78,31 @@ Plot a Flux.Chain neural network according to recipe.
         scale_sz(sz, max_width) = min(sz, 7.5 * sz / max_width)
         seriestype --> :scatter
         markersize --> vcat(
-            [scale_sz(layerplotattributes(get_layer_type(m, get_prop(mg, v, :layer_number))).mrkrsize, max_width)
+            [scale_sz(layerplotattributes(get_prop(mg, v, :layer_type)).mrkrsize, max_width)
              for v in vertices(mg)],
-            [scale_sz(layerplotattributes(get_layer_type(m, get_prop(mg, v, :layer_number))).mrkrsize, max_width)
+            [scale_sz(layerplotattributes(get_prop(mg, v, :layer_type)).mrkrsize, max_width)
              for v in vertices(mg)
-             if length(layerplotattributes(get_layer_type(m, get_prop(mg, v, :layer_number))).mrkrshape) > 1],
-            [scale_sz(layerplotattributes(get_layer_type(m, get_prop(mg, v, :layer_number))).mrkrsize, max_width)
+             if length(layerplotattributes(get_prop(mg, v, :layer_type)).mrkrshape) > 1],
+            [scale_sz(layerplotattributes(get_prop(mg, v, :layer_type)).mrkrsize, max_width)
              for v in vertices(mg) if get_prop(mg, v, :layer_number) == m_len]
         )
         markershape --> begin
             neuron_shape == :auto ? vcat(
-                [layerplotattributes(get_layer_type(m, get_prop(mg, v, :layer_number))).mrkrshape[1]
+                [layerplotattributes(get_prop(mg, v, :layer_type)).mrkrshape[1]
                  for v in vertices(mg)],
-                [layerplotattributes(get_layer_type(m, get_prop(mg, v, :layer_number))).mrkrshape[end]
+                [layerplotattributes(get_prop(mg, v, :layer_type)).mrkrshape[end]
                  for v in vertices(mg)
-                 if length(layerplotattributes(get_layer_type(m, get_prop(mg, v, :layer_number))).mrkrshape) > 1],
+                 if length(layerplotattributes(get_prop(mg, v, :layer_type)).mrkrshape) > 1],
                 [layerplotattributes(:output_layer).mrkrshape[end] for v in vertices(mg) if get_prop(mg, v, :layer_number) == m_len]
             ) : neuron_shape
         end
         markercolor --> begin
             neuron_color == :auto ? vcat(
-                [layerplotattributes(get_layer_type(m, get_prop(mg, v, :layer_number))).mrkrcolor[1]
+                [layerplotattributes(get_prop(mg, v, :layer_type)).mrkrcolor[1]
                  for v in vertices(mg)],
-                [layerplotattributes(get_layer_type(m, get_prop(mg, v, :layer_number))).mrkrcolor[end]
+                [layerplotattributes(get_prop(mg, v, :layer_type)).mrkrcolor[end]
                  for v in vertices(mg)
-                 if length(layerplotattributes(get_layer_type(m, get_prop(mg, v, :layer_number))).mrkrshape) > 1],
+                 if length(layerplotattributes(get_prop(mg, v, :layer_type)).mrkrshape) > 1],
                 [layerplotattributes(:output_layer).mrkrcolor[end]
                  for v in vertices(mg)
                  if get_prop(mg, v, :layer_number) == m_len]
@@ -119,7 +111,7 @@ Plot a Flux.Chain neural network according to recipe.
         dataseries = vcat(
             [(get_prop(mg, v, :loc_x), get_prop(mg, v, :loc_y)) for v in vertices(mg)],
             [(get_prop(mg, v, :loc_x), get_prop(mg, v, :loc_y)) for v in vertices(mg)
-             if length(layerplotattributes(get_layer_type(m, get_prop(mg, v, :layer_number))).mrkrshape) > 1],
+             if length(layerplotattributes(get_prop(mg, v, :layer_type)).mrkrshape) > 1],
             [(get_prop(mg, v, :loc_x), get_prop(mg, v, :loc_y)) for v in vertices(mg)
              if get_prop(mg, v, :layer_number) == m_len]
         )
