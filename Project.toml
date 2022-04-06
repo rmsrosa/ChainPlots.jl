@@ -1,7 +1,7 @@
 name = "ChainPlot"
 uuid = "43761bbe-b505-42c3-b8bd-5d4ae40fd227"
 authors = ["Ricardo Rosa <rmsrosa@gmail.com>"]
-version = "0.0.3"
+version = "0.0.4"
 
 [deps]
 Flux = "587475ba-b771-5e3f-ad9e-33799f191a9c"
