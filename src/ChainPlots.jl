@@ -3,7 +3,7 @@
 # See https://docs.juliaplots.org/latest/generated/supported/
 # See https://fluxml.ai/Flux.jl/stable/models/layers/
 
-module ChainPlot
+module ChainPlots
 
 using Flux
 using Graphs

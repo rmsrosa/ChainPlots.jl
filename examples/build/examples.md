@@ -1,6 +1,6 @@
 # Examples
 
-The aim of `ChainPlot.jl` is to provide a visualization of the topology of a neural network constructed with `Flux.Chain`. It does that by applying a `Plots.jl` recipe. The recipe is built by first constructing a `MetaGraph`.
+The aim of `ChainPlots.jl` is to provide a visualization of the topology of a neural network constructed with `Flux.Chain`. It does that by applying a `Plots.jl` recipe. The recipe is built by first constructing a `MetaGraph`.
 
 Here, we consider some examples of building both a MetaGraph and some plots.
 
@@ -20,12 +20,12 @@ using MetaGraphs
 using GraphPlot
 ````
 
-and, of course, `ChainPlot`:
+and, of course, `ChainPlots`:
 
 ````julia
-include("../src/ChainPlot.jl")
+include("../src/ChainPlots.jl")
 
-using .ChainPlot
+using .ChainPlots
 ````
 
 We play with different themes for `Plots.jl`, so we collect them here:
@@ -99,10 +99,10 @@ Chain(
           # plus 4 non-trainable, 16 parameters, summarysize 2.391 KiB.
 ````
 
-The MetaGraph is built with the function `ChainPlot.chaingraph`:
+The MetaGraph is built with the function `ChainPlots.chaingraph`:
 
 ````julia
-mg_nnr = ChainPlot.chaingraph(nnr)
+mg_nnr = ChainPlots.chaingraph(nnr)
 ````
 
 ````
@@ -118,11 +118,12 @@ mg_nnr.vprops[1]
 ````
 
 ````
-Dict{Symbol, Any} with 7 entries:
+Dict{Symbol, Any} with 8 entries:
   :loc_y => 0.416667
   :neuron_color => :yellow
   :layer_number => 0
-  :layer_type => "input layer"
+  :layer_type => :input_layer
+  :layer_name => "input layer"
   :index_in_layer => (1,)
   :layer_center => 1.0
   :loc_x => 0.0

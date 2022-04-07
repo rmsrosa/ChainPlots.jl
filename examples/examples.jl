@@ -1,6 +1,6 @@
 # # Examples
 #
-# The aim of `ChainPlot.jl` is to provide a visualization of the topology of a neural network constructed with `Flux.Chain`. It does that by applying a `Plots.jl` recipe. The recipe is built by first constructing a `MetaGraph`.
+# The aim of `ChainPlots.jl` is to provide a visualization of the topology of a neural network constructed with `Flux.Chain`. It does that by applying a `Plots.jl` recipe. The recipe is built by first constructing a `MetaGraph`.
 #
 # Here, we consider some examples of building both a MetaGraph and some plots.
 #
@@ -18,10 +18,10 @@ using Graphs
 using MetaGraphs
 using GraphPlot
 
-# and, of course, `ChainPlot`:
-include("../src/ChainPlot.jl")
+# and, of course, `ChainPlots`:
+include("../src/ChainPlots.jl")
 
-using .ChainPlot
+using .ChainPlots
 
 # We play with different themes for `Plots.jl`, so we collect them here:
 
@@ -53,9 +53,9 @@ theme(:default)
 # Here is the neural network:
 nnr = Chain(Dense(2, 5, σ), RNN(5, 4, relu), LSTM(4, 4), GRU(4, 4), Dense(4, 3))
 #
-# The MetaGraph is built with the function `ChainPlot.chaingraph`:
+# The MetaGraph is built with the function `ChainPlots.chaingraph`:
 #
-mg_nnr = ChainPlot.chaingraph(nnr)
+mg_nnr = ChainPlots.chaingraph(nnr)
 #
 # We can already see the number of vertices and edges in this graph.
 #

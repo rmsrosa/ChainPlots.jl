@@ -1,11 +1,11 @@
-include("../src/ChainPlot.jl")
+include("../src/ChainPlots.jl")
 
 using Flux
 using Plots
 using Test
-using .ChainPlot
+using .ChainPlots
 
-import .ChainPlot.NeuralNumbers: cold, hot, fneutralize
+import .ChainPlots.NeuralNumbers: cold, hot, fneutralize
 
 m = Chain(Conv((2,), 1 => 1))
 fm = fneutralize(m)
@@ -44,6 +44,6 @@ inp2d = [hot cold cold;
 m2d(inp2d)
 fm2d(inp2d)
 
-@profview ChainPlot.neuron_connections(m2d, inp2d)
+@profview ChainPlots.neuron_connections(m2d, inp2d)
 
 @profview plot(m2d, [6 5 0; 0 0 0; 0 0 0; 0 0 0; 0 0 0;;;;])

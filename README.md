@@ -1,6 +1,6 @@
-# ChainPlot
+# ChainPlots
 
-![Main Tests Workflow Status](https://github.com/rmsrosa/ChainPlot.jl/workflows/CI/badge.svg) [![codecov](https://codecov.io/gh/rmsrosa/ChainPlot.jl/branch/main/graph/badge.svg)](https://codecov.io/gh/rmsrosa/ChainPlot.jl) [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT) ![GitHub repo size](https://img.shields.io/github/repo-size/rmsrosa/ChainPlot.jl) ![OSS Lifecycle](https://img.shields.io/osslifecycle/rmsrosa/ChainPlot.jl)
+![Main Tests Workflow Status](https://github.com/rmsrosa/ChainPlots.jl/workflows/CI/badge.svg) [![codecov](https://codecov.io/gh/rmsrosa/ChainPlots.jl/branch/main/graph/badge.svg)](https://codecov.io/gh/rmsrosa/ChainPlots.jl) [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT) ![GitHub repo size](https://img.shields.io/github/repo-size/rmsrosa/ChainPlots.jl) ![OSS Lifecycle](https://img.shields.io/osslifecycle/rmsrosa/ChainPlots.jl)
 
 Plot recipes and graph generator of the topology of [FluxML/Flux.jl](https://github.com/FluxML/Flux.jl)'s neural networks composed with [Flux.Chain](https://fluxml.ai/Flux.jl/stable/models/layers/#Flux.Chain).
 
@@ -32,7 +32,7 @@ In the former case, just passing a network `m = Chain(...)` to plot works, e.g. 
 
 Any other argument for plot is accepted, like `plot(m, a, title="Convolutional network with $(length(m)) layers", titlefont = 12)`
 
-One can also obtain a metagraph with `mg = ChainPlot.chaingraph(m)` or `mg = ChainPlot.chaingraph(m, a)`. The current attributes can be seen in the docstring for `chaingraph`.
+One can also obtain a metagraph with `mg = ChainPlots.chaingraph(m)` or `mg = ChainPlots.chaingraph(m, a)`. The current attributes can be seen in the docstring for `chaingraph`.
 
 ## Examples
 
@@ -40,7 +40,7 @@ There are several examples in the Literated file [examples/build/examples.md](ex
 
 Here is a little taste of it.
 
-In all the examples below, one needs `Flux`, `ChainPlot` and `Plots`, while for the graph, one needs `Graphs` and `MetaGraphs`. One can also display the metagraph using `GraphPlot`, for which one also needs `Cairo` and `Compose`.
+In all the examples below, one needs `Flux`, `ChainPlots` and `Plots`, while for the graph, one needs `Graphs` and `MetaGraphs`. One can also display the metagraph using `GraphPlot`, for which one also needs `Cairo` and `Compose`.
 
 ### Dense and Recurrent layers
 
@@ -118,7 +118,7 @@ julia> plot(nnrs2d, Float32.(rand(4)), title="$nnrs2d", titlefontsize=9)
 
 ### From Chain to MetaGraph
 
-With `ChainPlot.chaingraph()` we can convert a `Flux.Chain` to a `MetaGraph`.
+With `ChainPlots.chaingraph()` we can convert a `Flux.Chain` to a `MetaGraph`.
 
 ```julia
 julia> nnr = Chain(Dense(2,5,σ),RNN(5,4,relu), LSTM(4,4), GRU(4,4), Dense(4,3))
@@ -159,7 +159,7 @@ We may visualize the generated MetaGraph with [JuliaGraphs/GraphPlot.jl](https:/
 julia> nnr = Chain(Dense(2,5,σ),RNN(5,4,relu), LSTM(4,4), GRU(4,4), Dense(4,3))
 Chain(Dense(2, 5, σ), Recur(RNNCell(5, 4, relu)), Recur(LSTMCell(4, 4)), Recur(GRUCell(4, 4)), Dense(4, 3))
 
-julia> mg_nnr = ChainPlot.chaingraph(nnr)
+julia> mg_nnr = ChainPlots.chaingraph(nnr)
 {22, 65} undirected Int64 metagraph with Float64 weights defined by :weight (default weight 1.0)
 
 julia> locs_x = [get_prop(mg_nnr, v, :loc_x) for v in vertices(mg_nnr)]

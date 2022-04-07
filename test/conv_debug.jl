@@ -3,10 +3,10 @@
 using Flux
 import Flux.NNlib: check_dims, input_size, calc_padding_regions, channels_in, kernel_size, channels_out, padding, dilation, stride, flipkernel
 
-include("../src/ChainPlot.jl")
+include("../src/ChainPlots.jl")
 
-using .ChainPlot
-import ChainPlot.NeuralNumbers: cold, hot, fneutralize
+using .ChainPlots
+import ChainPlots.NeuralNumbers: cold, hot, fneutralize
 
 m = Chain(Conv((2,), 1 => 1))
 

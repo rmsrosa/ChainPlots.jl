@@ -1,4 +1,4 @@
-name = "ChainPlot"
+name = "ChainPlots"
 uuid = "43761bbe-b505-42c3-b8bd-5d4ae40fd227"
 authors = ["Ricardo Rosa <rmsrosa@gmail.com>"]
 version = "0.0.4"

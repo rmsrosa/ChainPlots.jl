@@ -4,9 +4,9 @@ using MetaGraphs
 using Random
 using Test
 
-using ChainPlot
+using ChainPlots
 
-import ChainPlot.NeuralNumbers: cold, hot, fneutralize
+import ChainPlots.NeuralNumbers: cold, hot, fneutralize
 
 @testset "neurons" begin
     m = Chain(Dense(2, 3), RNN(3, 2))
@@ -98,8 +98,8 @@ end
     @test get_prop(mg, 2, :index_in_layer) == (2,)
     @test get_prop(mg, 3, :index_in_layer) == (1,)
     @test get_prop(mg, 7, :index_in_layer) == (5,)
-    @test get_prop(mg, 3, :neuron_color) == ChainPlot.neuron_color(Dense(2, 5, σ))
-    @test get_prop(mg, 8, :neuron_color) == ChainPlot.neuron_color(RNN(5, 4, relu))
+    @test get_prop(mg, 3, :neuron_color) == ChainPlots.neuron_color(Dense(2, 5, σ))
+    @test get_prop(mg, 8, :neuron_color) == ChainPlots.neuron_color(RNN(5, 4, relu))
     @test neighbors(mg, 1) == neighbors(mg, 2) == (3:7)
     @test all(==([(1:2); (8:11)]), neighbors.(Ref(mg), 3:7))
     @test all(==([(3:7); (12:15)]), neighbors.(Ref(mg), 8:11))
