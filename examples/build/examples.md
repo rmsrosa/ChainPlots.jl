@@ -338,6 +338,21 @@ Back to `:default` theme.
 theme(:default)
 ````
 
+### Plotting with extra arguments
+
+One is free to use (most of) other arguments accepted by `Plots.jl`. For instance, the following plot is used for the repo's social preview:
+
+````julia
+plot(nnr, title="ChainPlots.jl", topmargin=6mm, bottommargin=4mm, size=(720,380), titlefont=(42, "Bookman Demi"))
+````
+![](1577505646.svg)
+
+````julia
+savefig("img/nnr_chainplots_socialpreview.png")
+````
+
+Some attributes, like `annotationfontsize` and `markersize`, however, which are explicitly set in the Plots, recipe cannot be currently changed, but there are plans to make this more flexible.
+
 ---
 
 *This page was generated using [Literate.jl](https://github.com/fredrikekre/Literate.jl), with `Literate.markdown("examples.jl", "build", execute = true, flavor = Literate.CommonMarkFlavor(), postprocess = s -> replace(s, r"(?!\")!\[\]\(img\/" => "![](../img/"), credit=false)`.*
