@@ -129,12 +129,16 @@ end
     mg = chaingraph(m, input_data)
     @test nv(mg) == 6 + 6 + 5 + 4 + 5 == 26
     @test ne(mg) == 6 + 2 * 5 + 5 * 4 + 4 * 5 == 56
+    mg_ldim = chaingraph(m, size(input_data))
+    @test mg_ldim == mg
 
     m = Chain(x³, dx, LSTM(10, 4), Dense(4, 2))
     input_data = rand(Float32, 11)
     mg = chaingraph(m, input_data)
     @test nv(mg) == 38
     @test ne(mg) == 79
+    mg_ldim = chaingraph(m, size(input_data))
+    @test mg_ldim == mg
 end
 
 # Convolution tests work in REPL but not in `]test`...
@@ -148,24 +152,32 @@ end
     mg = chaingraph(m, input_data)
     nv(mg) == 5 + 4 == 9
     ne(mg) == 2 * 4 == 8
+    mg_ldim = chaingraph(m, size(input_data))
+    @test mg_ldim == mg
 
     m = Chain(x³, Dense(3, 6), reshape6x1x1, Conv((2,), 1 => 1), vec, Dense(5, 4))
     input_data = rand(Float32, 3)
     mg = chaingraph(m, input_data)
     @test nv(mg) == 3 + 3 + 6 + 6 + 5 + 5 + 4 == 32
     @test ne(mg) == 3 + 3 * 6 + 6 + 2 * 5 + 5 + 5 * 4 == 62
+    mg_ldim = chaingraph(m, size(input_data))
+    @test mg_ldim == mg
 
     m = Chain(x³, Dense(4, 16), reshape4x4x1x1, Conv((2, 2), 1 => 1), vec)
     input_data = rand(Float32, 4)
     mg = chaingraph(m, input_data)
     @test nv(mg) == 4 + 4 + 16 + 16 + 9 + 9 == 58
     @test ne(mg) == 4 + 4 * 16 + 16 + 9 * 4 + 9 == 129
+    mg_ldim = chaingraph(m, size(input_data))
+    @test mg_ldim == mg
 
     m = Chain(Conv((3,3), 1=>2))
     input_data = rand(Float32, 10, 10, 1, 1)
     mg = chaingraph(m, input_data)
     @test nv(mg) == 10 * 10 + 8 * 8 * 2 == 228
     @test ne(mg) == 8 * 8 * 9 * 2 == 1152
+    mg_ldim = chaingraph(m, size(input_data))
+    @test mg_ldim == mg
 
     m = Chain(Conv((3, 3), 1 => 4, leakyrelu, pad=1), GroupNorm(4, 2))
     input_data = rand(6,5,1,1)
