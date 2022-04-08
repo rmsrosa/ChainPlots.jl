@@ -63,9 +63,8 @@ function chaingraph(m::Flux.Chain, input_data::Array)
     full_dimensions = [
         Tuple(length(v) ≥ n ? v[n] : 1 for n in 1:max_dim) for v in chain_dimensions
     ]
-    max_widths = [maximum(getindex.(full_dimensions, i)) for i in 1:max_dim] =#
-    # max_width, = maximum(chain_dimensions)
-    max_width = maximum(getindex.(chain_dimensions, 1))
+    max_widths = maximum.(chain_dimensions) =#
+    max_width = mapreduce(x -> x[1], max, chain_dimensions)
     connections = neuron_connections(m, input_data)
 
     neuron_to_node = Dict(

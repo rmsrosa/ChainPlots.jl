@@ -94,11 +94,3 @@ function neuron_connections(m::Flux.Chain, input_data::Union{Nothing,Array,Tuple
     end
     return connections
 end
-
-"""
-    get_max_width(m::Flux.Chain, input_data::Union{Nothing,Array,Tuple} = nothing)
-
-Get the maximum display width for the chain.
-"""
-get_max_width(m::Flux.Chain, input_data::Union{Nothing,Array,Tuple}=nothing) =
-    mapreduce(x -> x[1], max, get_dimensions(m, input_data))
