@@ -149,7 +149,7 @@ draw(PNG("img/mg_nnr.png", 600, 400), plt)
 
 It is easier, however, to use a `Plots.jl` recipe, as we show here.
 
-### Single layer networks
+### Single layer networks with fixed-size input
 
 For illustrative purposes, we start with some simple, single-layer networks:
 
@@ -193,6 +193,39 @@ plot(lgru, title="$lgru", titlefontsize=12)
 savefig("img/lgru.png")
 ````
 
+## Single-layer with variable input
+
+Some layers accept input with varied size. In this case, we need to provide either an input, in the form of a `Vector` or `Array`, or the size of the input, in the form of a `Tuple`.
+
+````julia
+lvar = Conv((2,), 1 => 1)
+plot(lvar, rand(5, 1, 1))
+````
+![](4225505258.svg)
+
+````julia
+savefig("img/lvar5.png")
+````
+
+````julia
+plot(lvar, (8, 1, 1))
+````
+![](1424737611.svg)
+
+````julia
+savefig("img/lvar8.png")
+````
+
+````julia
+nnc = Conv((3,3), 1=>2)
+plot(nnc, (6, 5, 1, 1), title="$nnc", titlefontsize=10)
+````
+![](1739689633.svg)
+
+````julia
+savefig("img/nnc.png")
+````
+
 ## Multilayer networks
 
 ````julia
@@ -216,12 +249,12 @@ savefig("img/nnr.png")
 ````
 
 ````julia
-dx(x) = x[2:end] - x[1:end-1]
 x³(x) = x .^ 3
+dx(x) = x[2:end] - x[1:end-1]
 nna = Chain(Dense(2, 5, σ), dx, RNN(4, 6, relu), x³, LSTM(6, 4), GRU(4, 4), Dense(4, 3))
 plot(nna, title="$nna", titlefontsize=7)
 ````
-![](113086247.svg)
+![](470407956.svg)
 
 ````julia
 savefig("img/nna.png")
@@ -238,6 +271,18 @@ plot(nnx, input_data, title="$nnx", titlefontsize=9)
 savefig("img/nnx.png")
 ````
 
+or just passing the dimensions:
+
+````julia
+nnx = Chain(x³, dx, LSTM(5, 10), Dense(10, 5))
+plot(nnx, (6,), title="$nnx", titlefontsize=9)
+````
+![](893900538.svg)
+
+````julia
+savefig("img/nnx_ldim.png")
+````
+
 ````julia
 nnrlwide = Chain(Dense(5, 8), RNN(8, 20), LSTM(20, 10), Dense(10, 7))
 plot(nnrlwide, title="$nnrlwide", titlefontsize=9)
@@ -251,9 +296,9 @@ savefig("img/nnrlwide.png")
 ````julia
 reshape6x1x1(a) = reshape(a, 6, 1, 1)
 nnrs = Chain(x³, Dense(3, 6), reshape6x1x1, Conv((2,), 1 => 1), vec, Dense(5, 4))
-plot(nnrs, Float32.(rand(3)), title="$nnrs", titlefontsize=9)
+plot(nnrs, rand(Float32, 3), title="$nnrs", titlefontsize=9)
 ````
-![](2381570670.svg)
+![](1675611250.svg)
 
 ````julia
 savefig("img/nnrs.png")
@@ -263,29 +308,19 @@ savefig("img/nnrs.png")
 N = 4
 reshapeNxNx1x1(a) = reshape(a, N, N, 1, 1)
 nnrs2d = Chain(x³, Dense(4, N^2), reshapeNxNx1x1, Conv((2, 2), 1 => 1), vec)
-plot(nnrs2d, Float32.(rand(4)), title="$nnrs2d", titlefontsize=9)
+plot(nnrs2d, (4,), title="$nnrs2d", titlefontsize=9)
 ````
-![](3260841003.svg)
+![](1854954380.svg)
 
 ````julia
 savefig("img/nnrs2d.png")
 ````
 
 ````julia
-nnc = Chain(Conv((3,3), 1=>2))
-plot(nnc, rand(Float32, 10, 10, 1, 1), title="$nnc", titlefontsize=10)
-````
-![](3729221628.svg)
-
-````julia
-savefig("img/nnc.png")
-````
-
-````julia
 nncg = Chain(Conv((3,3), 1=>4, leakyrelu, pad = 1),GroupNorm(4,2))
-plot(nncg, Float32.(rand(6,6,1,1)), title="$nncg", titlefontsize=10)
+plot(nncg, (6,6,1,1), title="$nncg", titlefontsize=10)
 ````
-![](730219694.svg)
+![](3611096667.svg)
 
 ````julia
 savefig("img/nncg.png")

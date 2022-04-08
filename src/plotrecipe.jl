@@ -31,9 +31,11 @@ function layerplotattributes(s::Symbol; neuron_colors = NEURON_COLORS)
 end
 
 """
-    plot(m::Flux.Chain, input_data::Union{Nothing,Array} = nothing; kargs...)
+    plot(m::Flux.Chain, input_data::Union{Nothing,Array,Tuple} = nothing; kargs...)
 
-Plot a Flux.Chain neural network according to recipe.
+Plot the topology of Flux.Chain neural network `m`.
+
+If the first layer accepts an input with arbitrary dimensions, an `input_data` must be provided, we can be a `Vector`, an `Array`, or just a `Tuple` with the dimensions of the `input`.
 """
 @recipe function plot(
     m::Flux.Chain,
@@ -134,15 +136,10 @@ end
     Flux.Chain(d)
 end
 
-"""
-    plot((m,s)::Tuple{Flux.Chain,Tuple{Int}})
+@recipe function plot(m::Flux.Chain, ldim::Tuple)
+    return m, rand(Float32, ldim)
+end
 
-Plot a Flux.Chain neural network `m` with input dimensions `s`.
-
-Useful when the neural network starts with a variable-input layer, such as a convolutional layer.
-
-YET TO BE IMPLEMENTED.
-"""
-@recipe function plot((m, s)::Tuple{Flux.Chain,Tuple{Int}})
-    nothing
+@recipe function plot(l::Flux.Conv, input::Union{Array, Tuple})
+    return Flux.Chain(l), input
 end
