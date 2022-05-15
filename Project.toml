@@ -10,3 +10,11 @@ Graphs = "86223c79-3864-5bf0-83f7-82e725a168b6"
 MetaGraphs = "626554b9-1ddb-594c-aa3c-2596fe9399a5"
 Random = "9a3f8284-a2c9-5f02-9a11-845980a1fd5c"
 RecipesBase = "3cdcf5f2-1ef4-517c-9805-6587b60abb01"
+
+[compat]
+julia = "1.6"
+Flux = "0.12"
+Functors = "0.2"
+Graphs = "1.6"
+MetaGraphs = "0.7"
+RecipesBase = "1.2"
