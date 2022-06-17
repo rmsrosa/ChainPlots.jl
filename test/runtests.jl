@@ -141,7 +141,6 @@ end
     @test mg_ldim == mg
 end
 
-# Convolution tests work in REPL but not in `]test`...
 @testset "Convolutions" begin
     x³(x) = x .^ 3
     reshape6x1x1(a) = reshape(a, 6, 1, 1)
@@ -184,4 +183,16 @@ end
     mg = chaingraph(m, input_data)
     @test nv(mg) == 6 * 5 + 6 * 5 * 4 * 2 == 270
     @test ne(mg) == (4 * 3 * 9 + ( 2 * 4 + 2 * 3 ) * 6 + 4 * 4 ) * 4 + ( 6 * 5 )^2 * 2 * 4 == 8032
+
+    m = Chain(
+        Conv((3, 3), 1=>2, pad=(1,1), bias=false),
+        MaxPool((2,2)),
+        Conv((3, 3), 2=>4, pad=SamePad(), relu),
+        AdaptiveMaxPool((4,4)),
+        Conv((3, 3), 4=>4, relu),
+        GlobalMaxPool()
+    )
+    input_size = (16, 16, 1, 1)
+    mg = chaingraph(m, input_size)
+    @test nv(mg) == 16^2 + 16^2 * 2 + 8^2 * 2 + 8^2 * 4 + 4^2 * 4 + 2^2 * 4 + 1^2 * 4 == 1236
 end

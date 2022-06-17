@@ -20,6 +20,13 @@ using MetaGraphs
 using GraphPlot
 ````
 
+````
+[ Info: Precompiling Cairo [159f3aea-2a34-519c-b102-8c37f9878175]
+[ Info: Precompiling Compose [a81c6b42-2e10-5240-aca2-a61377ecd94b]
+[ Info: Precompiling GraphPlot [a2cc645c-3eea-5389-862e-a155d0052231]
+
+````
+
 and, of course, `ChainPlots`:
 
 ````julia
@@ -324,6 +331,23 @@ plot(nncg, (6,6,1,1), title="$nncg", titlefontsize=10)
 
 ````julia
 savefig("img/nncg.png")
+````
+
+````julia
+nncp = Chain(
+    Conv((3, 3), 1=>2, pad=(1,1), bias=false),
+    MaxPool((2,2)),
+    Conv((3, 3), 2=>4, pad=SamePad(), relu),
+    AdaptiveMaxPool((4,4)),
+    Conv((3, 3), 4=>4, relu),
+    GlobalMaxPool()
+)
+plot(nncp, (16, 16, 1, 1), title="Chain with convolutional and pooling layers", titlefontsize=10)
+````
+![](3835335252.svg)
+
+````julia
+savefig("img/nncp.png")
 ````
 
 ````julia
