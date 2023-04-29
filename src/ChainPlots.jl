@@ -5,6 +5,7 @@
 
 module ChainPlots
 
+using Plots
 using Flux
 using Graphs
 using MetaGraphs
