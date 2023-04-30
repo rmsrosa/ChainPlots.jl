@@ -12,17 +12,17 @@ Retrive plot attributes for each specific type of layer.
 """
 function layerplotattributes(s::Symbol; neuron_colors = NEURON_COLORS)
     if s == :input_layer
-        return (mrkrsize=12, mrkrshape=[Main.Plots.Shape(circle_verts), :rtriangle], mrkrcolor=[false, neuron_colors[s]])
+        return (mrkrsize=12, mrkrshape=[Plots.Shape(circle_verts), :rtriangle], mrkrcolor=[false, neuron_colors[s]])
     elseif s == :output_layer
         return (mrkrsize=12, mrkrshape=[:rtriangle], mrkrcolor=[neuron_colors[s]])
     elseif s == :Dense
         return (mrkrsize=12, mrkrshape=[:circle], mrkrcolor=[neuron_colors[s]])
     elseif s == :RNNCell
-        return (mrkrsize=12, mrkrshape=[Main.Plots.Shape(lrnn_verts), :circle], mrkrcolor=[false, neuron_colors[s]])
+        return (mrkrsize=12, mrkrshape=[Plots.Shape(lrnn_verts), :circle], mrkrcolor=[false, neuron_colors[s]])
     elseif s == :LSTMCell
-        return (mrkrsize=12, mrkrshape=[Main.Plots.Shape(lstm_verts), :circle], mrkrcolor=[false, neuron_colors[s]])
+        return (mrkrsize=12, mrkrshape=[Plots.Shape(lstm_verts), :circle], mrkrcolor=[false, neuron_colors[s]])
     elseif s == :GRUCell
-        return (mrkrsize=12, mrkrshape=[Main.Plots.Shape(lgru_verts), :circle], mrkrcolor=[false, neuron_colors[s]])
+        return (mrkrsize=12, mrkrshape=[Plots.Shape(lgru_verts), :circle], mrkrcolor=[false, neuron_colors[s]])
     elseif s == :Conv
         return (mrkrsize=10, mrkrshape=[:square], mrkrcolor=[neuron_colors[s]])
     else
@@ -124,8 +124,8 @@ If the first layer accepts an input with arbitrary dimensions, an `input_data` m
     for ln in 0:m_len
         @series begin
             nj = chain_dimensions[ln+1]
-            series_annotations --> Main.Plots.series_annotations(
-                [ln == 0 ? "input" : string(m[ln])], Main.Plots.font("Sans", 8, rotation=20)
+            series_annotations --> Plots.series_annotations(
+                [ln == 0 ? "input" : string(m[ln])], Plots.font("Sans", 8, rotation=20)
             )
             return [ln], [(nj[1] / 2 + 1 + max_width / 2) / (max_width + 1)]
         end
