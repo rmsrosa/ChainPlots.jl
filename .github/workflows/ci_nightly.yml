@@ -1,4 +1,4 @@
-name: CI
+name: CI Nightly
 on:
   push:
     branches:
@@ -14,12 +14,9 @@ jobs:
       fail-fast: false
       matrix:
         version:
-          - '1.6'
-          - '1.8'
+          - 'nightly'
         os:
           - ubuntu-latest
-#          - macOS-latest
-#          - windows-latest
         arch:
           - x64
     steps:
