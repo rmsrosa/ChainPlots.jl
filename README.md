@@ -116,6 +116,31 @@ julia> plot(nnrs2d, Float32.(rand(4)), title="$nnrs2d", titlefontsize=9)
 
 ![nnrs2d plot](examples/img/nnrs2d.png)
 
+With convolutional and pooling layers:
+
+```julia
+julia> nncp = Chain(
+           Conv((3, 3), 1=>2, pad=(1,1), bias=false),
+           MaxPool((2,2)),
+           Conv((3, 3), 2=>4, pad=SamePad(), relu),
+           AdaptiveMaxPool((4,4)),
+           Conv((3, 3), 4=>4, relu),
+           GlobalMaxPool()
+       )
+Chain(
+  Conv((3, 3), 1 => 2, pad=1, bias=false),  # 18 parameters
+  MaxPool((2, 2)),
+  Conv((3, 3), 2 => 4, relu, pad=1),    # 76 parameters
+  AdaptiveMaxPool((4, 4)),
+  Conv((3, 3), 4 => 4, relu),           # 148 parameters
+  GlobalMaxPool(),
+)                   # Total: 5 arrays, 242 parameters, 2.047 KiB.
+
+julia> plot(nncp, (16, 16, 1, 1), title="Chain with convolutional and pooling layers", titlefontsize=10)
+```
+
+![nncp plot](examples/img/nncp.png)
+
 ### From Chain to MetaGraph
 
 With `ChainPlots.chaingraph()` we can convert a `Flux.Chain` to a `MetaGraph`.

@@ -198,6 +198,19 @@ plot(nncg, (6,6,1,1), title="$nncg", titlefontsize=10)
 savefig("img/nncg.png")
 
 #
+nncp = Chain(
+    Conv((3, 3), 1=>2, pad=(1,1), bias=false),
+    MaxPool((2,2)),
+    Conv((3, 3), 2=>4, pad=SamePad(), relu),
+    AdaptiveMaxPool((4,4)),
+    Conv((3, 3), 4=>4, relu),
+    GlobalMaxPool()
+)
+plot(nncp, (16, 16, 1, 1), title="Chain with convolutional and pooling layers", titlefontsize=10)
+#
+savefig("img/nncp.png")
+
+#
 
 hdf5()
 plot(nnr, title="$nnr with HDF5", titlefontsize=7)
