@@ -96,7 +96,7 @@ Base.big(::NeuralNumber) = NeuralNumber
 
 Base.promote_rule(::Type{NeuralNumber}, ::Type{<:Number}) = NeuralNumber
 
-Random.rand(rng::Random.AbstractRNG, ::Random.SamplerType{NeuralNumber}) = cold
+Random.rand(::Random.AbstractRNG, ::Random.Sampler{NeuralNumber}) = cold
 
 for f in [:+, :-, :abs, :abs2, :inv, :tanh, :sqrt,
     :exp, :log, :log1p, :log2, :log10,
@@ -110,6 +110,8 @@ end
 
 for f in [:+, :-, :*, :/, :^, :mod, :div, :rem, :widemul]
     # specialize to avoid conflict with Base
+#=     @eval Base.$f(x::NeuralNumber, ::Bool) = x
+    @eval Base.$f(::Bool, y::NeuralNumber) = y =#
     @eval Base.$f(x::NeuralNumber, ::Integer) = x
     @eval Base.$f(::Integer, y::NeuralNumber) = y
     @eval Base.$f(x::NeuralNumber, ::Real) = x
