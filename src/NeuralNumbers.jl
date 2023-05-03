@@ -130,6 +130,8 @@ Base.clamp(x::NeuralNumber, y...) = x
 
 Convert the parameters of a model to `NeuralNumber` with value `cold`.
 """
-fneutralize(m) = fmap(x -> x isa AbstractArray{<:Number} ? fill(cold, size(x)) : x, m)
+fneutralize(m) = fmap(x -> x isa AbstractArray{<:Number} ? convert.(NeuralNumber, x) : x, m)
+# do not force it to be a matrix, try with the same type
+# fneutralize(m) = fmap(x -> x isa AbstractArray{<:Number} ? fill(cold, size(x)) : x, m)
 
 end # module
