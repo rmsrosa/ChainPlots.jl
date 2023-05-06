@@ -37,6 +37,8 @@ Plot the topology of Flux.Chain neural network `m`.
 
 If the first layer accepts an input with arbitrary dimensions, an `input_data` must be provided, we can be a `Vector`, an `Array`, or just a `Tuple` with the dimensions of the `input`.
 """
+plotchain(m::Flux.Chain, input_data::Union{Nothing,Array}=nothing, kwargs...) = plot(m, input_data, kwargs...)
+
 @recipe function plot(
     m::Flux.Chain,
     input_data::Union{Nothing,Array}=nothing;
