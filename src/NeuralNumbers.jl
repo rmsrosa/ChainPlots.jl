@@ -98,17 +98,22 @@ Base.promote_rule(::Type{NeuralNumber}, ::Type{<:Number}) = NeuralNumber
 
 Random.rand(::Random.AbstractRNG, ::Random.Sampler{NeuralNumber}) = cold
 
-for f in [:+, :-, :abs, :abs2, :inv, :tanh, :sqrt,
-    :exp, :log, :log1p, :log2, :log10,
-    :conj, :transpose, :adjoint, :angle]
+for f in (:log, :exp, :sin, :cos, :tan, :sinh, :cosh, :tanh, :asin,
+    :acos, :atan, :asinh, :acosh, :atanh, :cbrt, :sqrt, :log2, :log10,
+    :max, :min, :exp2, :exp10, :expm1, :log1p, :sinpi, :cospi, :mod2pi,
+    )
     @eval Base.$f(x::NeuralNumber) = x
 end
 
-for f in [:+, :-, :*, :/, :^, :mod, :div, :rem, :widemul]
+for f in (:+, :-, :abs, :abs2, :inv, :conj, :transpose, :adjoint, :angle)
+    @eval Base.$f(x::NeuralNumber) = x
+end
+
+for f in (:+, :-, :*, :/, :^, :mod, :div, :rem, :widemul)
     @eval Base.$f(x::NeuralNumber, y::NeuralNumber) = max(x, y)
 end
 
-for f in [:+, :-, :*, :/, :^, :mod, :div, :rem, :widemul]
+for f in (:+, :-, :*, :/, :^, :mod, :div, :rem, :widemul)
     # specialize to avoid conflict with Base
 #=     @eval Base.$f(x::NeuralNumber, ::Bool) = x
     @eval Base.$f(::Bool, y::NeuralNumber) = y =#
