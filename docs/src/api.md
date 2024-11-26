@@ -3,6 +3,5 @@
 ## Auto
 
 ```@autodocs
-Modules = [ChainPlots]
-Order   = [:function, :type]
+Modules = [ChainPlots, ChainPlots.NeuralNumbers]
 ```
