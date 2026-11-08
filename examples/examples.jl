@@ -51,7 +51,7 @@ theme(:default)
 # We first consider a neural network with several different types of layers and building a MetaGraph from it.
 
 # Here is the neural network:
-nnr = Chain(Dense(2, 5, σ), RNN(5, 4, relu), LSTM(4, 4), GRU(4, 4), Dense(4, 3))
+nnr = Chain(Dense(2 => 5, σ), RNN(5 => 4, relu), LSTM(4 => 4), GRU(4 => 4), Dense(4 => 3))
 #
 # The MetaGraph is built with the function `ChainPlots.chaingraph`:
 #
@@ -81,7 +81,7 @@ draw(PNG("img/mg_nnr.png", 600, 400), plt)
 #
 # For illustrative purposes, we start with some simple, single-layer networks:
 
-dl = Dense(2, 3)
+dl = Dense(2 => 3)
 plot(dl, title="$dl", titlefontsize=12)
 #-
 
@@ -89,7 +89,7 @@ savefig("img/dl.png")
 
 #-
 
-rl = RNN(3, 5)
+rl = RNN(3 => 5)
 plot(rl, title="$rl", titlefontsize=12)
 
 #-
@@ -97,14 +97,14 @@ savefig("img/rl.png")
 
 #
 
-llstm = LSTM(4, 7)
+llstm = LSTM(4 => 7)
 plot(llstm, title="$llstm", titlefontsize=12)
 #
 savefig("img/llstm.png")
 
 #
 
-lgru = GRU(5, 7)
+lgru = GRU(5 => 7)
 plot(lgru, title="$lgru", titlefontsize=12)
 #
 savefig("img/lgru.png")
@@ -132,14 +132,14 @@ savefig("img/nnc.png")
 
 # ## Multilayer networks
 
-nnd = Chain(Dense(2, 5), Dense(5, 7, σ), Dense(7, 2, relu), Dense(2, 3))
+nnd = Chain(Dense(2 => 5), Dense(5 => 7, σ), Dense(7 => 2, relu), Dense(2 => 3))
 plot(nnd, title="$nnd", titlefontsize=10, xaxis=nothing)
 #
 savefig("img/nnd.png")
 
 #
 
-nnr = Chain(Dense(2, 5, σ), RNN(5, 4, relu), LSTM(4, 4), GRU(4, 4), Dense(4, 3))
+nnr = Chain(Dense(2 => 5, σ), RNN(5 => 4, relu), LSTM(4 => 4), GRU(4 => 4), Dense(4 => 3))
 plot(nnr, title="$nnr", titlefontsize=7)
 #
 savefig("img/nnr.png")
@@ -148,27 +148,27 @@ savefig("img/nnr.png")
 
 x³(x) = x .^ 3
 dx(x) = x[2:end] - x[1:end-1]
-nna = Chain(Dense(2, 5, σ), dx, RNN(4, 6, relu), x³, LSTM(6, 4), GRU(4, 4), Dense(4, 3))
+nna = Chain(Dense(2 => 5, σ), dx, RNN(4 => 6, relu), x³, LSTM(6 => 4), GRU(4 => 4), Dense(4 => 3))
 plot(nna, title="$nna", titlefontsize=7)
 #
 savefig("img/nna.png")
 
 #
 
-nnx = Chain(x³, dx, LSTM(5, 10), Dense(10, 5))
+nnx = Chain(x³, dx, LSTM(5 => 10), Dense(10 => 5))
 input_data = rand(6)
 plot(nnx, input_data, title="$nnx", titlefontsize=9)
 #
 savefig("img/nnx.png")
 
 # or just passing the dimensions:
-nnx = Chain(x³, dx, LSTM(5, 10), Dense(10, 5))
+nnx = Chain(x³, dx, LSTM(5 => 10), Dense(10 => 5))
 plot(nnx, (6,), title="$nnx", titlefontsize=9)
 #
 savefig("img/nnx_ldim.png")
 #
 
-nnrlwide = Chain(Dense(5, 8), RNN(8, 20), LSTM(20, 10), Dense(10, 7))
+nnrlwide = Chain(Dense(5 => 8), RNN(8 => 20), LSTM(20 => 10), Dense(10 => 7))
 plot(nnrlwide, title="$nnrlwide", titlefontsize=9)
 #
 savefig("img/nnrlwide.png")
@@ -176,7 +176,7 @@ savefig("img/nnrlwide.png")
 #
 
 reshape6x1x1(a) = reshape(a, 6, 1, 1)
-nnrs = Chain(x³, Dense(3, 6), reshape6x1x1, Conv((2,), 1 => 1), vec, Dense(5, 4))
+nnrs = Chain(x³, Dense(3 => 6), reshape6x1x1, Conv((2,), 1 => 1), vec, Dense(5 => 4))
 plot(nnrs, rand(Float32, 3), title="$nnrs", titlefontsize=9)
 #
 savefig("img/nnrs.png")
@@ -185,7 +185,7 @@ savefig("img/nnrs.png")
 
 N = 4
 reshapeNxNx1x1(a) = reshape(a, N, N, 1, 1)
-nnrs2d = Chain(x³, Dense(4, N^2), reshapeNxNx1x1, Conv((2, 2), 1 => 1), vec)
+nnrs2d = Chain(x³, Dense(4 => N^2), reshapeNxNx1x1, Conv((2, 2), 1 => 1), vec)
 plot(nnrs2d, (4,), title="$nnrs2d", titlefontsize=9)
 #
 savefig("img/nnrs2d.png")

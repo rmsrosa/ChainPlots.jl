@@ -51,7 +51,7 @@ plotchain(m::Flux.Chain, input_data::Union{Nothing,Array}=nothing, kwargs...) = 
     mg = chaingraph(m, input_data)
     m_len = length(m)
 
-    axis --> false
+    framestyle --> :grid
     xrotation --> 60
     xticks --> begin
         ll = 0:m_len
@@ -127,7 +127,7 @@ plotchain(m::Flux.Chain, input_data::Union{Nothing,Array}=nothing, kwargs...) = 
         @series begin
             nj = chain_dimensions[ln+1]
             series_annotations --> Plots.series_annotations(
-                [ln == 0 ? "input" : string(m[ln])], Plots.font("Sans", 8, rotation=20)
+                [ln == 0 ? "input" : string(m[ln])], Plots.font(8, rotation=20)
             )
             return [ln], [(nj[1] / 2 + 1 + max_width / 2) / (max_width + 1)]
         end
