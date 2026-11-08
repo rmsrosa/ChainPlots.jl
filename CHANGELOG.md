@@ -1,8 +1,8 @@
 # Changelog
 
-## Unreleased
+## v0.3.0
 
-This release is breaking, so it will be v0.3.0.
+This release has a breaking change: Plots.jl is now an optional dependency. See [From 0.2 to 0.3](https://rmsrosa.github.io/ChainPlots.jl/dev/migration/) for how to update your code.
 
 ### Breaking
 
@@ -12,6 +12,8 @@ This release is breaking, so it will be v0.3.0.
 
 - Support for [Lux.jl](https://github.com/LuxDL/Lux.jl) models, through a package extension loaded with Lux ([#17](https://github.com/rmsrosa/ChainPlots.jl/issues/17)): `chaingraph` and `plotchain` accept a `Lux.Chain` or a single Lux layer, and set up its parameters themselves. A `Lux.Recurrence` is drawn folded, with the marker of its cell, and the graphs are the same as those of the corresponding Flux models. See the new [Lux models](https://rmsrosa.github.io/ChainPlots.jl/dev/lux_examples/) docs page.
 - A [Custom layers](https://rmsrosa.github.io/ChainPlots.jl/dev/custom_layers/) page in the docs, with tests: custom layers that take and return a single array work, as do `Parallel` and `SkipConnection`, and a model with several inputs can be drawn by writing it to split a single array ([#14](https://github.com/rmsrosa/ChainPlots.jl/issues/14)).
+
+- A [Pluto](https://plutojl.org) notebook of the examples, [`examples/chainplots_examples_pluto.jl`](https://github.com/rmsrosa/ChainPlots.jl/blob/main/examples/chainplots_examples_pluto.jl) ([#9](https://github.com/rmsrosa/ChainPlots.jl/issues/9)).
 
 ### Fixed
 

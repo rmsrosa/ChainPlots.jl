@@ -1,6 +1,6 @@
 # Migrating
 
-## From 0.2 to 0.3 (unreleased)
+## From 0.2 to 0.3
 
 Plots.jl is now an optional dependency, and the plot recipe and [`plotchain`](@ref) are loaded with it, as a package extension. So add Plots to your environment and run `using Plots` before plotting; otherwise `plotchain` throws a `MethodError` that says so. [`chaingraph`](@ref) works without Plots.
 

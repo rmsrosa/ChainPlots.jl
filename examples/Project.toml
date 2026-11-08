@@ -16,7 +16,7 @@ ChainPlots = {path = ".."}
 
 [compat]
 Cairo = "1"
-ChainPlots = "0.2"
+ChainPlots = "0.3"
 Colors = "0.12, 0.13"
 Compose = "0.9"
 Flux = "0.16"
