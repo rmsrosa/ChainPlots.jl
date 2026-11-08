@@ -31,25 +31,52 @@ function layerplotattributes(s::Symbol; neuron_colors = NEURON_COLORS)
 end
 
 """
-    plot(m::Flux.Chain, input_data::Union{Nothing,Array,Tuple} = nothing; kargs...)
+    plotchain(m, input = nothing; kwargs...)
 
-Plot the topology of Flux.Chain neural network `m`.
+Plot the topology of the neural network `m`, which is `plot(chaingraph(m, input); kwargs...)`.
 
-If the first layer accepts an input with arbitrary dimensions, an `input_data` must be provided, we can be a `Vector`, an `Array`, or just a `Tuple` with the dimensions of the `input`.
+`m` can be a `Flux.Chain` or a single layer. If the first layer accepts an input with
+arbitrary dimensions, such as a convolutional or a functional layer, an `input` must be
+given, either as an `Array` or as a `Tuple` with the dimensions of the input.
+
+Any other keyword argument is passed on to `plot`, such as `title`, as well as the
+attributes of the [`ChainGraph`](@ref) recipe, `connection_color`, `neuron_colors` and
+`neuron_shape`.
 """
-plotchain(m::Flux.Chain, input_data::Union{Nothing,Array}=nothing, kwargs...) = plot(m, input_data, kwargs...)
+plotchain(m, input=nothing; kwargs...) = Plots.plot(chaingraph(m, input); kwargs...)
 
-@recipe function plot(
-    m::Flux.Chain,
-    input_data::Union{Nothing,Array}=nothing;
+"""
+    plotchain!([plt,] m, input = nothing; kwargs...)
+
+Add the topology of the neural network `m` to the current plot, or to `plt`.
+
+See [`plotchain`](@ref).
+"""
+plotchain!(m, input=nothing; kwargs...) = Plots.plot!(chaingraph(m, input); kwargs...)
+plotchain!(plt::Plots.Plot, m, input=nothing; kwargs...) = Plots.plot!(plt, chaingraph(m, input); kwargs...)
+
+"""
+    plot(cg::ChainGraph; connection_color = :gray68, neuron_colors = NEURON_COLORS, neuron_shape = :auto)
+
+Plot recipe for a [`ChainGraph`](@ref), drawing each neuron with a marker given by the
+type of its layer, and each connection as a line.
+
+* `connection_color`: color of the connections;
+* `neuron_colors`: either a `Dict` from layer types to colors, as in
+  [`NEURON_COLORS`](@ref), or a color for all neurons;
+* `neuron_shape`: `:auto` for a marker depending on the type of the layer, or a
+  marker shape for all neurons.
+"""
+@recipe function f(
+    cg::ChainGraph;
     connection_color=:gray68,
     neuron_colors=NEURON_COLORS,
     neuron_shape=:auto
 )
-    chain_dimensions = get_dimensions(m, input_data)
+    mg = cg.graph
+    chain_dimensions = cg.layer_dimensions
     max_width, = maximum(chain_dimensions)
-    mg = chaingraph(m, input_data)
-    m_len = length(m)
+    m_len = nlayers(cg)
 
     framestyle --> :grid
     xrotation --> 60
@@ -127,21 +154,9 @@ plotchain(m::Flux.Chain, input_data::Union{Nothing,Array}=nothing, kwargs...) = 
         @series begin
             nj = chain_dimensions[ln+1]
             series_annotations --> Plots.series_annotations(
-                [ln == 0 ? "input" : string(m[ln])], Plots.font(8, rotation=20)
+                [ln == 0 ? "input" : cg.layer_names[ln+1]], Plots.font(8, rotation=20)
             )
             return [ln], [(nj[1] / 2 + 1 + max_width / 2) / (max_width + 1)]
         end
     end
-end
-
-@recipe function plot(d::Union{FIXED_INPUT_DIM_LAYERS...})
-    Flux.Chain(d)
-end
-
-@recipe function plot(m::Flux.Chain, ldim::Tuple)
-    return m, rand(Float32, ldim)
-end
-
-@recipe function plot(l::Flux.Conv, input::Union{Array, Tuple})
-    return Flux.Chain(l), input
 end

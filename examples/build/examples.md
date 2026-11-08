@@ -1,8 +1,8 @@
 # Examples
 
-The aim of `ChainPlots.jl` is to provide a visualization of the topology of a neural network constructed with `Flux.Chain`. It does that by applying a `Plots.jl` recipe. The recipe is built by first constructing a `MetaGraph`.
+The aim of `ChainPlots.jl` is to provide a visualization of the topology of a neural network constructed with `Flux.Chain`. It does that by first building a `ChainGraph` of the network, with `chaingraph`, and then applying the `Plots.jl` recipe for `ChainGraph`.
 
-Here, we consider some examples of building both a MetaGraph and some plots.
+Here, we consider some examples of building both a `ChainGraph` and some plots.
 
 ## Load Packages
 
@@ -16,15 +16,7 @@ using Colors
 using Cairo
 using Compose
 using Graphs
-using MetaGraphs
 using GraphPlot
-````
-
-````
-[ Info: Precompiling Cairo [159f3aea-2a34-519c-b102-8c37f9878175]
-[ Info: Precompiling Compose [a81c6b42-2e10-5240-aca2-a61377ecd94b]
-[ Info: Precompiling GraphPlot [a2cc645c-3eea-5389-862e-a155d0052231]
-
 ````
 
 and, of course, `ChainPlots`:
@@ -79,74 +71,75 @@ gr()
 theme(:default)
 ````
 
-## Chain to MetaGraph
+## Chain to ChainGraph
 
-We first consider a neural network with several different types of layers and building a MetaGraph from it.
+We first consider a neural network with several different types of layers and building a `ChainGraph` from it.
 
 Here is the neural network:
 
 ````julia
-nnr = Chain(Dense(2, 5, σ), RNN(5, 4, relu), LSTM(4, 4), GRU(4, 4), Dense(4, 3))
+nnr = Chain(Dense(2 => 5, σ), RNN(5 => 4, relu), LSTM(4 => 4), GRU(4 => 4), Dense(4 => 3))
 ````
 
 ````
 Chain(
-  Dense(2, 5, σ),                       # 15 parameters
-  Recur(
-    RNNCell(5, 4, relu),                # 44 parameters
-  ),
-  Recur(
-    LSTMCell(4, 4),                     # 152 parameters
-  ),
-  Recur(
-    GRUCell(4, 4),                      # 112 parameters
-  ),
-  Dense(4, 3),                          # 15 parameters
-)         # Total: 17 trainable arrays, 338 parameters,
-          # plus 4 non-trainable, 16 parameters, summarysize 2.391 KiB.
+  Dense(2 => 5, σ),                     # 15 parameters
+  RNN(5 => 4, relu),                    # 40 parameters
+  LSTM(4 => 4),                         # 144 parameters
+  GRU(4 => 4),                          # 108 parameters
+  Dense(4 => 3),                        # 15 parameters
+)                   # Total: 13 arrays, 322 parameters, 1.930 KiB.
 ````
 
-The MetaGraph is built with the function `ChainPlots.chaingraph`:
+The `ChainGraph` is built with the function `chaingraph`:
 
 ````julia
-mg_nnr = ChainPlots.chaingraph(nnr)
+cg_nnr = chaingraph(nnr)
 ````
 
 ````
-{22, 74} undirected Int64 metagraph with Float64 weights defined by :weight (default weight 1.0)
+ChainGraph with 22 neurons, 74 connections and 5 layers:
+  0: input layer (2,)
+  1: Dense(2 => 5, σ) (5,)
+  2: RNN(5 => 4, relu) (4,)
+  3: LSTM(4 => 4) (4,)
+  4: GRU(4 => 4) (4,)
+  5: Dense(4 => 3) (3,)
 ````
 
-We can already see the number of vertices and edges in this graph.
+We can already see the number of vertices (neurons) and edges (connections) in this graph, as well as the dimensions of each layer.
 
-We can also look at the first vertice for all the attributes it contains:
+A `ChainGraph` is a `Graphs.AbstractGraph`, so the functions of `Graphs.jl` work on it:
 
 ````julia
-mg_nnr.vprops[1]
+nv(cg_nnr), ne(cg_nnr), neighbors(cg_nnr, 1)
 ````
 
 ````
-Dict{Symbol, Any} with 8 entries:
-  :loc_y => 0.416667
-  :neuron_color => :yellow
-  :layer_number => 0
-  :layer_type => :input_layer
-  :layer_name => "input layer"
-  :index_in_layer => (1,)
-  :layer_center => 1.0
-  :loc_x => 0.0
+(22, 74, [3, 4, 5, 6, 7])
 ````
 
-The two attributes `locs_x` and `locs_y` give the coordinates of each vertice, while `neuron_color` gives the color based on the type of layer, whether dense, recurrent, convolutional, etc.
-
-We can get the list of those attributes for all the vertices and use them to plot the topology of the network with `GraphPlot`:
+We can also look at the first vertex for all the properties it contains, with `nodeprops`:
 
 ````julia
-locs_x = [get_prop(mg_nnr, v, :loc_x) for v in vertices(mg_nnr)]
-locs_y = [get_prop(mg_nnr, v, :loc_y) for v in vertices(mg_nnr)]
-nodefillc = [parse(Colorant, get_prop(mg_nnr, v, :neuron_color)) for v in vertices(mg_nnr)]
-plt = gplot(mg_nnr, locs_x, locs_y, nodefillc=nodefillc)
+nodeprops(cg_nnr, 1)
 ````
-![](3575602010.svg)
+
+````
+(layer_number = 0, layer_name = "input layer", layer_type = :input_layer, index_in_layer = (1,), layer_center = 1.0, loc_x = 0.0, loc_y = 0.4166666666666667, neuron_color = :yellow)
+````
+
+The two properties `loc_x` and `loc_y` give the coordinates of each vertex, while `neuron_color` gives the color based on the type of layer, whether dense, recurrent, convolutional, etc.
+
+We can get one of those properties for all the vertices with `nodeprop`, and use them to plot the topology of the network with `GraphPlot`:
+
+````julia
+locs_x = nodeprop.(Ref(cg_nnr), vertices(cg_nnr), :loc_x)
+locs_y = nodeprop.(Ref(cg_nnr), vertices(cg_nnr), :loc_y)
+nodefillc = [parse(Colorant, nodeprop(cg_nnr, v, :neuron_color)) for v in vertices(cg_nnr)]
+plt = gplot(cg_nnr, locs_x, locs_y, nodefillc=nodefillc)
+````
+![](examples-20.svg)
 
 ````julia
 draw(PNG("img/mg_nnr.png", 600, 400), plt)
@@ -154,50 +147,73 @@ draw(PNG("img/mg_nnr.png", 600, 400), plt)
 
 ## Now with Plots.jl
 
-It is easier, however, to use a `Plots.jl` recipe, as we show here.
+It is easier, however, to use the `Plots.jl` recipe for `ChainGraph`, as in `plot(cg_nnr)`:
+
+````julia
+plot(cg_nnr)
+````
+![](examples-24.svg)
+
+or, in one step, `plotchain(nnr)`, which is the same as `plot(chaingraph(nnr))`, as we do from now on.
 
 ### Single layer networks with fixed-size input
 
 For illustrative purposes, we start with some simple, single-layer networks:
 
 ````julia
-dl = Dense(2, 3)
-plot(dl, title="$dl", titlefontsize=12)
+dl = Dense(2 => 3)
+plotchain(dl, title="$dl", titlefontsize=12)
 ````
-![](2659499519.svg)
+![](examples-27.svg)
 
 ````julia
 savefig("img/dl.png")
 ````
 
-````julia
-rl = RNN(3, 5)
-plot(rl, title="$rl", titlefontsize=12)
 ````
-![](588818785.svg)
+"/home/user/ChainPlots.jl/examples/img/dl.png"
+````
+
+````julia
+rl = RNN(3 => 5)
+plotchain(rl, title="$rl", titlefontsize=12)
+````
+![](examples-29.svg)
 
 ````julia
 savefig("img/rl.png")
 ````
 
-````julia
-llstm = LSTM(4, 7)
-plot(llstm, title="$llstm", titlefontsize=12)
 ````
-![](2670644766.svg)
+"/home/user/ChainPlots.jl/examples/img/rl.png"
+````
+
+````julia
+llstm = LSTM(4 => 7)
+plotchain(llstm, title="$llstm", titlefontsize=12)
+````
+![](examples-31.svg)
 
 ````julia
 savefig("img/llstm.png")
 ````
 
-````julia
-lgru = GRU(5, 7)
-plot(lgru, title="$lgru", titlefontsize=12)
 ````
-![](3271135632.svg)
+"/home/user/ChainPlots.jl/examples/img/llstm.png"
+````
+
+````julia
+lgru = GRU(5 => 7)
+plotchain(lgru, title="$lgru", titlefontsize=12)
+````
+![](examples-33.svg)
 
 ````julia
 savefig("img/lgru.png")
+````
+
+````
+"/home/user/ChainPlots.jl/examples/img/lgru.png"
 ````
 
 ## Single-layer with variable input
@@ -206,131 +222,179 @@ Some layers accept input with varied size. In this case, we need to provide eith
 
 ````julia
 lvar = Conv((2,), 1 => 1)
-plot(lvar, rand(5, 1, 1))
+plotchain(lvar, rand(5, 1, 1))
 ````
-![](4225505258.svg)
+![](examples-37.svg)
 
 ````julia
 savefig("img/lvar5.png")
 ````
 
-````julia
-plot(lvar, (8, 1, 1))
 ````
-![](1424737611.svg)
+"/home/user/ChainPlots.jl/examples/img/lvar5.png"
+````
+
+````julia
+plotchain(lvar, (8, 1, 1))
+````
+![](examples-39.svg)
 
 ````julia
 savefig("img/lvar8.png")
 ````
 
+````
+"/home/user/ChainPlots.jl/examples/img/lvar8.png"
+````
+
 ````julia
 nnc = Conv((3,3), 1=>2)
-plot(nnc, (6, 5, 1, 1), title="$nnc", titlefontsize=10)
+plotchain(nnc, (6, 5, 1, 1), title="$nnc", titlefontsize=10)
 ````
-![](1739689633.svg)
+![](examples-41.svg)
 
 ````julia
 savefig("img/nnc.png")
 ````
 
+````
+"/home/user/ChainPlots.jl/examples/img/nnc.png"
+````
+
 ## Multilayer networks
 
 ````julia
-nnd = Chain(Dense(2, 5), Dense(5, 7, σ), Dense(7, 2, relu), Dense(2, 3))
-plot(nnd, title="$nnd", titlefontsize=10, xaxis=nothing)
+nnd = Chain(Dense(2 => 5), Dense(5 => 7, σ), Dense(7 => 2, relu), Dense(2 => 3))
+plotchain(nnd, title="$nnd", titlefontsize=10, xaxis=nothing)
 ````
-![](1816137404.svg)
+![](examples-44.svg)
 
 ````julia
 savefig("img/nnd.png")
 ````
 
-````julia
-nnr = Chain(Dense(2, 5, σ), RNN(5, 4, relu), LSTM(4, 4), GRU(4, 4), Dense(4, 3))
-plot(nnr, title="$nnr", titlefontsize=7)
 ````
-![](1357268417.svg)
+"/home/user/ChainPlots.jl/examples/img/nnd.png"
+````
+
+````julia
+nnr = Chain(Dense(2 => 5, σ), RNN(5 => 4, relu), LSTM(4 => 4), GRU(4 => 4), Dense(4 => 3))
+plotchain(nnr, title="$nnr", titlefontsize=7)
+````
+![](examples-46.svg)
 
 ````julia
 savefig("img/nnr.png")
 ````
 
+````
+"/home/user/ChainPlots.jl/examples/img/nnr.png"
+````
+
 ````julia
 x³(x) = x .^ 3
 dx(x) = x[2:end] - x[1:end-1]
-nna = Chain(Dense(2, 5, σ), dx, RNN(4, 6, relu), x³, LSTM(6, 4), GRU(4, 4), Dense(4, 3))
-plot(nna, title="$nna", titlefontsize=7)
+nna = Chain(Dense(2 => 5, σ), dx, RNN(4 => 6, relu), x³, LSTM(6 => 4), GRU(4 => 4), Dense(4 => 3))
+plotchain(nna, title="$nna", titlefontsize=7)
 ````
-![](470407956.svg)
+![](examples-48.svg)
 
 ````julia
 savefig("img/nna.png")
 ````
 
-````julia
-nnx = Chain(x³, dx, LSTM(5, 10), Dense(10, 5))
-input_data = rand(6)
-plot(nnx, input_data, title="$nnx", titlefontsize=9)
 ````
-![](1172628636.svg)
+"/home/user/ChainPlots.jl/examples/img/nna.png"
+````
+
+````julia
+nnx = Chain(x³, dx, LSTM(5 => 10), Dense(10 => 5))
+input_data = rand(6)
+plotchain(nnx, input_data, title="$nnx", titlefontsize=9)
+````
+![](examples-50.svg)
 
 ````julia
 savefig("img/nnx.png")
 ````
 
+````
+"/home/user/ChainPlots.jl/examples/img/nnx.png"
+````
+
 or just passing the dimensions:
 
 ````julia
-nnx = Chain(x³, dx, LSTM(5, 10), Dense(10, 5))
-plot(nnx, (6,), title="$nnx", titlefontsize=9)
+nnx = Chain(x³, dx, LSTM(5 => 10), Dense(10 => 5))
+plotchain(nnx, (6,), title="$nnx", titlefontsize=9)
 ````
-![](893900538.svg)
+![](examples-53.svg)
 
 ````julia
 savefig("img/nnx_ldim.png")
 ````
 
-````julia
-nnrlwide = Chain(Dense(5, 8), RNN(8, 20), LSTM(20, 10), Dense(10, 7))
-plot(nnrlwide, title="$nnrlwide", titlefontsize=9)
 ````
-![](2655440084.svg)
+"/home/user/ChainPlots.jl/examples/img/nnx_ldim.png"
+````
+
+````julia
+nnrlwide = Chain(Dense(5 => 8), RNN(8 => 20), LSTM(20 => 10), Dense(10 => 7))
+plotchain(nnrlwide, title="$nnrlwide", titlefontsize=9)
+````
+![](examples-55.svg)
 
 ````julia
 savefig("img/nnrlwide.png")
 ````
 
+````
+"/home/user/ChainPlots.jl/examples/img/nnrlwide.png"
+````
+
 ````julia
 reshape6x1x1(a) = reshape(a, 6, 1, 1)
-nnrs = Chain(x³, Dense(3, 6), reshape6x1x1, Conv((2,), 1 => 1), vec, Dense(5, 4))
-plot(nnrs, rand(Float32, 3), title="$nnrs", titlefontsize=9)
+nnrs = Chain(x³, Dense(3 => 6), reshape6x1x1, Conv((2,), 1 => 1), vec, Dense(5 => 4))
+plotchain(nnrs, rand(Float32, 3), title="$nnrs", titlefontsize=9)
 ````
-![](1675611250.svg)
+![](examples-57.svg)
 
 ````julia
 savefig("img/nnrs.png")
 ````
 
+````
+"/home/user/ChainPlots.jl/examples/img/nnrs.png"
+````
+
 ````julia
 N = 4
 reshapeNxNx1x1(a) = reshape(a, N, N, 1, 1)
-nnrs2d = Chain(x³, Dense(4, N^2), reshapeNxNx1x1, Conv((2, 2), 1 => 1), vec)
-plot(nnrs2d, (4,), title="$nnrs2d", titlefontsize=9)
+nnrs2d = Chain(x³, Dense(4 => N^2), reshapeNxNx1x1, Conv((2, 2), 1 => 1), vec)
+plotchain(nnrs2d, (4,), title="$nnrs2d", titlefontsize=9)
 ````
-![](1854954380.svg)
+![](examples-59.svg)
 
 ````julia
 savefig("img/nnrs2d.png")
 ````
 
+````
+"/home/user/ChainPlots.jl/examples/img/nnrs2d.png"
+````
+
 ````julia
 nncg = Chain(Conv((3,3), 1=>4, leakyrelu, pad = 1),GroupNorm(4,2))
-plot(nncg, (6,6,1,1), title="$nncg", titlefontsize=10)
+plotchain(nncg, (6,6,1,1), title="$nncg", titlefontsize=10)
 ````
-![](3611096667.svg)
+![](examples-61.svg)
 
 ````julia
 savefig("img/nncg.png")
+````
+
+````
+"/home/user/ChainPlots.jl/examples/img/nncg.png"
 ````
 
 ````julia
@@ -342,22 +406,26 @@ nncp = Chain(
     Conv((3, 3), 4=>4, relu),
     GlobalMaxPool()
 )
-plot(nncp, (16, 16, 1, 1), title="Chain with convolutional and pooling layers", titlefontsize=10)
+plotchain(nncp, (16, 16, 1, 1), title="Chain with convolutional and pooling layers", titlefontsize=10)
 ````
-![](3835335252.svg)
+![](examples-63.svg)
 
 ````julia
 savefig("img/nncp.png")
 ````
 
+````
+"/home/user/ChainPlots.jl/examples/img/nncp.png"
+````
+
 ````julia
 hdf5()
-plot(nnr, title="$nnr with HDF5", titlefontsize=7)
+plotchain(nnr, title="$nnr with HDF5", titlefontsize=7)
 Plots.hdf5plot_write("img/nnrhdf5.hdf5")
 gr()
 plthdf5_read = Plots.hdf5plot_read("img/nnrhdf5.hdf5")
 ````
-![](4270960851.svg)
+![](examples-65.svg)
 
 ### Plotting with different themes
 
@@ -367,7 +435,7 @@ plts = []
 for t in themes
     theme(t)
     try
-        push!(plts, plot(nnr, title="With theme $t", titlefontsize=10, show=true))
+        push!(plts, plotchain(nnr, title="With theme $t", titlefontsize=10, show=true))
         display(plts[end])
         #
         savefig("img/nnr_$t.png")
@@ -402,12 +470,16 @@ theme(:default)
 One is free to use (most of) other arguments accepted by `Plots.jl`. For instance, the following plot is used for the repo's social preview:
 
 ````julia
-plot(nnr, title="ChainPlots.jl", topmargin=6mm, bottommargin=4mm, size=(720,380), titlefont=(42, "Bookman Demi"))
+plotchain(nnr, title="ChainPlots.jl", topmargin=6mm, bottommargin=4mm, size=(720,380), titlefont=(42, "Bookman Demi"))
 ````
-![](1577505646.svg)
+![](examples-73.svg)
 
 ````julia
 savefig("img/nnr_chainplots_socialpreview.png")
+````
+
+````
+"/home/user/ChainPlots.jl/examples/img/nnr_chainplots_socialpreview.png"
 ````
 
 Some attributes, like `annotationfontsize` and `markersize`, however, which are explicitly set in the Plots, recipe cannot be currently changed, but there are plans to make this more flexible.

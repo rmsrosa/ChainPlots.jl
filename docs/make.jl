@@ -7,8 +7,9 @@ makedocs(
         "Overview" => "index.md"
         "Examples" => [
             "chain_examples.md",
-            "metagraphs_examples.md"
+            "graph_examples.md"
         ]
+        "Migrating to 0.2" => "migration.md"
         "API" => "api.md"
     ],
     authors = "Ricardo Rosa",

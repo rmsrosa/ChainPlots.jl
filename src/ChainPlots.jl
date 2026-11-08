@@ -11,13 +11,15 @@ using Graphs
 using MetaGraphs
 using RecipesBase
 import Base: getindex, length, size
-export chaingraph
+export ChainGraph, chaingraph, plotchain, plotchain!
+export nodeprop, nodeprops, layer_dimensions, layer_names
 
 include("NeuralNumbers.jl")
 
 import .NeuralNumbers: cold, hot, fneutralize
 
 include("utils.jl")
+include("chaingraphtype.jl")
 include("chaingraph.jl")
 include("plotrecipe.jl")
 
