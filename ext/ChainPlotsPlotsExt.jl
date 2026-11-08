@@ -38,7 +38,7 @@ function layerplotattributes(s::Symbol; neuron_colors = NEURON_COLORS)
     elseif s == :Conv
         return (mrkrsize=10, mrkrshape=[:square], mrkrcolor=[neuron_colors[s]])
     else
-        return (mrkrsize=12, mrkrshape=[:circle], mrkrcolor=[neuron_colors[:Any]])
+        return (mrkrsize=12, mrkrshape=[:circle], mrkrcolor=[get(neuron_colors, s, neuron_colors[:Any])])
     end
 end
 

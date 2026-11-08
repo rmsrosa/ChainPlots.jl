@@ -7,6 +7,7 @@ makedocs(
         "Overview" => "index.md"
         "Examples" => [
             "chain_examples.md",
+            "custom_layers.md",
             "graph_examples.md"
         ]
         "Migrating" => "migration.md"
