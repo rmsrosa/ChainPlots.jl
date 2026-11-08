@@ -6,9 +6,14 @@ Specify the color for each type of layer.
 NEURON_COLORS = Dict(
     :Any => :gray,
     :Dense => :lightgreen,
+    :RNN => :lightskyblue1,
     :RNNCell => :lightskyblue1,
+    :LSTM => :skyblue2,
     :LSTMCell => :skyblue2,
+    :GRU => :skyblue3,
     :GRUCell => :skyblue3,
+    :GRUv3 => :skyblue3,
+    :GRUv3Cell => :skyblue3,
     :Conv => :plum,
     :input_layer => :yellow,
     :output_layer => :orange
@@ -21,7 +26,6 @@ Grab the color for each specific type of neuron.
 The color depends on the type of layer the neuron belongs to and the colorset given `neuron_colors`, which defaults to [`NEURON_COLORS`](@ref).
 """
 neuron_color(::T; neuron_colors = NEURON_COLORS) where T = nameof(T) in keys(neuron_colors) ? neuron_colors[nameof(T)] : neuron_colors[:Any]
-neuron_color(r::Flux.Recur; neuron_colors = NEURON_COLORS) = neuron_color(r.cell; neuron_colors)
 neuron_color(s::Symbol; neuron_colors = NEURON_COLORS) = s in keys(neuron_colors) ? neuron_colors[s] : throw(ArgumentError("Color not defined for the given symbol $s."))
 
 """
@@ -39,22 +43,24 @@ function projection(z::Tuple{T, NTuple{N, T}}, center, max_width, dimensions) wh
 end
 
 """
-    chaingraph(m::Flux.Chain, input_data::Array)
+    chaingraph(m::Flux.Chain, input_data::Array) -> ChainGraph
 
-Return a MetaGraph representing the graph structure of the neural network.
+Return a [`ChainGraph`](@ref) with the graph structure of the neural network `m`
+when applied to `input_data`.
 
-Each node represents a neuron of the Chain `m` and contains the following properties:
-    `:layer_number`: Int indicating to each layer it belongs (
-        with `0` indicating the input layer, `1, …, length(m)-1` 
-        indicating the hidden layers, and with `length(m)` indicating
-        the output layer);
-    `:layer_type`: symbol indicating the layer type it is part of in the Chain
-        (e.g. `:Dense`, `:GRUCell`, `:Conv`, …);
-    `:index_in_layer`: `Tuple` indicating the position of the neuron
-        within the layer. The indices cover the size of the layer, which is 
-        given by a Tuple, e.g. of the form `(n,)` for `Dense(n,m)` and
-        `RNN(n,m)`, or `(n₁, …, nₖ,m,d,b)` for convolutional layers, and so on;
-    `:layer_center`: Float64 with the vertical mid-point of the layer it belongs to.
+Each vertex is a neuron of the network, and each edge connects a neuron to a neuron of
+the next layer that it affects. The properties of each neuron, listed in
+[`NODE_PROPERTIES`](@ref), are read with [`nodeprop`](@ref) and [`nodeprops`](@ref).
+
+The recurrent layers `RNN`, `LSTM`, `GRU` and `GRUv3` are drawn folded, as a single
+time step, when the input is a vector. If the input is a sequence of size `(in, len)`,
+the graph has a neuron for each time step instead, with each time step connected to the
+same and the later time steps of the next layer; the plot recipe does not lay the time
+steps out separately, though. The recurrent cells (`RNNCell`, …) return a tuple
+`(y, state)`, so they can only be the last layer of a chain.
+
+The plot recipe for `ChainGraph` draws it, as in `plot(chaingraph(m, input_data))`;
+see also [`plotchain`](@ref).
 """
 function chaingraph(m::Flux.Chain, input_data::Array)
     # m32 = f32(m) # this is not needed so far but leave it as a comment just in case
@@ -80,7 +86,7 @@ function chaingraph(m::Flux.Chain, input_data::Array)
             mg, i, Dict(
                 :layer_number => first(node_to_neuron[i]),
                 :layer_name => first(node_to_neuron[i]) == 0 ? "input layer" : string(m[first(node_to_neuron[i])]),
-                :layer_type => first(node_to_neuron[i]) == 0 ? :input_layer : m[first(node_to_neuron[i])] isa Flux.Recur ? nameof(typeof(m[first(node_to_neuron[i])].cell)) : nameof(typeof(m[first(node_to_neuron[i])])),
+                :layer_type => first(node_to_neuron[i]) == 0 ? :input_layer : nameof(typeof(m[first(node_to_neuron[i])])),
                 :index_in_layer => last(node_to_neuron[i]),
                 :layer_center => center,
                 :loc_x => x,
@@ -96,22 +102,23 @@ function chaingraph(m::Flux.Chain, input_data::Array)
             end
         end
     end
-    return mg
+    layer_names = ["input layer"; [string(l) for l in m.layers]]
+    return ChainGraph(mg, chain_dimensions, layer_names)
 end
 
 """
-    chaingraph(m::Flux.Chain, ldim::Tuple)
+    chaingraph(m::Flux.Chain, ldim::Tuple) -> ChainGraph
 
-Return a MetaGraph representing the graph structure of the neural network with an input of shape `ldim`.
+Return a [`ChainGraph`](@ref) with the graph structure of the neural network `m` with an input of shape `ldim`.
 
 See [`chaingraph`](@ref) for the properties of each node of the graph.
 """
 chaingraph(m::Flux.Chain, ldim::Tuple) = chaingraph(m, rand(Float32, ldim))
 
 """
-    chaingraph(m::Flux.Chain)
+    chaingraph(m::Flux.Chain) -> ChainGraph
 
-Return a MetaGraph representing the graph structure of the neural network.
+Return a [`ChainGraph`](@ref) with the graph structure of the neural network `m`.
 
 In this case, the first layer must be a layer with fixed input dimension.
 
@@ -125,8 +132,19 @@ function chaingraph(m::Flux.Chain, ::Nothing=nothing)
 end
 
 """
-    chaingraph(l::Union{Flux.Dense,Flux.Recur,Flux.RNNCell,Flux.LSTMCell,Flux.GRUCell})
+    chaingraph(l::Union{FIXED_INPUT_DIM_LAYERS...}) -> ChainGraph
 
-Return a MetaGraph representing the graph structure of a neural network composed of the single layer `l`.
+Return a [`ChainGraph`](@ref) with the graph structure of a neural network composed of the single layer `l`.
+
+This covers `Flux.Dense`, the sequence layers `Flux.RNN`, `Flux.LSTM`, `Flux.GRU` and `Flux.GRUv3`,
+and their cells.
 """
-chaingraph(l::Union{Flux.Dense,Flux.Recur,Flux.RNNCell,Flux.LSTMCell,Flux.GRUCell}) = chaingraph(Flux.Chain(l))
+chaingraph(l::Union{FIXED_INPUT_DIM_LAYERS...}, ::Nothing=nothing) = chaingraph(Flux.Chain(l))
+
+"""
+    chaingraph(l, input::Union{Array,Tuple}) -> ChainGraph
+
+Return a [`ChainGraph`](@ref) with the graph structure of a neural network composed of
+the single layer `l`, such as a `Flux.Conv`, applied to `input`, or to an input of shape `input`.
+"""
+chaingraph(l, input::Union{Array,Tuple}) = chaingraph(Flux.Chain(l), input)

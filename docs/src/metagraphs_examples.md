@@ -1,2 +1,0 @@
-# MetaGraphs examples
-
