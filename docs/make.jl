@@ -9,7 +9,7 @@ makedocs(
             "chain_examples.md",
             "graph_examples.md"
         ]
-        "Migrating to 0.2" => "migration.md"
+        "Migrating" => "migration.md"
         "API" => "api.md"
     ],
     authors = "Ricardo Rosa",

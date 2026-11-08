@@ -6,7 +6,11 @@
 #
 # ## Load Packages
 #
-# First we load some packages:
+# First we load some packages. This script uses the ChainPlots.jl checkout it lives in, which is added to the `examples` environment with
+# ```julia
+# julia --project=examples -e 'using Pkg; Pkg.develop(path="."); Pkg.instantiate()'
+# ```
+# from the root of the repository.
 
 using Flux
 using Plots
@@ -17,10 +21,8 @@ using Compose
 using Graphs
 using GraphPlot
 
-# and, of course, `ChainPlots`:
-include("../src/ChainPlots.jl")
-
-using .ChainPlots
+# and, of course, `ChainPlots`. The plot recipe is loaded together with `Plots`, as a package extension.
+using ChainPlots
 
 # We play with different themes for `Plots.jl`, so we collect them here:
 
