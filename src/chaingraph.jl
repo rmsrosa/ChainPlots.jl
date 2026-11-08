@@ -6,9 +6,14 @@ Specify the color for each type of layer.
 NEURON_COLORS = Dict(
     :Any => :gray,
     :Dense => :lightgreen,
+    :RNN => :lightskyblue1,
     :RNNCell => :lightskyblue1,
+    :LSTM => :skyblue2,
     :LSTMCell => :skyblue2,
+    :GRU => :skyblue3,
     :GRUCell => :skyblue3,
+    :GRUv3 => :skyblue3,
+    :GRUv3Cell => :skyblue3,
     :Conv => :plum,
     :input_layer => :yellow,
     :output_layer => :orange
@@ -21,7 +26,6 @@ Grab the color for each specific type of neuron.
 The color depends on the type of layer the neuron belongs to and the colorset given `neuron_colors`, which defaults to [`NEURON_COLORS`](@ref).
 """
 neuron_color(::T; neuron_colors = NEURON_COLORS) where T = nameof(T) in keys(neuron_colors) ? neuron_colors[nameof(T)] : neuron_colors[:Any]
-neuron_color(r::Flux.Recur; neuron_colors = NEURON_COLORS) = neuron_color(r.cell; neuron_colors)
 neuron_color(s::Symbol; neuron_colors = NEURON_COLORS) = s in keys(neuron_colors) ? neuron_colors[s] : throw(ArgumentError("Color not defined for the given symbol $s."))
 
 """
@@ -49,11 +53,11 @@ Each node represents a neuron of the Chain `m` and contains the following proper
         indicating the hidden layers, and with `length(m)` indicating
         the output layer);
     `:layer_type`: symbol indicating the layer type it is part of in the Chain
-        (e.g. `:Dense`, `:GRUCell`, `:Conv`, …);
+        (e.g. `:Dense`, `:LSTM`, `:GRUCell`, `:Conv`, …);
     `:index_in_layer`: `Tuple` indicating the position of the neuron
         within the layer. The indices cover the size of the layer, which is 
-        given by a Tuple, e.g. of the form `(n,)` for `Dense(n,m)` and
-        `RNN(n,m)`, or `(n₁, …, nₖ,m,d,b)` for convolutional layers, and so on;
+        given by a Tuple, e.g. of the form `(n,)` for `Dense(n => m)` and
+        `RNN(n => m)`, or `(n₁, …, nₖ,m,d,b)` for convolutional layers, and so on;
     `:layer_center`: Float64 with the vertical mid-point of the layer it belongs to.
 """
 function chaingraph(m::Flux.Chain, input_data::Array)
@@ -80,7 +84,7 @@ function chaingraph(m::Flux.Chain, input_data::Array)
             mg, i, Dict(
                 :layer_number => first(node_to_neuron[i]),
                 :layer_name => first(node_to_neuron[i]) == 0 ? "input layer" : string(m[first(node_to_neuron[i])]),
-                :layer_type => first(node_to_neuron[i]) == 0 ? :input_layer : m[first(node_to_neuron[i])] isa Flux.Recur ? nameof(typeof(m[first(node_to_neuron[i])].cell)) : nameof(typeof(m[first(node_to_neuron[i])])),
+                :layer_type => first(node_to_neuron[i]) == 0 ? :input_layer : nameof(typeof(m[first(node_to_neuron[i])])),
                 :index_in_layer => last(node_to_neuron[i]),
                 :layer_center => center,
                 :loc_x => x,
@@ -125,8 +129,11 @@ function chaingraph(m::Flux.Chain, ::Nothing=nothing)
 end
 
 """
-    chaingraph(l::Union{Flux.Dense,Flux.Recur,Flux.RNNCell,Flux.LSTMCell,Flux.GRUCell})
+    chaingraph(l::Union{FIXED_INPUT_DIM_LAYERS...})
 
 Return a MetaGraph representing the graph structure of a neural network composed of the single layer `l`.
+
+This covers `Flux.Dense`, the sequence layers `Flux.RNN`, `Flux.LSTM`, `Flux.GRU` and `Flux.GRUv3`,
+and their cells.
 """
-chaingraph(l::Union{Flux.Dense,Flux.Recur,Flux.RNNCell,Flux.LSTMCell,Flux.GRUCell}) = chaingraph(Flux.Chain(l))
+chaingraph(l::Union{FIXED_INPUT_DIM_LAYERS...}) = chaingraph(Flux.Chain(l))

@@ -17,11 +17,11 @@ function layerplotattributes(s::Symbol; neuron_colors = NEURON_COLORS)
         return (mrkrsize=12, mrkrshape=[:rtriangle], mrkrcolor=[neuron_colors[s]])
     elseif s == :Dense
         return (mrkrsize=12, mrkrshape=[:circle], mrkrcolor=[neuron_colors[s]])
-    elseif s == :RNNCell
+    elseif s == :RNNCell || s == :RNN
         return (mrkrsize=12, mrkrshape=[Plots.Shape(lrnn_verts), :circle], mrkrcolor=[false, neuron_colors[s]])
-    elseif s == :LSTMCell
+    elseif s == :LSTMCell || s == :LSTM
         return (mrkrsize=12, mrkrshape=[Plots.Shape(lstm_verts), :circle], mrkrcolor=[false, neuron_colors[s]])
-    elseif s == :GRUCell
+    elseif s == :GRUCell || s in (:GRU, :GRUv3, :GRUv3Cell)
         return (mrkrsize=12, mrkrshape=[Plots.Shape(lgru_verts), :circle], mrkrcolor=[false, neuron_colors[s]])
     elseif s == :Conv
         return (mrkrsize=10, mrkrshape=[:square], mrkrcolor=[neuron_colors[s]])
@@ -134,7 +134,7 @@ plotchain(m::Flux.Chain, input_data::Union{Nothing,Array}=nothing, kwargs...) = 
     end
 end
 
-@recipe function plot(d::Union{Flux.Dense,Flux.Recur,Flux.RNNCell,Flux.LSTMCell,Flux.GRUCell})
+@recipe function plot(d::Union{FIXED_INPUT_DIM_LAYERS...})
     Flux.Chain(d)
 end
 

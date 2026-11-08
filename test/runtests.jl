@@ -9,9 +9,19 @@ using ChainPlots
 import ChainPlots.NeuralNumbers: cold, hot, fneutralize
 
 @testset "neurons" begin
-    m = Chain(Dense(2, 3), RNN(3, 2))
+    m = Chain(Dense(2 => 3), RNN(3 => 2))
     fm = fneutralize(m)
-    @test fm([cold, hot]) == [hot, hot]
+    # sequence layers take an `(in, len)` input
+    @test fm(reshape([cold, hot], 2, 1)) == reshape([hot, hot], 2, 1)
+    # a signal at time step `t` reaches every later time step, but no earlier one
+    @test fm([cold cold hot; cold cold cold]) == [cold cold hot; cold cold hot]
+    @test fm([cold hot cold; cold cold cold]) == [cold hot hot; cold hot hot]
+    # and ChainPlots runs it as a single time step on a vector input
+    @test foldl((x, l) -> ChainPlots.applylayer(l, x), fm.layers; init = [cold, hot]) == [hot, hot]
+
+    for c in (RNNCell(2 => 3), LSTMCell(2 => 3), GRUCell(2 => 3), GRUv3Cell(2 => 3))
+        @test ChainPlots.applylayer(fneutralize(c), [hot, cold]) == [hot, hot, hot]
+    end
 
     m = Chain(x -> x[2:end] - x[1:end-1])
     fm = fneutralize(m)
@@ -46,10 +56,15 @@ end
         (:Dense, 2, 3),
         (:RNN, 3, 5),
         (:LSTM, 7, 4),
-        (:GRU, 8, 5)
+        (:GRU, 8, 5),
+        (:GRUv3, 4, 3),
+        (:RNNCell, 3, 5),
+        (:LSTMCell, 7, 4),
+        (:GRUCell, 8, 5),
+        (:GRUv3Cell, 4, 3)
     )
         @testset "$l" begin
-            @eval m = Flux.$l($ni, $no)
+            m = getfield(Flux, l)(ni => no)
             mg = chaingraph(m)
             @test nv(mg) == ni + no
             @test ne(mg) == ni * no
@@ -67,15 +82,18 @@ end
             @test neighbors(mg, ni + 1) == neighbors(mg, ni + no) == (1:ni)
             @test length(get_prop.(Ref(mg), vertices(mg), :loc_x)) == length(get_prop.(Ref(mg), vertices(mg), :loc_y)) == ni + no
             @test unique(get_prop(mg, v, :loc_x) for v in vertices(mg)) == (0.0:1.0)
+            @test get_prop(mg, ni + 1, :layer_type) == l
+            @test get_prop(mg, ni + 1, :neuron_color) == ChainPlots.neuron_color(m)
         end
     end
 end
 
 @testset "chains" begin
     for (m, num_vert, num_edges) in (
-        (Chain(Dense(2, 5), Dense(5, 7, σ), Dense(7, 2, relu), Dense(2, 3)), 19, 65),
-        (Chain(Dense(2, 5, σ), RNN(5, 4, relu), LSTM(4, 4), GRU(4, 4), Dense(4, 3)), 22, 74),
-        (Chain(Dense(5, 8), RNN(8, 20), LSTM(20, 10), Dense(10, 7)), 50, 470)
+        (Chain(Dense(2 => 5), Dense(5 => 7, σ), Dense(7 => 2, relu), Dense(2 => 3)), 19, 65),
+        (Chain(Dense(2 => 5, σ), RNN(5 => 4, relu), LSTM(4 => 4), GRU(4 => 4), Dense(4 => 3)), 22, 74),
+        (Chain(Dense(5 => 8), RNN(8 => 20), LSTM(20 => 10), Dense(10 => 7)), 50, 470),
+        (Chain(Dense(2 => 3), GRUCell(3 => 4)), 9, 18)
     )
         mg = chaingraph(m)
         @test nv(mg) == num_vert
@@ -84,22 +102,23 @@ end
 end
 
 @testset "nnr" begin
-    nnr = Chain(Dense(2, 5, σ), RNN(5, 4, relu), LSTM(4, 4), GRU(4, 4), Dense(4, 3))
+    nnr = Chain(Dense(2 => 5, σ), RNN(5 => 4, relu), LSTM(4 => 4), GRU(4 => 4), Dense(4 => 3))
     mg = chaingraph(nnr)
     @test nv(mg) == 2 + 5 + 4 + 4 + 4 + 3 == 22
     @test ne(mg) == 2 * 5 + 5 * 4 + 4 * 4 + 4 * 4 + 4 * 3 == 74
     @test all(==("input layer"), get_prop.(Ref(mg), 1:2, :layer_name))
     @test all(s -> occursin("Dense", s), get_prop.(Ref(mg), 3:7, :layer_name))
-    @test all(s -> occursin("RNNCell", s), get_prop.(Ref(mg), 8:11, :layer_name))
-    @test all(s -> occursin("LSTMCell", s), get_prop.(Ref(mg), 12:15, :layer_name))
-    @test all(s -> occursin("GRUCell", s), get_prop.(Ref(mg), 16:19, :layer_name))
+    @test all(s -> startswith(s, "RNN("), get_prop.(Ref(mg), 8:11, :layer_name))
+    @test all(s -> startswith(s, "LSTM("), get_prop.(Ref(mg), 12:15, :layer_name))
+    @test all(s -> startswith(s, "GRU("), get_prop.(Ref(mg), 16:19, :layer_name))
+    @test get_prop.(Ref(mg), [3, 8, 12, 16, 20], :layer_type) == [:Dense, :RNN, :LSTM, :GRU, :Dense]
     @test all(s -> occursin("Dense", s), get_prop.(Ref(mg), 20:22, :layer_name))
     @test get_prop(mg, 1, :index_in_layer) == (1,)
     @test get_prop(mg, 2, :index_in_layer) == (2,)
     @test get_prop(mg, 3, :index_in_layer) == (1,)
     @test get_prop(mg, 7, :index_in_layer) == (5,)
-    @test get_prop(mg, 3, :neuron_color) == ChainPlots.neuron_color(Dense(2, 5, σ))
-    @test get_prop(mg, 8, :neuron_color) == ChainPlots.neuron_color(RNN(5, 4, relu))
+    @test get_prop(mg, 3, :neuron_color) == ChainPlots.neuron_color(Dense(2 => 5, σ))
+    @test get_prop(mg, 8, :neuron_color) == ChainPlots.neuron_color(RNN(5 => 4, relu))
     @test neighbors(mg, 1) == neighbors(mg, 2) == (3:7)
     @test all(==([(1:2); (8:11)]), neighbors.(Ref(mg), 3:7))
     @test all(==([(3:7); (12:15)]), neighbors.(Ref(mg), 8:11))
@@ -114,7 +133,7 @@ end
 @testset "functional" begin
     x³(x) = x .^ 3
     dx(x) = x[2:end] - x[1:end-1]
-    nna = Chain(Dense(2, 5, σ), dx, RNN(4, 6, relu), x³, LSTM(6, 4), GRU(4, 4), Dense(4, 3))
+    nna = Chain(Dense(2 => 5, σ), dx, RNN(4 => 6, relu), x³, LSTM(6 => 4), GRU(4 => 4), Dense(4 => 3))
     mg = chaingraph(nna)
     @test nv(mg) == 2 + 5 + 4 + 6 + 6 + 4 + 4 + 3 == 34
     @test ne(mg) == 2 * 5 + 2 * 4 + 4 * 6 + 1 * 6  + 6 * 4 + 4 * 4 + 4 * 3 == 100
@@ -124,7 +143,7 @@ end
     x³(x) = x .^ 3
     dx(x) = x[2:end] - x[1:end-1]
     
-    m = Chain(x³, dx, LSTM(5, 4), Dense(4, 5))
+    m = Chain(x³, dx, LSTM(5 => 4), Dense(4 => 5))
     input_data = rand(Float32, 6)
     mg = chaingraph(m, input_data)
     @test nv(mg) == 6 + 6 + 5 + 4 + 5 == 26
@@ -132,7 +151,7 @@ end
     mg_ldim = chaingraph(m, size(input_data))
     @test mg_ldim == mg
 
-    m = Chain(x³, dx, LSTM(10, 4), Dense(4, 2))
+    m = Chain(x³, dx, LSTM(10 => 4), Dense(4 => 2))
     input_data = rand(Float32, 11)
     mg = chaingraph(m, input_data)
     @test nv(mg) == 38
@@ -149,12 +168,12 @@ end
     m = Chain(Conv((2,), 1 => 1))
     input_data = rand(Float32, 5, 1, 1)
     mg = chaingraph(m, input_data)
-    nv(mg) == 5 + 4 == 9
-    ne(mg) == 2 * 4 == 8
+    @test nv(mg) == 5 + 4 == 9
+    @test ne(mg) == 2 * 4 == 8
     mg_ldim = chaingraph(m, size(input_data))
     @test mg_ldim == mg
 
-    m = Chain(x³, Dense(3, 6), reshape6x1x1, Conv((2,), 1 => 1), vec, Dense(5, 4))
+    m = Chain(x³, Dense(3 => 6), reshape6x1x1, Conv((2,), 1 => 1), vec, Dense(5 => 4))
     input_data = rand(Float32, 3)
     mg = chaingraph(m, input_data)
     @test nv(mg) == 3 + 3 + 6 + 6 + 5 + 5 + 4 == 32
@@ -162,7 +181,7 @@ end
     mg_ldim = chaingraph(m, size(input_data))
     @test mg_ldim == mg
 
-    m = Chain(x³, Dense(4, 16), reshape4x4x1x1, Conv((2, 2), 1 => 1), vec)
+    m = Chain(x³, Dense(4 => 16), reshape4x4x1x1, Conv((2, 2), 1 => 1), vec)
     input_data = rand(Float32, 4)
     mg = chaingraph(m, input_data)
     @test nv(mg) == 4 + 4 + 16 + 16 + 9 + 9 == 58
@@ -195,4 +214,26 @@ end
     input_size = (16, 16, 1, 1)
     mg = chaingraph(m, input_size)
     @test nv(mg) == 16^2 + 16^2 * 2 + 8^2 * 2 + 8^2 * 4 + 4^2 * 4 + 2^2 * 4 + 1^2 * 4 == 1236
+end
+
+@testset "recurrent" begin
+    # a cell can only be the last layer of a chain, since it returns `(y, state)`
+    for c in (RNNCell(3 => 4), LSTMCell(3 => 4), GRUCell(3 => 4), GRUv3Cell(3 => 4))
+        @test_throws ArgumentError chaingraph(Chain(c, Dense(4 => 2)))
+    end
+    mg = chaingraph(Chain(Dense(2 => 3), LSTMCell(3 => 4)))
+    @test nv(mg) == 2 + 3 + 4
+    @test ne(mg) == 2 * 3 + 3 * 4
+    @test get_prop(mg, 9, :layer_type) == :LSTMCell
+
+    # a vector input is drawn folded, as a single time step
+    @test chaingraph(Chain(RNN(3 => 2)), (3,)) == chaingraph(RNN(3 => 2))
+
+    # an `(in, len)` sequence input is unrolled in time, and the step `t` of
+    # the input reaches all the steps `t′ ≥ t` of the output
+    for (L, ni, no, len) in ((RNN, 3, 2, 4), (LSTM, 2, 3, 3), (GRU, 2, 2, 5))
+        mg = chaingraph(Chain(L(ni => no)), (ni, len))
+        @test nv(mg) == (ni + no) * len
+        @test ne(mg) == ni * no * len * (len + 1) ÷ 2
+    end
 end
