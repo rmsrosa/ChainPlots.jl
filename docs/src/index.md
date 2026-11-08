@@ -10,6 +10,8 @@ cg = chaingraph(m)  # the graph of neurons and connections
 plot(cg)            # or, in one step, plotchain(m)
 ```
 
+Plots.jl is an optional dependency: the plot recipe and [`plotchain`](@ref) are loaded with it, as a package extension, so `using Plots` is needed to plot, while [`chaingraph`](@ref) works without it.
+
 If the first layer accepts inputs of any size, such as a convolutional layer, pass an input, or the shape of an input, as in `plotchain(m, (16, 16, 1, 1))`.
 
-Upgrading from ChainPlots 0.1? See [Migrating from 0.1 to 0.2](@ref).
+Upgrading from ChainPlots 0.1? See [From 0.1 to 0.2](@ref).

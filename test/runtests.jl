@@ -272,8 +272,18 @@ end
     @test_throws ArgumentError chaingraph(Chain(x -> x .^ 3, Dense(3 => 2)))
 end
 
+@testset "plotchain without Plots" begin
+    # the Plots extension is not loaded yet
+    @test isnothing(Base.get_extension(ChainPlots, :ChainPlotsPlotsExt))
+    err = try plotchain(Dense(2 => 3)) catch e; e end
+    @test err isa MethodError
+    @test occursin("using Plots", sprint(showerror, err))
+end
+
+using Plots
+
 @testset "plot recipe" begin
-    Plots = ChainPlots.Plots
+    @test !isnothing(Base.get_extension(ChainPlots, :ChainPlotsPlotsExt))
     nnr = Chain(Dense(2 => 5, σ), RNN(5 => 4, relu), Dense(4 => 3))
     cg = chaingraph(nnr)
     plt = Plots.plot(cg)

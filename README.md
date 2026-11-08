@@ -7,7 +7,9 @@ Graph generator and plot recipe for the topology of [FluxML/Flux.jl](https://git
 
 ## Description
 
-`chaingraph(m)` builds a `ChainGraph` of the neural network `m`, with a vertex for each neuron and an edge for each connection between neurons of consecutive layers. A `ChainGraph` is a [JuliaGraphs/Graphs.jl](https://github.com/JuliaGraphs/Graphs.jl) graph, and it has a plot recipe, made with [JuliaPlots/RecipesBase.jl](https://github.com/JuliaPlots/RecipesBase.jl), so that `plot(chaingraph(m))`, or just `plotchain(m)`, draws the network.
+`chaingraph(m)` builds a `ChainGraph` of the neural network `m`, with a vertex for each neuron and an edge for each connection between neurons of consecutive layers. A `ChainGraph` is a [JuliaGraphs/Graphs.jl](https://github.com/JuliaGraphs/Graphs.jl) graph, and it has a plot recipe, so that `plot(chaingraph(m))`, or just `plotchain(m)`, draws the network.
+
+[JuliaPlots/Plots.jl](https://github.com/JuliaPlots/Plots.jl) is an optional dependency: the plot recipe and `plotchain` are loaded with it, as a package extension, so `using Plots` is needed to plot, while `chaingraph` works without it.
 
 ChainPlots 0.2 requires Flux 0.16 and Julia 1.10 or later.
 
@@ -252,6 +254,10 @@ julia> draw(PNG("img/mg_nnr.png", 600, 400), gplot(cg, locs_x, locs_y, nodefillc
 And here is the result.
 
 ![mg_nnr plot](examples/img/mg_nnr.png)
+
+## Migrating from 0.2 to 0.3 (unreleased)
+
+Plots.jl is now an optional dependency, loaded as a package extension. Add Plots to your environment and run `using Plots` before `plotchain` or `plot(cg)`; `chaingraph` works without it.
 
 ## Migrating from 0.1 to 0.2
 

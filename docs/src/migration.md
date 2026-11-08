@@ -1,8 +1,14 @@
-# Migrating from 0.1 to 0.2
+# Migrating
+
+## From 0.2 to 0.3 (unreleased)
+
+Plots.jl is now an optional dependency, and the plot recipe and [`plotchain`](@ref) are loaded with it, as a package extension. So add Plots to your environment and run `using Plots` before plotting; otherwise `plotchain` throws a `MethodError` that says so. [`chaingraph`](@ref) works without Plots.
+
+## From 0.1 to 0.2
 
 ChainPlots 0.2 supports Flux 0.16 only and changes what [`chaingraph`](@ref) returns.
 
-## `chaingraph` returns a `ChainGraph`
+### `chaingraph` returns a `ChainGraph`
 
 [`chaingraph`](@ref) used to return a `MetaGraphs.MetaGraph`. It now returns a [`ChainGraph`](@ref), which keeps the graph backend private, so that it can change without breaking your code. A `ChainGraph` is a `Graphs.AbstractGraph`, so the functions of `Graphs.jl` still work on it.
 
@@ -15,7 +21,7 @@ ChainPlots 0.2 supports Flux 0.16 only and changes what [`chaingraph`](@ref) ret
 
 The neuron properties are the same as before: `:layer_number`, `:layer_name`, `:layer_type`, `:index_in_layer`, `:layer_center`, `:loc_x`, `:loc_y` and `:neuron_color`.
 
-## Plotting
+### Plotting
 
 The `Plots.jl` recipes for `Flux.Chain` and for single Flux layers were removed, since defining them was type piracy: ChainPlots owns neither `plot` nor the Flux types. Plot the `ChainGraph` instead, or use [`plotchain`](@ref):
 
@@ -25,7 +31,7 @@ The `Plots.jl` recipes for `Flux.Chain` and for single Flux layers were removed,
 | `plot(m, input; kwargs...)` | `plotchain(m, input; kwargs...)` or `plot(chaingraph(m, input); kwargs...)` |
 | `plot!(m, ...)` | `plotchain!(m, ...)` or `plot!(chaingraph(m, ...))` |
 
-## Flux 0.16
+### Flux 0.16
 
 Flux 0.15 removed `Recur` and turned `RNN`, `LSTM` and `GRU` into layers that process a whole sequence, and Flux 0.16 made the recurrent cells return `(y, state)`. As a result:
 

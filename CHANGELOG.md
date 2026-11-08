@@ -1,5 +1,13 @@
 # Changelog
 
+## Unreleased
+
+This release is breaking, so it will be v0.3.0.
+
+### Breaking
+
+- **Plots.jl is an optional dependency**, loaded as a package extension ([#11](https://github.com/rmsrosa/ChainPlots.jl/issues/11)): run `using Plots` to get the plot recipe and `plotchain`, after adding Plots to your environment. Before that, `plotchain` throws a `MethodError` with a hint to load Plots. `chaingraph` works without Plots, and `using ChainPlots` is faster. RecipesBase is no longer a dependency.
+
 ## v0.2.0
 
 This release has breaking changes. See [Migrating from 0.1 to 0.2](https://rmsrosa.github.io/ChainPlots.jl/dev/migration/) for how to update your code.

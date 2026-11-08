@@ -1,3 +1,15 @@
+module ChainPlotsPlotsExt
+
+# The plot recipe for `ChainGraph` and the methods of `plotchain` and `plotchain!`,
+# loaded with Plots.jl, which the recipe needs for the shapes of the recurrent neurons.
+
+using ChainPlots: ChainPlots, ChainGraph, NEURON_COLORS, chaingraph, nlayers
+import ChainPlots: plotchain, plotchain!
+using Graphs: edges, vertices
+using MetaGraphs: get_prop
+using Plots
+import Plots: RecipesBase
+
 circle_verts = [(1.41 * sin(2π * n / 20), 1.41 * cos(2π * n / 20)) for n = -10:10]
 lrnn_verts = [(1.2 * sin(2π * n / 20), 1.2 * (1 + cos(2π * n / 20))) for n = -10:10]
 lstm_verts = vcat([(1.0 * sin(2π * n / 20), 1.2 + 1.0 * cos(2π * n / 20)) for n = -10:10],
@@ -30,44 +42,12 @@ function layerplotattributes(s::Symbol; neuron_colors = NEURON_COLORS)
     end
 end
 
-"""
-    plotchain(m, input = nothing; kwargs...)
-
-Plot the topology of the neural network `m`, which is `plot(chaingraph(m, input); kwargs...)`.
-
-`m` can be a `Flux.Chain` or a single layer. If the first layer accepts an input with
-arbitrary dimensions, such as a convolutional or a functional layer, an `input` must be
-given, either as an `Array` or as a `Tuple` with the dimensions of the input.
-
-Any other keyword argument is passed on to `plot`, such as `title`, as well as the
-attributes of the [`ChainGraph`](@ref) recipe, `connection_color`, `neuron_colors` and
-`neuron_shape`.
-"""
 plotchain(m, input=nothing; kwargs...) = Plots.plot(chaingraph(m, input); kwargs...)
 
-"""
-    plotchain!([plt,] m, input = nothing; kwargs...)
-
-Add the topology of the neural network `m` to the current plot, or to `plt`.
-
-See [`plotchain`](@ref).
-"""
 plotchain!(m, input=nothing; kwargs...) = Plots.plot!(chaingraph(m, input); kwargs...)
 plotchain!(plt::Plots.Plot, m, input=nothing; kwargs...) = Plots.plot!(plt, chaingraph(m, input); kwargs...)
 
-"""
-    plot(cg::ChainGraph; connection_color = :gray68, neuron_colors = NEURON_COLORS, neuron_shape = :auto)
-
-Plot recipe for a [`ChainGraph`](@ref), drawing each neuron with a marker given by the
-type of its layer, and each connection as a line.
-
-* `connection_color`: color of the connections;
-* `neuron_colors`: either a `Dict` from layer types to colors, as in
-  [`NEURON_COLORS`](@ref), or a color for all neurons;
-* `neuron_shape`: `:auto` for a marker depending on the type of the layer, or a
-  marker shape for all neurons.
-"""
-@recipe function f(
+RecipesBase.@recipe function f(
     cg::ChainGraph;
     connection_color=:gray68,
     neuron_colors=NEURON_COLORS,
@@ -160,3 +140,5 @@ type of its layer, and each connection as a line.
         end
     end
 end
+
+end # module
