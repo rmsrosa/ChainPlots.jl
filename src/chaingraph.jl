@@ -62,22 +62,28 @@ steps out separately, though. The recurrent cells (`RNNCell`, …) return a tupl
 The plot recipe for `ChainGraph` draws it, as in `plot(chaingraph(m, input_data))`;
 see also [`plotchain`](@ref).
 """
-function chaingraph(m::Flux.Chain, input_data::Array)
-    # m32 = f32(m) # this is not needed so far but leave it as a comment just in case
-    chain_dimensions = get_dimensions(m, input_data)
-    #= max_dim = maximum(length.(chain_dimensions))
-    full_dimensions = [
-        Tuple(length(v) ≥ n ? v[n] : 1 for n in 1:max_dim) for v in chain_dimensions
-    ]
-    max_widths = maximum.(chain_dimensions) =#
+chaingraph(m::Flux.Chain, input_data::Array) = chaingraph(modellayers(m), input_data)
+
+"""
+    chaingraph(ml::ModelLayers, input_data::Array) -> ChainGraph
+
+Build the [`ChainGraph`](@ref) of the model described by `ml`, when applied to `input_data`.
+
+This is the method all the others end up calling, after describing their model as a
+[`ModelLayers`](@ref).
+"""
+function chaingraph(ml::ModelLayers, input_data::Array)
+    chain_dimensions = get_dimensions(ml, input_data)
     max_width = mapreduce(x -> x[1], max, chain_dimensions)
-    connections = neuron_connections(m, input_data)
+    connections = neuron_connections(ml, input_data)
 
     neuron_to_node = Dict(
         (nl, c) => nl == 0 ? nc : sum([prod(chain_dimensions[nli+1]) for nli = 0:nl-1]) + nc
-        for nl in 0:length(m) for (nc, c) in enumerate(sort(neuron_indices(chain_dimensions[nl+1]))))
+        for nl in 0:length(ml) for (nc, c) in enumerate(sort(neuron_indices(chain_dimensions[nl+1]))))
     node_to_neuron = Dict{Int,Tuple{Int,Tuple}}(v => k for (k, v) in neuron_to_node)
 
+    layer_names = ["input layer"; ml.names]
+    layer_types = [:input_layer; ml.types]
     mg = MetaGraph(length(node_to_neuron))
     for i in 1:length(node_to_neuron)
         center = chain_dimensions[first(node_to_neuron[i])+1][1] / 2
@@ -85,24 +91,23 @@ function chaingraph(m::Flux.Chain, input_data::Array)
         set_props!(
             mg, i, Dict(
                 :layer_number => first(node_to_neuron[i]),
-                :layer_name => first(node_to_neuron[i]) == 0 ? "input layer" : string(m[first(node_to_neuron[i])]),
-                :layer_type => first(node_to_neuron[i]) == 0 ? :input_layer : nameof(typeof(m[first(node_to_neuron[i])])),
+                :layer_name => layer_names[first(node_to_neuron[i])+1],
+                :layer_type => layer_types[first(node_to_neuron[i])+1],
                 :index_in_layer => last(node_to_neuron[i]),
                 :layer_center => center,
                 :loc_x => x,
                 :loc_y => y,
-                :neuron_color => neuron_color(first(node_to_neuron[i]) == 0 ? :input_layer : m[first(node_to_neuron[i])])
+                :neuron_color => get(NEURON_COLORS, layer_types[first(node_to_neuron[i])+1], NEURON_COLORS[:Any])
             )
         )
     end
-    for nl in 0:length(m)-1
+    for nl in 0:length(ml)-1
         for ni in neuron_indices(chain_dimensions[nl+1])
             for nj in connections[nl+1][ni]
                 add_edge!(mg, neuron_to_node[(nl, ni)], neuron_to_node[(nl + 1, nj)])
             end
         end
     end
-    layer_names = ["input layer"; [string(l) for l in m.layers]]
     return ChainGraph(mg, chain_dimensions, layer_names)
 end
 
@@ -124,12 +129,7 @@ In this case, the first layer must be a layer with fixed input dimension.
 
 See [`chaingraph`](@ref) for the properties of each node of the graph.
 """
-function chaingraph(m::Flux.Chain, ::Nothing=nothing)
-    m.layers[1] isa Union{FIXED_INPUT_DIM_LAYERS...} || throw(ArgumentError("An input data or shape is required when the first layer accepts variable-dimension input"))
-
-    input_data = rand(Float32, layerdimensions(m.layers[1])[2])
-    return chaingraph(m, input_data)
-end
+chaingraph(m::Flux.Chain, ::Nothing=nothing) = chaingraph(m, input_array(m, nothing))
 
 """
     chaingraph(l::Union{FIXED_INPUT_DIM_LAYERS...}) -> ChainGraph
