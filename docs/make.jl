@@ -8,7 +8,8 @@ makedocs(
         "Examples" => [
             "chain_examples.md",
             "custom_layers.md",
-            "graph_examples.md"
+            "graph_examples.md",
+            "lux_examples.md"
         ]
         "Migrating" => "migration.md"
         "API" => "api.md"

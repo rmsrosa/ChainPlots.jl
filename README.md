@@ -3,7 +3,7 @@
 [![Dev](https://img.shields.io/badge/docs-dev-blue.svg)](https://rmsrosa.github.io/ChainPlots.jl/dev/) ![Main Tests Workflow Status](https://github.com/rmsrosa/ChainPlots.jl/workflows/CI/badge.svg)
 ![Nightly Tests Workflow Status](https://github.com/rmsrosa/ChainPlots.jl/workflows/CI%20Nightly/badge.svg) [![codecov](https://codecov.io/gh/rmsrosa/ChainPlots.jl/branch/main/graph/badge.svg)](https://codecov.io/gh/rmsrosa/ChainPlots.jl) [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT) ![GitHub repo size](https://img.shields.io/github/repo-size/rmsrosa/ChainPlots.jl) ![OSS Lifecycle](https://img.shields.io/osslifecycle/rmsrosa/ChainPlots.jl)
 
-Graph generator and plot recipe for the topology of [FluxML/Flux.jl](https://github.com/FluxML/Flux.jl)'s neural networks composed with [Flux.Chain](https://fluxml.ai/Flux.jl/stable/reference/models/layers/#Flux.Chain).
+Graph generator and plot recipe for the topology of [FluxML/Flux.jl](https://github.com/FluxML/Flux.jl)'s neural networks composed with [Flux.Chain](https://fluxml.ai/Flux.jl/stable/reference/models/layers/#Flux.Chain), and of [LuxDL/Lux.jl](https://github.com/LuxDL/Lux.jl)'s models composed with `Lux.Chain`.
 
 ## Description
 
@@ -25,7 +25,7 @@ The aim is to obtain a pictorial representations for all types of layers impleme
 
 ## Current state
 
-At the moment, the recipe has been tested with most of the layers in [Flux.jl/Basic Layers](https://fluxml.ai/Flux.jl/stable/reference/models/layers/), as well as with a number of "functional" layers (e.g. `x³ = x -> x .^ 3`, `dx = x -> x[2:end] - x[1:end-1]`), and with all activation functions in [Flux/NNlib](https://fluxml.ai/Flux.jl/stable/reference/models/nnlib/). Custom layers work as well, as long as they take a single array and return a single array; see [Custom layers](https://rmsrosa.github.io/ChainPlots.jl/dev/custom_layers/) in the documentation, which also shows how to draw a model with several inputs.
+At the moment, the recipe has been tested with most of the layers in [Flux.jl/Basic Layers](https://fluxml.ai/Flux.jl/stable/reference/models/layers/), as well as with a number of "functional" layers (e.g. `x³ = x -> x .^ 3`, `dx = x -> x[2:end] - x[1:end-1]`), and with all activation functions in [Flux/NNlib](https://fluxml.ai/Flux.jl/stable/reference/models/nnlib/). Models built with [Lux.jl](https://github.com/LuxDL/Lux.jl) are supported as well, through a package extension loaded with Lux: `chaingraph` and `plotchain` accept a `Lux.Chain` or a single Lux layer, and set up its parameters themselves; see [Lux models](https://rmsrosa.github.io/ChainPlots.jl/dev/lux_examples/) in the documentation. Custom layers work as well, as long as they take a single array and return a single array; see [Custom layers](https://rmsrosa.github.io/ChainPlots.jl/dev/custom_layers/) in the documentation, which also shows how to draw a model with several inputs.
 
 The recurrent layers `RNN`, `LSTM` and `GRU` are drawn folded, as a single time step, with a marker that hints at the recurrence. The recurrent cells `RNNCell`, `LSTMCell` and `GRUCell` return a tuple `(y, state)` in Flux 0.16, so they can only be drawn on their own or as the last layer of a chain.
 
