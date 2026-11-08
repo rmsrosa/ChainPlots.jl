@@ -354,6 +354,50 @@ using Plots
     @test_throws Exception Plots.plot(nnr)
 end
 
+import Lux
+
+@testset "Lux" begin
+    @test !isnothing(Base.get_extension(ChainPlots, :ChainPlotsLuxExt))
+    # Lux models give the same graphs as their Flux counterparts
+    for (lm, fm, input) in (
+        (Lux.Chain(Lux.Dense(2 => 5, σ), Lux.Dense(5 => 3)), Chain(Dense(2 => 5, σ), Dense(5 => 3)), nothing),
+        (
+            Lux.Chain(Lux.Dense(2 => 5), Lux.Recurrence(Lux.RNNCell(5 => 4)), Lux.Recurrence(Lux.LSTMCell(4 => 4)), Lux.Recurrence(Lux.GRUCell(4 => 4)), Lux.Dense(4 => 3)),
+            Chain(Dense(2 => 5), RNN(5 => 4), LSTM(4 => 4), GRU(4 => 4), Dense(4 => 3)),
+            nothing
+        ),
+        (Lux.Chain(Lux.Conv((3, 3), 1 => 2), Lux.MaxPool((2, 2))), Chain(Conv((3, 3), 1 => 2), MaxPool((2, 2))), (6, 6, 1, 1)),
+        (Lux.Chain(Lux.WrappedFunction(x -> x .^ 3), Lux.Dense(3 => 2)), Chain(x -> x .^ 3, Dense(3 => 2)), (3,)),
+        (Lux.Chain(Lux.Dense(2 => 3), Lux.LSTMCell(3 => 4)), Chain(Dense(2 => 3), LSTMCell(3 => 4)), nothing),
+        (Lux.Dense(2 => 3), Dense(2 => 3), nothing),
+        (Lux.Conv((2,), 1 => 1), Conv((2,), 1 => 1), (5, 1, 1)),
+    )
+        lg = chaingraph(lm, input)
+        fg = chaingraph(fm, input)
+        @test lg isa ChainGraph
+        @test nv(lg) == nv(fg)
+        @test collect(edges(lg)) == collect(edges(fg))
+        @test layer_dimensions(lg) == layer_dimensions(fg)
+    end
+
+    # recurrent layers are named after `Recurrence` and drawn after their cell
+    cg = chaingraph(Lux.Chain(Lux.Dense(2 => 5), Lux.Recurrence(Lux.LSTMCell(5 => 4)), Lux.Dense(4 => 3)))
+    @test layer_names(cg)[3] == "Recurrence(LSTMCell(5 => 4))"
+    @test nodeprop(cg, 8, :layer_type) == :LSTM
+    @test nodeprop(cg, 8, :neuron_color) == ChainPlots.NEURON_COLORS[:LSTM]
+    cg = chaingraph(Lux.Chain(Lux.Recurrence(Lux.RNNCell(2 => 3); return_sequence = true), Lux.Dense(3 => 1)))
+    @test nv(cg) == 2 + 3 + 1 && ne(cg) == 2 * 3 + 3
+
+    # an input from an array or a shape, and errors as with Flux
+    m = Lux.Chain(Lux.Conv((2,), 1 => 1))
+    @test chaingraph(m, rand(Float32, 5, 1, 1)) == chaingraph(m, (5, 1, 1))
+    @test_throws ArgumentError chaingraph(m)
+    @test_throws ArgumentError chaingraph(Lux.Chain(Lux.RNNCell(2 => 3), Lux.Dense(3 => 1)))
+
+    # and plotting
+    @test plotchain(Lux.Chain(Lux.Dense(2 => 3), Lux.Dense(3 => 1))) isa Plots.Plot
+end
+
 @testset "Aqua" begin
     # NeuralNumbers has method ambiguities with Base and ForwardDiff numbers,
     # unrelated to type piracy, so ambiguities are not checked here
