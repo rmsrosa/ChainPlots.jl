@@ -14,4 +14,4 @@ Plots.jl is an optional dependency: the plot recipe and [`plotchain`](@ref) are 
 
 If the first layer accepts inputs of any size, such as a convolutional layer, pass an input, or the shape of an input, as in `plotchain(m, (16, 16, 1, 1))`.
 
-Upgrading from ChainPlots 0.1? See [From 0.1 to 0.2](@ref).
+Upgrading from ChainPlots 0.2 or 0.1? See [From 0.2 to 0.3](@ref) and [From 0.1 to 0.2](@ref).

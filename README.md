@@ -11,9 +11,9 @@ Graph generator and plot recipe for the topology of [FluxML/Flux.jl](https://git
 
 [JuliaPlots/Plots.jl](https://github.com/JuliaPlots/Plots.jl) is an optional dependency: the plot recipe and `plotchain` are loaded with it, as a package extension, so `using Plots` is needed to plot, while `chaingraph` works without it.
 
-ChainPlots 0.2 requires Flux 0.16 and Julia 1.10 or later.
+ChainPlots requires Flux 0.16 and Julia 1.10 or later.
 
-> **Upgrading from ChainPlots 0.1?** `chaingraph` now returns a `ChainGraph` instead of a `MetaGraph`, and `plot(m::Flux.Chain)` is gone. See [Migrating from 0.1 to 0.2](#migrating-from-01-to-02) below.
+> **Upgrading?** From 0.2, plotting needs `using Plots`, as Plots.jl is now an optional dependency; see [Migrating from 0.2 to 0.3](#migrating-from-02-to-03). From 0.1, `chaingraph` also returns a `ChainGraph` instead of a `MetaGraph`, and `plot(m::Flux.Chain)` is gone; see [Migrating from 0.1 to 0.2](#migrating-from-01-to-02).
 
 ## Aim
 
@@ -255,7 +255,7 @@ And here is the result.
 
 ![mg_nnr plot](examples/img/mg_nnr.png)
 
-## Migrating from 0.2 to 0.3 (unreleased)
+## Migrating from 0.2 to 0.3
 
 Plots.jl is now an optional dependency, loaded as a package extension. Add Plots to your environment and run `using Plots` before `plotchain` or `plot(cg)`; `chaingraph` works without it.
 
