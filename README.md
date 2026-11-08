@@ -41,7 +41,7 @@ Any other argument for plot is accepted, like `plotchain(m, inp, title="Convolut
 
 ## Examples
 
-There are several examples in the Literated file [examples/build/examples.md](examples/build/examples.md) (the source file is in  [examples/examples.jl](examples/examples.jl), with all the plots saved to the folder [examples/img](examples/img/)).
+There are several examples in the Literated file [examples/build/examples.md](examples/build/examples.md) (the source file is in  [examples/examples.jl](examples/examples.jl), with all the plots saved to the folder [examples/img](examples/img/)). The same examples are also in the [Pluto](https://plutojl.org) notebook [examples/chainplots_examples_pluto.jl](examples/chainplots_examples_pluto.jl), which uses the checkout it lives in: open it with `Pluto.run(notebook = "examples/chainplots_examples_pluto.jl")`.
 
 Here is a little taste of it.
 
