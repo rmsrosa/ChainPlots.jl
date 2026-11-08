@@ -238,6 +238,52 @@ end
     end
 end
 
+# custom layers, defined at the top level, as structs must be
+struct Scale{T}
+    w::T
+end
+Flux.@layer Scale
+(s::Scale)(x) = s.w .* x
+
+# a two-input model, wrapped so that it takes one array and splits it
+struct Split{T}
+    parts::T
+end
+Flux.@layer Split
+(s::Split)(x) = vcat(s.parts[1](x[1:1]), s.parts[2](x[2:2]))
+
+@testset "custom layers" begin
+    # an array-to-array custom layer, in the middle, first, or alone
+    cg = chaingraph(Chain(Dense(2 => 3), Scale(rand(Float32, 3))))
+    @test nv(cg) == 2 + 3 + 3
+    @test ne(cg) == 2 * 3 + 3
+    @test nodeprop(cg, 8, :layer_type) == :Scale
+    @test nodeprop(cg, 8, :neuron_color) == ChainPlots.NEURON_COLORS[:Any]
+    cg = chaingraph(Chain(Scale(rand(Float32, 3)), Dense(3 => 2)), (3,))
+    @test nv(cg) == 3 + 3 + 2 && ne(cg) == 3 + 3 * 2
+    cg = chaingraph(Scale(rand(Float32, 3)), (3,))
+    @test nv(cg) == 3 + 3 && ne(cg) == 3
+
+    # Flux's container layers
+    cg = chaingraph(Chain(Parallel(vcat, Dense(2 => 3), Dense(2 => 4)), Dense(7 => 1)), (2,))
+    @test nv(cg) == 2 + 7 + 1
+    @test ne(cg) == 2 * 7 + 7
+    cg = chaingraph(Chain(SkipConnection(Dense(3 => 3), +), Dense(3 => 1)), (3,))
+    @test nv(cg) == 3 + 3 + 1
+    @test ne(cg) == 3 * 3 + 3
+
+    # a two-input model, taking one array instead of a vector of arrays:
+    # each half of the input only reaches its own `Dense`
+    cg = chaingraph(Chain(Split((Dense(1 => 4, swish), Dense(1 => 4, swish))), Dense(8 => 1)), (2,))
+    @test nv(cg) == 2 + 8 + 1
+    @test ne(cg) == 4 + 4 + 8
+    @test neighbors(cg, 1) == 3:6
+    @test neighbors(cg, 2) == 7:10
+
+    # a vector of arrays as input is not supported
+    @test_throws Exception chaingraph(Chain(Dense(1 => 2)), [ones(Float32, 1), ones(Float32, 1)])
+end
+
 @testset "ChainGraph" begin
     nnr = Chain(Dense(2 => 5, σ), RNN(5 => 4, relu), LSTM(4 => 4), GRU(4 => 4), Dense(4 => 3))
     cg = chaingraph(nnr)
@@ -289,6 +335,11 @@ using Plots
     plt = Plots.plot(cg)
     @test plt isa Plots.Plot
     @test length(plotchain(nnr).series_list) == length(plt.series_list)
+
+    # a layer type without its own marker takes its color from `neuron_colors`, if there
+    ext = Base.get_extension(ChainPlots, :ChainPlotsPlotsExt)
+    @test only(ext.layerplotattributes(:Scale).mrkrcolor) == ChainPlots.NEURON_COLORS[:Any]
+    @test only(ext.layerplotattributes(:Scale; neuron_colors = merge(ChainPlots.NEURON_COLORS, Dict(:Scale => :tomato))).mrkrcolor) == :tomato
     @test plotchain(Dense(2 => 3)) isa Plots.Plot
     @test plotchain(Conv((2,), 1 => 1), (5, 1, 1)) isa Plots.Plot
     @test plotchain(Chain(x -> x .^ 3, Dense(3 => 2)), (3,); title = "t") isa Plots.Plot

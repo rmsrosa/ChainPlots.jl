@@ -25,7 +25,7 @@ The aim is to obtain a pictorial representations for all types of layers impleme
 
 ## Current state
 
-At the moment, the recipe has been tested with most of the layers in [Flux.jl/Basic Layers](https://fluxml.ai/Flux.jl/stable/reference/models/layers/), as well as with a number of "functional" layers (e.g. `x³ = x -> x .^ 3`, `dx = x -> x[2:end] - x[1:end-1]`), and with all activation functions in [Flux/NNlib](https://fluxml.ai/Flux.jl/stable/reference/models/nnlib/).
+At the moment, the recipe has been tested with most of the layers in [Flux.jl/Basic Layers](https://fluxml.ai/Flux.jl/stable/reference/models/layers/), as well as with a number of "functional" layers (e.g. `x³ = x -> x .^ 3`, `dx = x -> x[2:end] - x[1:end-1]`), and with all activation functions in [Flux/NNlib](https://fluxml.ai/Flux.jl/stable/reference/models/nnlib/). Custom layers work as well, as long as they take a single array and return a single array; see [Custom layers](https://rmsrosa.github.io/ChainPlots.jl/dev/custom_layers/) in the documentation, which also shows how to draw a model with several inputs.
 
 The recurrent layers `RNN`, `LSTM` and `GRU` are drawn folded, as a single time step, with a marker that hints at the recurrence. The recurrent cells `RNNCell`, `LSTMCell` and `GRUCell` return a tuple `(y, state)` in Flux 0.16, so they can only be drawn on their own or as the last layer of a chain.
 
