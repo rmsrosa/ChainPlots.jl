@@ -9,7 +9,7 @@ Graph generator and plot recipe for the topology of [FluxML/Flux.jl](https://git
 
 `chaingraph(m)` builds a `ChainGraph` of the neural network `m`, with a vertex for each neuron and an edge for each connection between neurons of consecutive layers. A `ChainGraph` is a [JuliaGraphs/Graphs.jl](https://github.com/JuliaGraphs/Graphs.jl) graph, and it has a plot recipe, so that `plot(chaingraph(m))`, or just `plotchain(m)`, draws the network.
 
-[JuliaPlots/Plots.jl](https://github.com/JuliaPlots/Plots.jl) is an optional dependency: the plot recipe and `plotchain` are loaded with it, as a package extension, so `using Plots` is needed to plot, while `chaingraph` works without it.
+Plotting works with either [JuliaPlots/Plots.jl](https://github.com/JuliaPlots/Plots.jl) or [MakieOrg/Makie.jl](https://github.com/MakieOrg/Makie.jl), both optional dependencies: the plot recipes and `plotchain` are loaded with them, as package extensions. So run `using Plots`, or load a Makie backend, as in `using CairoMakie`, to plot, while `chaingraph` works without either. See [Plotting with Makie](https://rmsrosa.github.io/ChainPlots.jl/dev/makie_examples/) in the documentation.
 
 ChainPlots requires Flux 0.16 and Julia 1.10 or later.
 

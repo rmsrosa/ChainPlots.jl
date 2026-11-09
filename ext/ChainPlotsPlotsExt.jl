@@ -3,7 +3,7 @@ module ChainPlotsPlotsExt
 # The plot recipe for `ChainGraph` and the methods of `plotchain` and `plotchain!`,
 # loaded with Plots.jl, which the recipe needs for the shapes of the recurrent neurons.
 
-using ChainPlots: ChainPlots, ChainGraph, NEURON_COLORS, chaingraph, nlayers
+using ChainPlots: ChainPlots, ChainGraph, NEURON_COLORS, PlotsBackend, chaingraph, nlayers
 import ChainPlots: plotchain, plotchain!
 using Graphs: edges, vertices
 using MetaGraphs: get_prop
@@ -42,10 +42,11 @@ function layerplotattributes(s::Symbol; neuron_colors = NEURON_COLORS)
     end
 end
 
-plotchain(m, input=nothing; kwargs...) = Plots.plot(chaingraph(m, input); kwargs...)
+plotchain(::PlotsBackend, m, input=nothing; kwargs...) = Plots.plot(chaingraph(m, input); kwargs...)
 
-plotchain!(m, input=nothing; kwargs...) = Plots.plot!(chaingraph(m, input); kwargs...)
-plotchain!(plt::Plots.Plot, m, input=nothing; kwargs...) = Plots.plot!(plt, chaingraph(m, input); kwargs...)
+plotchain!(::PlotsBackend, m, input=nothing; kwargs...) = Plots.plot!(chaingraph(m, input); kwargs...)
+plotchain!(::PlotsBackend, plt::Plots.Plot, m, input=nothing; kwargs...) = Plots.plot!(plt, chaingraph(m, input); kwargs...)
+plotchain!(plt::Plots.Plot, m, input=nothing; kwargs...) = plotchain!(PlotsBackend(), plt, m, input; kwargs...)
 
 RecipesBase.@recipe function f(
     cg::ChainGraph;

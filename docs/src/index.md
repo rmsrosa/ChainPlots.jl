@@ -10,7 +10,7 @@ cg = chaingraph(m)  # the graph of neurons and connections
 plot(cg)            # or, in one step, plotchain(m)
 ```
 
-Plots.jl is an optional dependency: the plot recipe and [`plotchain`](@ref) are loaded with it, as a package extension, so `using Plots` is needed to plot, while [`chaingraph`](@ref) works without it.
+Plotting works with either Plots.jl or Makie.jl, both optional dependencies: the plot recipes and [`plotchain`](@ref) are loaded with them, as package extensions. So run `using Plots`, or load a Makie backend, as in `using CairoMakie`, to plot, while [`chaingraph`](@ref) works without either; see [Plotting with Makie](@ref).
 
 If the first layer accepts inputs of any size, such as a convolutional layer, pass an input, or the shape of an input, as in `plotchain(m, (16, 16, 1, 1))`.
 

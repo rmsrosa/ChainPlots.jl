@@ -1,5 +1,16 @@
 # Changelog
 
+## Unreleased
+
+### Added
+
+- Plotting with [Makie.jl](https://docs.makie.org), through a package extension loaded with Makie: `plot(cg)` draws a `ChainGraph` with the same markers and colors as with Plots.jl, and `plotchain` and `plotchain!` work with Makie too. See the new [Plotting with Makie](https://rmsrosa.github.io/ChainPlots.jl/dev/makie_examples/) docs page.
+- `plotchain` and `plotchain!` use whichever of Plots.jl and Makie.jl is loaded. If both are, choose one by passing `ChainPlots.PlotsBackend()` or `ChainPlots.MakieBackend()` as the first argument.
+
+### Changed
+
+- Calling `plotchain` with neither Plots.jl nor Makie.jl loaded throws an `ArgumentError` saying to load one of them, instead of a `MethodError` with a hint.
+
 ## v0.3.0
 
 This release has a breaking change: Plots.jl is now an optional dependency. See [From 0.2 to 0.3](https://rmsrosa.github.io/ChainPlots.jl/dev/migration/) for how to update your code.
