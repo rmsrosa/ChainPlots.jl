@@ -318,12 +318,17 @@ end
     @test_throws ArgumentError chaingraph(Chain(x -> x .^ 3, Dense(3 => 2)))
 end
 
-@testset "plotchain without Plots" begin
-    # the Plots extension is not loaded yet
+@testset "plotchain without a plotting package" begin
+    # neither the Plots nor the Makie extension is loaded yet
     @test isnothing(Base.get_extension(ChainPlots, :ChainPlotsPlotsExt))
+    @test isnothing(Base.get_extension(ChainPlots, :ChainPlotsMakieExt))
     err = try plotchain(Dense(2 => 3)) catch e; e end
-    @test err isa MethodError
-    @test occursin("using Plots", sprint(showerror, err))
+    @test err isa ArgumentError
+    @test occursin("using Plots", sprint(showerror, err)) && occursin("Makie", sprint(showerror, err))
+    @test_throws ArgumentError plotchain!(Dense(2 => 3))
+    err = try plotchain(ChainPlots.MakieBackend(), Dense(2 => 3)) catch e; e end
+    @test err isa ArgumentError && occursin("CairoMakie", sprint(showerror, err))
+    @test_throws ArgumentError plotchain(ChainPlots.PlotsBackend(), Dense(2 => 3))
 end
 
 using Plots
@@ -396,6 +401,39 @@ import Lux
 
     # and plotting
     @test plotchain(Lux.Chain(Lux.Dense(2 => 3), Lux.Dense(3 => 1))) isa Plots.Plot
+end
+
+import Makie
+
+@testset "Makie" begin
+    @test !isnothing(Base.get_extension(ChainPlots, :ChainPlotsMakieExt))
+    nnr = Chain(Dense(2 => 5, σ), RNN(5 => 4, relu), LSTM(4 => 4), Dense(4 => 3))
+    cg = chaingraph(nnr)
+
+    # with both Plots and Makie loaded, the backend has to be chosen
+    err = try plotchain(nnr) catch e; e end
+    @test err isa ArgumentError && occursin("Both", sprint(showerror, err))
+    @test plotchain(ChainPlots.PlotsBackend(), nnr) isa Plots.Plot
+
+    # the recipe, through `plot` and `plotchain`
+    fap = Makie.plot(cg)
+    @test fap isa Makie.FigureAxisPlot
+    @test fap.plot isa Base.get_extension(ChainPlots, :ChainPlotsMakieExt).ChainGraphPlot
+    @test fap.axis.xticks[] == (0:4, ["input\nlayer", "hidden\nlayer 1", "hidden\nlayer 2", "hidden\nlayer 3", "output\nlayer"])
+    @test !fap.axis.yticklabelsvisible[]
+    fap = plotchain(ChainPlots.MakieBackend(), nnr; axis = (; title = "nnr"))
+    @test fap isa Makie.FigureAxisPlot
+    @test fap.axis.title[] == "nnr"
+    @test plotchain(ChainPlots.MakieBackend(), Conv((2,), 1 => 1), (5, 1, 1)) isa Makie.FigureAxisPlot
+    @test plotchain(ChainPlots.MakieBackend(), nnr; neuron_shape = :diamond, neuron_colors = :red,
+        connection_color = :blue) isa Makie.FigureAxisPlot
+
+    # adding to an axis
+    fig = Makie.Figure()
+    ax = Makie.Axis(fig[1, 1])
+    @test plotchain!(ax, Dense(2 => 3)) isa Makie.AbstractPlot
+    @test plotchain!(ChainPlots.MakieBackend(), ax, GRU(2 => 3)) isa Makie.AbstractPlot
+    @test length(ax.scene.plots) == 2
 end
 
 @testset "Aqua" begin

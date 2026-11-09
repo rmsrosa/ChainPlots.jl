@@ -30,8 +30,8 @@ vertex per neuron and one edge per connection between neurons of consecutive lay
 
 A `ChainGraph` implements the `Graphs.jl` interface, so functions such as `nv`, `ne`,
 `vertices`, `edges` and `neighbors` work on it, and so do packages built on that
-interface, such as `GraphPlot.jl`. It is plotted with `Plots.jl` by `plot(cg)`, once
-Plots.jl is loaded; see [`plotchain`](@ref) for the attributes of the plot recipe.
+interface, such as `GraphPlot.jl`. It is plotted with `plot(cg)`, once Plots.jl or
+Makie.jl is loaded; see [`plotchain`](@ref) for the attributes of the plot recipes.
 
 Use [`nodeprop`](@ref) and [`nodeprops`](@ref) to read the properties of a neuron
 (see [`NODE_PROPERTIES`](@ref)), and [`layer_dimensions`](@ref) and
