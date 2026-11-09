@@ -1,6 +1,8 @@
 # Changelog
 
-## Unreleased
+## v0.3.1
+
+Adds plotting with Makie.jl. Nothing breaks, but calling `plotchain` with no plotting package loaded now throws an `ArgumentError` instead of a `MethodError`.
 
 ### Added
 

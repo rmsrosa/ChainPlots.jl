@@ -2,7 +2,7 @@
 
 ## From 0.2 to 0.3
 
-Plots.jl is now an optional dependency, and the plot recipe and [`plotchain`](@ref) are loaded with it, as a package extension. So add Plots to your environment and run `using Plots` before plotting; otherwise `plotchain` throws an error that says so. In later versions, Makie.jl can be used instead of Plots.jl; see [Plotting with Makie](@ref). [`chaingraph`](@ref) works without Plots.
+Plots.jl is now an optional dependency, and the plot recipe and [`plotchain`](@ref) are loaded with it, as a package extension. So add Plots to your environment and run `using Plots` before plotting; otherwise `plotchain` throws an error that says so. Since 0.3.1, Makie.jl can be used instead of Plots.jl; see [Plotting with Makie](@ref). [`chaingraph`](@ref) works without Plots.
 
 ## From 0.1 to 0.2
 
